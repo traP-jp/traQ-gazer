@@ -1,0 +1,525 @@
+"openapi": "3.0.3"
+"info":
+  "title": "Swagger Petstore - OpenAPI 3.0"
+  "description": "This is a sample An Ego Search Support Bot on traQ based on the OpenAPI 3.0 specification.  You can find out more about\nSwagger at [https://swagger.io](https://swagger.io)."
+  "version": "1.0.0"
+"servers":
+  -
+    "url": "http://api.example.com/v1"
+"tags":
+  -
+    "name": "words"
+    "description": "このサービスの根幹のAPI集"
+  -
+    "name": "list"
+    "description": "一覧を見るためのAPI集"
+  -
+    "name": "trend"
+    "description": "トレンドのためのAPI集"
+  -
+    "name": "similar"
+    "description": "おすすめのためのAPI集"
+"paths":
+  "/words":
+    "post":
+      "tags":
+        - "words"
+      "summary": "wordの登録"
+      "description": "wordの登録"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "type": "object"
+              "properties":
+                "userId":
+                  "type": "string"
+                "word":
+                  "type": "string"
+      "responses":
+        "200":
+          "description": "Successful registration"
+        "400":
+          "description": "Invalid input"
+    "delete":
+      "tags":
+        - "words"
+      "summary": "wordの削除"
+      "description": "wordの削除"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "type": "object"
+              "properties":
+                "userId":
+                  "type": "string"
+                "word":
+                  "type": "string"
+      "responses":
+        "200":
+          "description": "Successful deletion"
+        "400":
+          "description": "Invalid input"
+    "get":
+      "tags":
+        - "words"
+      "summary": "全データの取得"
+      "description": "全データの取得"
+      "responses":
+        "200":
+          "description": "Successful retrieval"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "words":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "userId":
+                          "type": "string"
+                        "word":
+                          "type": "string"
+                        "time":
+                          "type": "string"
+  "/list/{userId}":
+    "get":
+      "tags":
+        - "list"
+      "summary": "あるuserのwordたち"
+      "description": "userの登録しているwordの取得"
+      "parameters":
+        -
+          "in": "path"
+          "name": "userId"
+          "description": "ID of the user"
+          "required": true
+          "schema":
+            "type": "string"
+      "responses":
+        "200":
+          "description": "Successful retrieval"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "words":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "word":
+                          "type": "string"
+                        "time":
+                          "type": "string"
+                  "userId":
+                    "type": "string"
+        "404":
+          "description": "User not found"
+  "/list/{word}":
+    "get":
+      "tags":
+        - "list"
+      "summary": "ある単語を見ているuserたち"
+      "description": "ある単語を登録しているuserの取得"
+      "parameters":
+        -
+          "in": "path"
+          "name": "word"
+          "description": "The word to search for"
+          "required": true
+          "schema":
+            "type": "string"
+      "responses":
+        "200":
+          "description": "Successful retrieval"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "users":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "userId":
+                          "type": "string"
+                        "time":
+                          "type": "string"
+                  "word":
+                    "type": "string"
+        "404":
+          "description": "Word not found"
+  "/trend/day/today":
+    "get":
+      "tags":
+        - "trend"
+      "summary": "今日のトレンド"
+      "description": "今日最も追加されたwordの取得"
+      "operationId": "getTodayTrendingWords"
+      "parameters":
+        -
+          "name": "n"
+          "in": "query"
+          "description": "返すwordの数"
+          "required": false
+          "schema":
+            "type": "integer"
+            "default": 10
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "words":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "number":
+                          "type": "integer"
+                          "example": 1
+                        "word":
+                          "type": "string"
+                          "example": "example"
+  "/trend/day/{day}":
+    "parameters":
+      -
+        "name": "day"
+        "in": "path"
+        "description": "Specific day in the format \"YYYY-MM-DD\""
+        "required": true
+        "schema":
+          "type": "string"
+          "format": "date"
+    "get":
+      "tags":
+        - "trend"
+      "summary": "ある日のトレンド"
+      "description": "特定の日に最も追加されたwordの取得"
+      "operationId": "getTrendingWordsForDay"
+      "parameters":
+        -
+          "name": "n"
+          "in": "query"
+          "description": "返すwordの数"
+          "required": false
+          "schema":
+            "type": "integer"
+            "default": 10
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "words":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "number":
+                          "type": "integer"
+                          "example": 1
+                        "word":
+                          "type": "string"
+                          "example": "example"
+  "/trend/month/{month}":
+    "parameters":
+      -
+        "name": "month"
+        "in": "path"
+        "description": "Specific month in the format \"YYYY-MM\""
+        "required": true
+        "schema":
+          "type": "string"
+          "format": "date"
+    "get":
+      "tags":
+        - "trend"
+      "summary": "ある月のトレンド"
+      "description": "特定の月に最も追加されたwordの取得"
+      "operationId": "getTrendingWordsForMonth"
+      "parameters":
+        -
+          "name": "n"
+          "in": "query"
+          "description": "返すwordの数"
+          "required": false
+          "schema":
+            "type": "integer"
+            "default": 10
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "words":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "number":
+                          "type": "integer"
+                          "example": 1
+                        "word":
+                          "type": "string"
+                          "example": "example"
+  "/trend/year/{year}":
+    "parameters":
+      -
+        "name": "year"
+        "in": "path"
+        "description": "Specific year in the format \"YYYY\""
+        "required": true
+        "schema":
+          "type": "string"
+          "format": "date"
+    "get":
+      "tags":
+        - "trend"
+      "summary": "ある年のトレンド"
+      "description": "特定の年に最も追加されたwordの取得"
+      "operationId": "getTrendingWordsForYear"
+      "parameters":
+        -
+          "name": "n"
+          "in": "query"
+          "description": "返すwordの数"
+          "required": false
+          "schema":
+            "type": "integer"
+            "default": 10
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "words":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "number":
+                          "type": "integer"
+                          "example": 1
+                        "word":
+                          "type": "string"
+                          "example": "example"
+  "/similar/{userId}":
+    "parameters":
+      -
+        "name": "userId"
+        "in": "path"
+        "description": "ID of the user"
+        "required": true
+        "schema":
+          "type": "string"
+    "get":
+      "tags":
+        - "similar"
+      "summary": "似たような者を探す"
+      "description": "特定のuserと同じような単語を登録しているuserの取得"
+      "operationId": "getUsersWithSimilarWords"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "userIds":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "userId":
+                          "type": "string"
+  "/similar/{userId}/recommend":
+    "parameters":
+      -
+        "name": "userId"
+        "in": "path"
+        "description": "ID of the user"
+        "required": true
+        "schema":
+          "type": "string"
+    "get":
+      "tags":
+        - "similar"
+      "summary": "おすすめの単語を出す"
+      "description": "特定のuserと同じような単語を登録しているuserが登録している単語の取得"
+      "operationId": "getRecommendedWordsForUser"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "words":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "number":
+                          "type": "integer"
+                          "example": 1
+                        "word":
+                          "type": "string"
+                          "example": "example"
+"components":
+  "schemas":
+    "WordRequest":
+      "type": "object"
+      "properties":
+        "userId":
+          "type": "string"
+        "word":
+          "type": "string"
+    "WordsAllList":
+      "type": "object"
+      "properties":
+        "words":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "userId":
+                "type": "string"
+              "word":
+                "type": "string"
+              "time":
+                "type": "string"
+    "WordAllList":
+      "type": "object"
+      "properties":
+        "userId":
+          "type": "string"
+        "word":
+          "type": "string"
+        "time":
+          "type": "string"
+    "WordsList":
+      "type": "object"
+      "properties":
+        "words":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "word":
+                "type": "string"
+              "time":
+                "type": "string"
+        "userId":
+          "type": "string"
+    "WordList":
+      "type": "object"
+      "properties":
+        "word":
+          "type": "string"
+        "time":
+          "type": "string"
+    "UsersList":
+      "type": "object"
+      "properties":
+        "users":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "userId":
+                "type": "string"
+              "time":
+                "type": "string"
+        "word":
+          "type": "string"
+    "UserList":
+      "type": "object"
+      "properties":
+        "userId":
+          "type": "string"
+        "time":
+          "type": "string"
+    "TrendingWords":
+      "type": "object"
+      "properties":
+        "words":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "number":
+                "type": "integer"
+                "example": 1
+              "word":
+                "type": "string"
+                "example": "example"
+    "TrendingWord":
+      "type": "object"
+      "properties":
+        "number":
+          "type": "integer"
+          "example": 1
+        "word":
+          "type": "string"
+          "example": "example"
+    "SimilarUsers":
+      "type": "object"
+      "properties":
+        "userIds":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "userId":
+                "type": "string"
+    "SimilarUser":
+      "type": "object"
+      "properties":
+        "userId":
+          "type": "string"
+    "RecommendedWords":
+      "type": "object"
+      "properties":
+        "words":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "number":
+                "type": "integer"
+                "example": 1
+              "word":
+                "type": "string"
+                "example": "example"
+    "RecommendedWord":
+      "type": "object"
+      "properties":
+        "number":
+          "type": "integer"
+          "example": 1
+        "word":
+          "type": "string"
+          "example": "example"
