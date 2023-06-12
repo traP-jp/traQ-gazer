@@ -10,6 +10,8 @@ servers:
 tags:
   - name: words
     description: このサービスの根幹のAPI集
+  - name: bot
+    description: botの通知の設定のAPI集
   - name: list
     description: 一覧を見るためのAPI集
   - name: trend
@@ -44,7 +46,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WordRequest'
+              $ref: '#/components/schemas/WordDelete'
+      responses:
+        '200':
+          description: Successful deletion
+        '400':
+          description: Invalid input
+    put:
+      tags:
+        - bot
+      summary: bot通知の変更
+      description: bot通知の変更
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WordDelete'
       responses:
         '200':
           description: Successful deletion
@@ -62,6 +80,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WordsAllList'
+  /list/{userId}/bot:
+    post:
+      tags:
+        - bot
+      summary: 特定のUserの通知の一括変更
+      description: 特定のUserの通知の全てを一括変更
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bot'
+        '404':
+          description: User not found
   /list/{userId}:
     get:
       tags:
@@ -270,6 +310,15 @@ components:
           type: string
         word:
           type: string
+        bot:
+          type: boolean
+    WordDelete:
+      type: object
+      properties:
+        userId:
+          type: string
+        word:
+          type: string
     WordsAllList:
       type: object
       properties:
@@ -286,6 +335,8 @@ components:
           type: string
         time:
           type: string
+        bot:
+          type: boolean
     WordsList:
       type: object
       properties:
@@ -302,6 +353,8 @@ components:
           type: string
         time:
           type: string
+        bot:
+          type: boolean
     UsersList:
       type: object
       properties:
@@ -318,6 +371,8 @@ components:
           type: string
         time:
           type: string
+        bot:
+          type: boolean
     TrendingWords:
       type: object
       properties:
@@ -362,3 +417,9 @@ components:
         word:
           type: string
           example: "example"
+    Bot:
+      type: object
+      properties:
+        bot:
+          type: boolean
+          example: true
