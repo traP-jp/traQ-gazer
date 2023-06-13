@@ -55,14 +55,14 @@ paths:
     put:
       tags:
         - bot
-      summary: bot通知の変更
-      description: bot通知の変更
+      summary: bot投稿に対する通知設定
+      description: 各wordに対してbotが投稿したものについても通知するか決める
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WordDelete'
+              $ref: '#/components/schemas/WordBotSetting'
       responses:
         '200':
           description: Successful deletion
@@ -306,26 +306,32 @@ components:
     WordRequest:
       type: object
       properties:
-        userId:
-          type: string
+        # userId: session
+        #   type: string
         word:
           type: string
-        bot:
+        includeBot:
           type: boolean
     WordDelete:
       type: object
       properties:
-        userId:
-          type: string
+        # userId: session
+        #   type: string
         word:
           type: string
-    WordsAllList:
+    WordBotSetting:
       type: object
       properties:
-        words:
-          type: array
-          items:
-            $ref: '#/components/schemas/WordAllList'
+        # userId: session
+        #   type: string
+        word:
+          type: string
+        includeBot:
+          type: boolean
+    WordsAllList:
+      type: array
+      items:
+        $ref: '#/components/schemas/WordAllList'
     WordAllList:
       type: object
       properties:
@@ -335,35 +341,25 @@ components:
           type: string
         time:
           type: string
-        bot:
+        includeBot:
           type: boolean
     WordsList:
-      type: object
-      properties:
-        words:
-          type: array
-          items:
-            $ref: '#/components/schemas/WordList'
-        userId:
-          type: string
-    WordList:
+      type: array
+      items:
+        $ref: '#/components/schemas/WordListItem'
+    WordListItem:
       type: object
       properties:
         word:
           type: string
         time:
           type: string
-        bot:
+        includeBot:
           type: boolean
     UsersList:
-      type: object
-      properties:
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserList'
-        word:
-          type: string
+      type: array
+      items:
+        $ref: '#/components/schemas/UserList'
     UserList:
       type: object
       properties:
@@ -371,15 +367,12 @@ components:
           type: string
         time:
           type: string
-        bot:
+        includeBot:
           type: boolean
     TrendingWords:
-      type: object
-      properties:
-        words:
-          type: array
-          items:
-            $ref: '#/components/schemas/TrendingWord'
+      type: array
+      items:
+        $ref: '#/components/schemas/TrendingWord'
     TrendingWord:
       type: object
       properties:
@@ -390,24 +383,18 @@ components:
           type: string
           example: "example"
     SimilarUsers:
-      type: object
-      properties:
-        userIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/SimilarUser'
+      type: array
+      items:
+        $ref: '#/components/schemas/SimilarUser'
     SimilarUser:
       type: object
       properties:
         userId:
           type: string
     RecommendedWords:
-      type: object
-      properties:
-        words:
-          type: array
-          items:
-            $ref: '#/components/schemas/RecommendedWord'
+      type: array
+      items:
+        $ref: '#/components/schemas/RecommendedWord'
     RecommendedWord:
       type: object
       properties:
@@ -420,6 +407,6 @@ components:
     Bot:
       type: object
       properties:
-        bot:
+        includeBot:
           type: boolean
           example: true
