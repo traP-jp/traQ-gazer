@@ -80,26 +80,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WordsAllList'
-  /list/{userId}/bot:
+  /words/bot:
     post:
       tags:
         - bot
       summary: 特定のUserの通知の一括変更
       description: 特定のUserの通知の全てを一括変更
-      parameters:
-        - in: path
-          name: userId
-          description: ID of the user
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful retrieval
-          content:
-            application/json:
+      requestBody:
+        required: true
+        content:
+          application/json:
               schema:
                 $ref: '#/components/schemas/Bot'
+      responses:
+        '200':
+          description: Successful deletion
         '404':
           description: User not found
   /list/{userId}:
@@ -403,6 +398,7 @@ components:
           example: "example"
     Bot:
       type: object
+      description: sessionからuserIdを取る
       properties:
         includeBot:
           type: boolean
