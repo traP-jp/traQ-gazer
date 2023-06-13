@@ -55,7 +55,7 @@ paths:
     put:
       tags:
         - bot
-      summary: bot投稿に対する通知設定
+      summary: bot投稿に対する通知の設定
       description: 各wordに対してbotが投稿したものについても通知するか決める
       requestBody:
         required: true
@@ -84,8 +84,8 @@ paths:
     post:
       tags:
         - bot
-      summary: 特定のUserの通知の一括変更
-      description: 特定のUserの通知の全てを一括変更
+      summary: bot投稿に対する通知の一括設定
+      description: botが投稿したもの全てについて通知するか決める
       requestBody:
         required: true
         content:
@@ -306,12 +306,17 @@ components:
           type: string
         includeBot:
           type: boolean
+      required:
+        - word
+        - includeBot
     WordDelete:
       type: object
       description: sessionからuserIdを取る
       properties:
         word:
           type: string
+      required:
+        - word
     WordBotSetting:
       type: object
       description: sessionからuserIdを取る
@@ -320,11 +325,14 @@ components:
           type: string
         includeBot:
           type: boolean
+      required:
+        - word
+        - includeBot
     WordsAllList:
       type: array
       items:
-        $ref: '#/components/schemas/WordAllList'
-    WordAllList:
+        $ref: '#/components/schemas/WordAllListItem'
+    WordAllListItem:
       type: object
       properties:
         userId:
@@ -335,6 +343,11 @@ components:
           type: string
         includeBot:
           type: boolean
+      required:
+        - userId
+        - word
+        - time
+        - includeBot
     WordsList:
       type: array
       items:
@@ -348,11 +361,15 @@ components:
           type: string
         includeBot:
           type: boolean
+      required:
+        - word
+        - time
+        - includeBot
     UsersList:
       type: array
       items:
-        $ref: '#/components/schemas/UserList'
-    UserList:
+        $ref: '#/components/schemas/UserListItem'
+    UserListItem:
       type: object
       properties:
         userId:
@@ -361,6 +378,10 @@ components:
           type: string
         includeBot:
           type: boolean
+      required:
+        - userId
+        - time
+        - includeBot
     TrendingWords:
       type: array
       items:
@@ -374,6 +395,9 @@ components:
         word:
           type: string
           example: "example"
+      required:
+        - number
+        - word
     SimilarUsers:
       type: array
       items:
@@ -383,6 +407,8 @@ components:
       properties:
         userId:
           type: string
+      required:
+        - userId
     RecommendedWords:
       type: array
       items:
@@ -396,6 +422,9 @@ components:
         word:
           type: string
           example: "example"
+      required:
+        - number
+        - word
     Bot:
       type: object
       description: sessionからuserIdを取る
@@ -403,3 +432,6 @@ components:
         includeBot:
           type: boolean
           example: true
+      required:
+        - includeBot
+
