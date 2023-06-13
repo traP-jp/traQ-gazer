@@ -305,25 +305,22 @@ components:
   schemas:
     WordRequest:
       type: object
+      description: sessionからuserIdを取る
       properties:
-        # userId: session
-        #   type: string
         word:
           type: string
         includeBot:
           type: boolean
     WordDelete:
       type: object
+      description: sessionからuserIdを取る
       properties:
-        # userId: session
-        #   type: string
         word:
           type: string
     WordBotSetting:
       type: object
+      description: sessionからuserIdを取る
       properties:
-        # userId: session
-        #   type: string
         word:
           type: string
         includeBot:
