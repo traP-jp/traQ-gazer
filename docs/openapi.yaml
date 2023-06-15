@@ -97,7 +97,7 @@ paths:
           description: Successful deletion
         '404':
           description: User not found
-  /list/{userId}:
+  /list/user/{userId}:
     get:
       tags:
         - list
@@ -119,7 +119,7 @@ paths:
                 $ref: '#/components/schemas/WordsList'
         '404':
           description: User not found
-  /list/{word}:
+  /list/word/{word}:
     get:
       tags:
         - list
@@ -139,6 +139,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UsersList'
+        '404':
+          description: Word not found
+  /list/user/{userId}/users:
+    get:
+      tags:
+        - list
+      summary: あるuserのwordたちを登録しているuserたち
+      description: あるuserが登録しているすべてのwordのそれぞれを登録しているusersの取得
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersOfWordsList'
+        '404':
+          description: User not found
+  /list/word/{word}/words:
+    get:
+      tags:
+        - list
+      summary: あるwordのuserたちが登録しているwordたち
+      description: あるwordを登録しているすべてのuserのそれぞれが登録しているwordsの取得
+      parameters:
+        - in: path
+          name: word
+          description: The word to search for
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WordsOfUsersList'
         '404':
           description: Word not found
   /trend/day/today:
@@ -382,6 +426,38 @@ components:
         - userId
         - time
         - includeBot
+    UsersOfWordListItem:
+      type: object
+      properties:
+        userIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserListItem'
+        word:
+          type: string
+      required:
+        - userIds
+        - word
+    UsersOfWordsList:
+      type: array
+      items:
+        $ref: '#/components/schemas/UsersOfWordListItem'
+    WordsOfUserListItem:
+      type: object
+      properties:
+        words:
+          type: array
+          items:
+            $ref: '#/components/schemas/WordListItem'
+        userId:
+          type: string
+      required:
+        - words
+        - userId
+    WordsOfUsersList:
+      type: array
+      items:
+        $ref: '#/components/schemas/WordsOfUserListItem'
     TrendingWords:
       type: array
       items:
