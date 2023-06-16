@@ -384,6 +384,7 @@ components:
           type: string
         time:
           type: string
+          format: date-time
         includeBot:
           type: boolean
       required:
@@ -402,6 +403,7 @@ components:
           type: string
         time:
           type: string
+          format: date-time
         includeBot:
           type: boolean
       required:
@@ -419,6 +421,7 @@ components:
           type: string
         time:
           type: string
+          format: date-time
         includeBot:
           type: boolean
       required:
