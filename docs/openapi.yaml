@@ -380,6 +380,7 @@ components:
       properties:
         userId:
           type: string
+          example: trap
         word:
           type: string
         time:
@@ -419,6 +420,7 @@ components:
       properties:
         userId:
           type: string
+          example: trap
         time:
           type: string
           format: date-time
@@ -453,6 +455,7 @@ components:
             $ref: '#/components/schemas/WordListItem'
         userId:
           type: string
+          example: trap
       required:
         - words
         - userId
@@ -485,6 +488,7 @@ components:
       properties:
         userId:
           type: string
+          example: trap
       required:
         - userId
     RecommendedWords:
