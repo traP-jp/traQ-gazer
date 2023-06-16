@@ -1,12 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Swagger Petstore - OpenAPI 3.0
+  title: h23s_15's service
   description: |-
-    This is a sample An Ego Search Support Bot on traQ based on the OpenAPI 3.0 specification.  You can find out more about
-    Swagger at [https://swagger.io](https://swagger.io). 
+    TBD
   version: 1.0.0
 servers:
-  - url: http://api.example.com/v1
+  - url: /api
 tags:
   - name: words
     description: このサービスの根幹のAPI集
