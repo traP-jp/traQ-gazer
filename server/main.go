@@ -3,6 +3,7 @@ package main
 import (
 	"h23s_15/api"
 	"h23s_15/handler"
+	"h23s_15/model"
 	"h23s_15/traqHandler"
 	"log"
 	"sync"
@@ -19,7 +20,7 @@ func main() {
 	server := handler.Server{}
 	api.RegisterHandlers(instance, server)
 
-	// model.SetUp()
+	model.SetUp()
 
 	go func() {
 		instance.Logger.Fatal(instance.Start(":8080"))
@@ -28,7 +29,7 @@ func main() {
 
 	traqServer := traqHandler.Start()
 	go func() {
-		log.Fatal(traqServer.ListenAndServe(":8000"))
+		log.Fatal(traqServer.ListenAndServe(":8100"))
 	}()
 
 	wg.Wait()

@@ -11,19 +11,18 @@ import (
 
 type traqServerInterface interface {
 	SetPingHandler() error
-	SetMessageCreatedHandler() error
+	SetMessageCreatedHandler(p *traqbot.MessageCreatedPayload) error
 	SetChannelCreatedHandler() error
 }
-
-const TOKEN = "/* your token */"
 
 func Start() *traqbot.BotServer {
 	slog.Info("traQ http server started on 8000")
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
+	// TOKEN := os.Getenv("TRAQ_CLIENT_TOKEN")
 	// auth := context.WithValue(context.Background(), traq.ContextAccessToken, TOKEN)
 
-	traQBotVrToken := os.Getenv("VERIFICATION_TOKEN")
+	traQBotVrToken := os.Getenv("TRAQ_BOT_VERIFICATION_TOKEN")
 
 	var traqServer traqServerInterface
 	traqServer = TraqServer{
@@ -38,7 +37,7 @@ func Start() *traqbot.BotServer {
 		}
 	})
 	handlers.SetMessageCreatedHandler(func(payload *traqbot.MessageCreatedPayload) {
-		err := traqServer.SetMessageCreatedHandler()
+		err := traqServer.SetMessageCreatedHandler(payload)
 		if err != nil {
 			log.Println(err)
 		}
