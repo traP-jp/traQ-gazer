@@ -29,18 +29,14 @@ RUN go build -o app .
 
 
 # 最終的な配信用
-FROM caddy:2.6.4-alpine
+FROM alpine:3.18.2
 
 WORKDIR /
 
-COPY config/Caddyfile /etc/caddy/Caddyfile
-
-COPY --from=client-build /app/dist /usr/share/caddy
+COPY --from=client-build /app/dist dist
 COPY --from=server-build /github.com/traP-jp/h23s_15/app app
 
-EXPOSE 80
-
-# traQからのイベントは部員認証なしで通すので
+EXPOSE 8080
 EXPOSE 8100
 
 ENTRYPOINT [ "./app" ]
