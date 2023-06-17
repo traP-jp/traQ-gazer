@@ -2,6 +2,10 @@
 import { ref } from 'vue'
 import { Switch } from '@headlessui/vue'
 
+const emit = defineEmits<{
+    (e: 'updeteBotNotify', value: boolean):void
+}>()
+
 const newBotNotify = ref(true)
 </script>
 
