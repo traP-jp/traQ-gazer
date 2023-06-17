@@ -10,3 +10,28 @@ services:
     volumes:
       - "./server:/github.com/traP-jp/h23s_15"
     command: air -c /github.com/traP-jp/h23s_15/.air.toml
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_HOSTNAME: mysql
+      DB_PORT: 3306
+      DB_DATABASE: main
+  
+  mariadb: 
+    image: mariadb:11.0.2-jammy
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: main
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root -p $MYSQL_ROOT_PASSWORD
+      interval: 1s
+      timeout: 10s
+      retries: 60
+
