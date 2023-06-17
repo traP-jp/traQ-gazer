@@ -56,18 +56,6 @@ func sendMessage(message model.Send) error {
 	// TODO: 送信処理
 	// 送信先: message.userId
 	// 送信内容: "ワード:"+message.word+"\n https://q.trap.jp/messages/"+message.messageId
-	v, _, err := t.client.MessageApi.PostDirectMessage(context.Background(), "userId").
-		PostMessageRequest(traq.PostMessageRequest{
-			// メッセージ本文
-			Content: "",
-			// // メンション・チャンネルリンクを自動埋め込みするか
-			// Embed: check,
-		}).
-		Execute()
-	slog.Info("%#v", v)
-	if err != nil {
-		slog.Info("%s", err)
-	}
 	return nil
 }
 
