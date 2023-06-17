@@ -2,6 +2,7 @@ package traqmessage
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -10,6 +11,28 @@ import (
 )
 
 var ACCESS_TOKEN = os.Getenv("BOT_ACCESS_TOKEN")
+
+// go routineの中で呼ぶこと
+func PollingMessages() {
+	pollingInterval := time.Minute * 5
+
+	lastCheckpoint := time.Now()
+	ticker := time.Tick(pollingInterval)
+
+	for range ticker {
+		now := time.Now()
+		messages, err := collectMessages(lastCheckpoint, now)
+		if err != nil {
+			slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
+			continue
+		}
+
+		lastCheckpoint = now
+
+		slog.Info(fmt.Sprintf("Collect %d messages", len(messages.Hits)))
+		// TODO: 取得したメッセージを使っての処理の呼び出し
+	}
+}
 
 func collectMessages(from time.Time, to time.Time) (*traq.MessageSearchResult, error) {
 	if ACCESS_TOKEN == "" {

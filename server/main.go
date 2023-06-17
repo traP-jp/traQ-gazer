@@ -4,6 +4,7 @@ import (
 	"h23s_15/api"
 	"h23s_15/handler"
 	"h23s_15/model"
+	"h23s_15/traqmessage"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -24,6 +25,10 @@ func main() {
 	instance.File("/words/add", "dist/index.html")
 
 	model.SetUp()
+
+	go func() {
+		traqmessage.PollingMessages()
+	}()
 
 	instance.Logger.Fatal(instance.Start(":8080"))
 }
