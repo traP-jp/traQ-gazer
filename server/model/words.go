@@ -8,6 +8,8 @@ import (
 	"errors"
 	"time"
 
+	"log"
+
 	"golang.org/x/exp/slog"
 )
 
@@ -45,4 +47,16 @@ func ExistWord(word, userId string) (bool, error) {
 
 	// 存在する
 	return true, nil
+}
+
+type WordsAllList []WordAllListItem
+
+func GetWords() (WordsAllList, error) {
+	words := []WordAllListItem{}
+	err := db.Select(&words, "SELECT * FROM words")
+	if err != nil {
+		log.Printf("Error: %s\n", err)
+		return nil, err
+	}
+	return words, nil
 }
