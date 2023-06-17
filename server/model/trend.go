@@ -1,6 +1,8 @@
 package model
 
-import "log"
+import (
+	"log"
+)
 
 type TrendingWord struct {
 	Number int    `db:"count"`
@@ -30,7 +32,7 @@ func GetTrendingWordsForDay(limit int, day string) (TrendingWords, error) {
 }
 
 func GetTrendingWordsForMonth(limit int, month string) (TrendingWords, error) {
-	words := TrendingWords{}
+	words := []TrendingWord{}
 	err := db.Select(&words, "SELECT word, COUNT(word) AS count FROM words WHERE DATE_FORMAT(register_time, '%Y-%m') = ? GROUP BY word ORDER BY count DESC LIMIT ?", month, limit)
 	if err != nil {
 		log.Printf("Error: %s\n", err)

@@ -10,7 +10,11 @@ import (
 // 今日のトレンド
 // (GET /trend/day/today)
 func (s Server) GetTodayTrendingWords(ctx echo.Context, params api.GetTodayTrendingWordsParams) error {
-	trendingWordsModel, err := model.GetTodayTrendingWords(*params.Limit)
+	limitNumber := 10
+	if params.Limit != nil {
+		limitNumber = *params.Limit
+	}
+	trendingWordsModel, err := model.GetTodayTrendingWords(limitNumber)
 	if err != nil {
 		return echo.NewHTTPError(500, err)
 	}
@@ -21,7 +25,11 @@ func (s Server) GetTodayTrendingWords(ctx echo.Context, params api.GetTodayTrend
 // ある日のトレンド
 // (GET /trend/day/{day})
 func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params api.GetTrendingWordsForDayParams) error {
-	trendingWordsModel, err := model.GetTrendingWordsForDay(*params.Limit, day)
+	limitNumber := 10
+	if params.Limit != nil {
+		limitNumber = *params.Limit
+	}
+	trendingWordsModel, err := model.GetTrendingWordsForDay(limitNumber, day)
 	if err != nil {
 		return echo.NewHTTPError(500, err)
 	}
@@ -32,7 +40,11 @@ func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params api.
 // ある月のトレンド
 // (GET /trend/month/{month})
 func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params api.GetTrendingWordsForMonthParams) error {
-	trendingWordsModel, err := model.GetTrendingWordsForMonth(*params.Limit, month)
+	limitNumber := 10
+	if params.Limit != nil {
+		limitNumber = *params.Limit
+	}
+	trendingWordsModel, err := model.GetTrendingWordsForMonth(limitNumber, month)
 	if err != nil {
 		return echo.NewHTTPError(500, err)
 	}
@@ -43,7 +55,11 @@ func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params 
 // ある年のトレンド
 // (GET /trend/year/{year})
 func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params api.GetTrendingWordsForYearParams) error {
-	trendingWordsModel, err := model.GetTrendingWordsForYear(*params.Limit, year)
+	limitNumber := 10
+	if params.Limit != nil {
+		limitNumber = *params.Limit
+	}
+	trendingWordsModel, err := model.GetTrendingWordsForYear(limitNumber, year)
 	if err != nil {
 		return echo.NewHTTPError(500, err)
 	}
