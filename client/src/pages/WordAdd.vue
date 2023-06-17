@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import BotNotify from '../components/BotNotify.vue'
 import SelfNotify from '../components/SelfNotify.vue'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
+import apiClient from '../apis'
+import { WordRequest, WordsAllList } from '../apis/generated'
 
 const newBotNotify = ref(true)
 const newSelfNotify = ref(false)
@@ -23,27 +25,33 @@ function openClearedDialog() {
   isClearedOpen.value = true
 }
 
-interface Word {
-  word: string
-  botNotify: boolean
-  selfNotify: boolean
-}
-
-const words = ref<Word[]>([])
+const words = ref<WordsAllList>([])
 const newWord = ref('')
 
-const addWord = () => {
-  if (newWord.value.length > 50) {
+apiClient.words.getWords().then((res) => (words.value = res))
+
+const registerNewWord = () => {
+  if (newWord.value.length == 0) {
+    return
+  } else if (newWord.value.length > 50) {
     openFailedDialog()
-  } else if (newWord.value.length <= 50 && newWord.value.length > 0) {
-    words.value.push({
-      word: newWord.value,
-      botNotify: newBotNotify.value,
-      selfNotify: newSelfNotify.value
-    })
-    newWord.value = ''
-    openClearedDialog()
+    return
   }
+
+  const reqBody: WordRequest = {
+    word: newWord.value,
+    includeBot: newBotNotify.value,
+    includeMe: newSelfNotify.value
+  }
+
+  // wordの登録リクエスト
+  apiClient.words.postWords(reqBody).catch((v) => console.log(v))
+
+  // 登録後のリストで更新
+  apiClient.words.getWords().then((res) => (words.value = res))
+
+  newWord.value = ''
+  openClearedDialog()
 }
 
 const updateNewBotNotify = (newValue: boolean) => {
@@ -85,7 +93,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
     <SelfNotify @updete-self-notify="(newValue) => updateNewSelfNotify(newValue)" />
   </div>
   <div class="registerButton">
-    <button @click="addWord">登録</button>
+    <button @click="registerNewWord">登録</button>
   </div>
 
   <div class="table">
@@ -99,10 +107,8 @@ const updateNewSelfNotify = (newValue: boolean) => {
       </tr>
       <tr v-for="item in words" :key="item.word">
         <td>{{ item.word }}</td>
-        <td v-if="item.botNotify === true">ON</td>
-        <td v-if="item.botNotify === false">OFF</td>
-        <td v-if="item.selfNotify === true">ON</td>
-        <td v-if="item.selfNotify === false">OFF</td>
+        <td>{{ item.includeBot ? 'ON' : 'OFF' }}</td>
+        <td>{{ item.includeMe ? 'ON' : 'OFF' }}</td>
       </tr>
     </table>
   </div>
