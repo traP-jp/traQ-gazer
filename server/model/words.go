@@ -1,16 +1,26 @@
 package model
 
 import (
-	"h23s_15/api"
+	"log"
+	"time"
 )
 
-
-func PostWords(data *api.PostWordsJSONBody, userId string) error {
-	_, err := db.Exec("INSERT INTO words (trap_id, word, bot_notification, me_notification) VALUES (?, ?, ?, ?)", userId, data.Word, data.IncludeBot, data.IncludeMe) 
-	return err
+type WordAllListItem struct {
+	IncludeBot bool      `db:"bot_notification"`
+	IncludeMe  bool      `db:"me_notification"`
+	Time       time.Time `db:"register_time"`
+	UserId     string    `db:"trap_id"`
+	Word       string    `db:"word"`
 }
 
-func DeleteWords(data *api.DeleteWordsJSONRequestBody, userId string) error {
-	_, err := db.Exec("DELETE FROM words WHERE trap_id = ? AND word = ?", userId, data.Word) 
-	return err
+type WordsAllList []WordAllListItem
+
+func GetWords() (WordsAllList, error) {
+	words := []WordAllListItem{}
+	err := db.Select(&words, "SELECT * FROM words")
+	if err != nil {
+		log.Printf("Error: %s\n", err)
+		return nil, err
+	}
+	return words, nil
 }
