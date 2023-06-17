@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ../..
+      dockerfile: dockerfiles/dev/server.Dockerfile
+    ports:
+      - 8080:8080
+    volumes:
+      - "../../server:/github.com/traP-jp/h23s_15"
+    command: air -c /github.com/traP-jp/h23s_15/.air.toml
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      DB_HOSTNAME: mariadb
+      DB_PORT: 3306
+      DB_DATABASE: main
+  
+  mariadb: 
+    image: mariadb:10.7.3
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: main
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    volumes:
+      - "../../schema/schema.sql:/docker-entrypoint-initdb.d/init.sql"
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD
+      interval: 1s
+      timeout: 10s
+      retries: 60
+
