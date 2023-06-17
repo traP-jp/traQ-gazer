@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: '18.15.0'
           cache: npm
+          cache-dependency-path: ./client/package-lock.json
       - name: npm ci
         run: npm ci
         working-directory: ./client/
@@ -36,6 +37,7 @@ jobs:
         with:
           node-version: '18.15.0'
           cache: npm
+          cache-dependency-path: ./client/package-lock.json
       - name: npm ci
         run: npm ci
         working-directory: ./client/    
@@ -52,6 +54,7 @@ jobs:
         with:
           node-version: '18.15.0'
           cache: npm
+          cache-dependency-path: ./client/package-lock.json
       - name: npm ci
         run: npm ci
         working-directory: ./client/    
@@ -68,6 +71,7 @@ jobs:
         with:
           node-version: '18.15.0'
           cache: npm
+          cache-dependency-path: ./client/package-lock.json
       - name: npm ci
         run: npm ci
         working-directory: ./client/    
