@@ -45,6 +45,10 @@ const addWord = () => {
     openClearedDialog()
   }
 }
+
+const updateNewBotNotify = (newValue: boolean) => {
+  newBotNotify.value = newValue
+}
 </script>
 
 <template>
@@ -72,7 +76,7 @@ const addWord = () => {
     </label>
   </div>
   <div>
-    <BotNotify />
+    <BotNotify @updete-bot-notify="(newValue) => updateNewBotNotify(newValue)" />
     <SelfNotify />
   </div>
   <div class="registerButton">

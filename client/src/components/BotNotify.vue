@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Switch } from '@headlessui/vue'
 
 const emit = defineEmits<{
-    (e: 'updeteBotNotify', value: boolean):void
+  (e: 'updeteBotNotify', value: boolean): boolean
 }>()
 
 const newBotNotify = ref(true)
+
+watch(newBotNotify, () => {
+  emit('updeteBotNotify', newBotNotify.value)
+})
 </script>
 
 <template>
