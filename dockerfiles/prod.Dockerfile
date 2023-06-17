@@ -40,4 +40,7 @@ COPY --from=server-build /github.com/traP-jp/h23s_15/app app
 
 EXPOSE 80
 
+# traQからのイベントは部員認証なしで通すので
+EXPOSE 8100
+
 ENTRYPOINT [ "./app" ]
