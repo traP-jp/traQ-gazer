@@ -14,9 +14,9 @@ services:
       mariadb:
         condition: service_healthy
     environment:
-      DB_USER: root
+      DB_USERNAME: root
       DB_PASSWORD: password
-      DB_HOSTNAME: mysql
+      DB_HOSTNAME: mariadb
       DB_PORT: 3306
       DB_DATABASE: main
   
