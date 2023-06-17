@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import BotNotify from '../components/BotNotify.vue'
 import SelfNotify from '../components/SelfNotify.vue'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
-import apiClient from '../apis';
-import { WordRequest, WordsAllList } from '../apis/generated';
+import apiClient from '../apis'
+import { WordRequest, WordsAllList } from '../apis/generated'
 
 const newBotNotify = ref(true)
 const newSelfNotify = ref(false)
@@ -33,7 +33,7 @@ apiClient.words.getWords().then((res) => (words.value = res))
 const registerNewWord = () => {
   if (newWord.value.length == 0) {
     return
-  } else if (newWord.value.length > 50){
+  } else if (newWord.value.length > 50) {
     openFailedDialog()
     return
   }
@@ -41,14 +41,14 @@ const registerNewWord = () => {
   const reqBody: WordRequest = {
     word: newWord.value,
     includeBot: newBotNotify.value,
-    includeMe: newSelfNotify.value,
+    includeMe: newSelfNotify.value
   }
 
   // wordの登録リクエスト
   apiClient.words.postWords(reqBody).catch((v) => console.log(v))
 
   // 登録後のリストで更新
-  apiClient.words.getWords().then((res) => words.value = res)
+  apiClient.words.getWords().then((res) => (words.value = res))
 
   newWord.value = ''
   openClearedDialog()
