@@ -3,6 +3,7 @@ package handler
 import (
 	"h23s_15/api"
 	"h23s_15/model"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -14,23 +15,23 @@ func (s Server) PutWords(ctx echo.Context) error {
 	err := ctx.Bind(data)
 	
 	if err != nil {
-		return ctx.JSON(400, err)
+		// 正常でないためステータスコード 400 "Invalid Input"
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// traPIdの取得
 	userId, err := getUserIdFromSession(ctx)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	err = model.PutWords(data, userId)
+	err = model.ChengeBotNotification(data.Word, data.IncludeBot, userId)
 	if err != nil {
-		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return err
 	}
 	
-	return ctx.JSON(200, err)
+	return ctx.JSON(http.StatusOK, err)
 }
 
 // bot投稿に対する通知の一括設定
@@ -40,21 +41,21 @@ func (s Server) PostWordsBot(ctx echo.Context) error {
 	err := ctx.Bind(data)
 	
 	if err != nil {
-		return ctx.JSON(400, err)
+		// 正常でないためステータスコード 400 "Invalid Input"
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// traPIdの取得
 	userId, err := getUserIdFromSession(ctx)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	err = model.PostWordsBot(data, userId)
 	if err != nil {
-		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return err
 	}
 
-	return ctx.JSON(200, err)
+	return ctx.JSON(http.StatusOK, err)
 }
