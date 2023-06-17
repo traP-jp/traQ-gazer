@@ -42,7 +42,7 @@ jobs:
         run: npm ci
         working-directory: ./client/    
       - name: Run fmt
-        run: npm run fmt
+        run: npm run fmt:check
         working-directory: ./client/
   lint:
     name: Run lint
