@@ -6,9 +6,10 @@ import (
 	// "fmt"
 	"database/sql"
 	"errors"
-	"h23s_15/api"
+	"net/http"
 	"time"
 
+	"github.com/labstack/echo"
 	"golang.org/x/exp/slog"
 )
 
@@ -20,41 +21,42 @@ type WordAllListItem struct {
 	Word       string    `db:"word"`
 }
 
-func PostWords(data *api.PostWordsJSONBody, userId string) error {
+func ResisterWord(word string, includeBot, includeMe bool, userId string) error {
 	var words WordAllListItem
-	err := db.Get(&words, "SELECT * FROM words WHERE trap_id = ? AND word = ?", userId, data.Word)
+	err := db.Get(&words, "SELECT * FROM words WHERE trap_id = ? AND word = ?", userId, word)
 
 	// 同じword trap_idの組が存在する
 	if err == nil {
 		slog.Info("Already Resistered")
-		return errors.New("Already Resistered")
+		return echo.NewHTTPError(http.StatusBadRequest, "Already Resistered")
 	}
 
 	// 予期せぬエラー
 	if !errors.Is(err, sql.ErrNoRows) {
-		slog.Info("!!!!!!")
-		return err
+		slog.Info(err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	_, err = db.Exec("INSERT INTO words (trap_id, word, bot_notification, me_notification) VALUES (?, ?, ?, ?)", userId, data.Word, data.IncludeBot, data.IncludeMe)
+	_, err = db.Exec("INSERT INTO words (trap_id, word, bot_notification, me_notification) VALUES (?, ?, ?, ?)", userId, word, includeBot, includeMe)
 	return err
 }
 
-func DeleteWords(data *api.DeleteWordsJSONRequestBody, userId string) error {
+func DeleteWord(word string, userId string) error {
 	var words WordAllListItem
-	err := db.Get(&words, "SELECT * FROM words WHERE trap_id = ? AND word = ?", userId, data.Word)
+	err := db.Get(&words, "SELECT * FROM words WHERE trap_id = ? AND word = ?", userId, word)
 
-	if err != nil {
-		// 予期せぬエラー
-		if !errors.Is(err, sql.ErrNoRows) {
-			slog.Info("!!!!!!!!!!")
-			return err
-		}
-		// 同じword trap_idの組が存在しない
+	// 削除するものが存在しない
+	if errors.Is(err, sql.ErrNoRows) {
 		slog.Info("Not Found")
-		return errors.New("Not Found")
+		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
 	}
 
-	_, err = db.Exec("DELETE FROM words WHERE trap_id = ? AND word = ?", userId, data.Word)
+	// 予期せぬエラー
+	if err != nil {
+		slog.Info(err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	_, err = db.Exec("DELETE FROM words WHERE trap_id = ? AND word = ?", userId, word)
 	return err
 }
