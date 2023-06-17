@@ -45,6 +45,13 @@ const addWord = () => {
     openClearedDialog()
   }
 }
+
+const updateNewBotNotify = (newValue: boolean) => {
+  newBotNotify.value = newValue
+}
+const updateNewSelfNotify = (newValue: boolean) => {
+  newSelfNotify.value = newValue
+}
 </script>
 
 <template>
@@ -59,6 +66,8 @@ const addWord = () => {
       <a href="../../words">他の人が登録している単語</a>
     </p>
     <br />
+  </div>
+  <div>
     <p>以下のフォームで登録した単語がtraQ上に投稿された際、DMに通知を送信します。</p>
   </div>
   <div>
@@ -72,8 +81,8 @@ const addWord = () => {
     </label>
   </div>
   <div>
-    <BotNotify />
-    <SelfNotify />
+    <BotNotify @updete-bot-notify="(newValue) => updateNewBotNotify(newValue)" />
+    <SelfNotify @updete-self-notify="(newValue) => updateNewSelfNotify(newValue)" />
   </div>
   <div class="registerButton">
     <button @click="addWord">登録</button>
