@@ -15,7 +15,7 @@ go install github.com/go-task/task/v3/cmd/task@v3.26.0
 
 開発環境の立ち上げ
 ```
-docker compose -f dockerfiles/dev/compose.yml up --build
+task server-dev
 ```
 
 openapi-codegenの実行
