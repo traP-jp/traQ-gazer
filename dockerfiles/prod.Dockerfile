@@ -14,9 +14,6 @@ RUN npm run build
 # サーバーサイドのビルド
 FROM golang:1.20.5-alpine3.18 as server-build
 
-EXPOSE 8080
-EXPOSE 8100
-
 WORKDIR /github.com/traP-jp/h23s_15
 
 COPY server/go.mod .
