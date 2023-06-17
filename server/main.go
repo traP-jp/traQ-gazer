@@ -18,8 +18,10 @@ func main() {
 	apiInstance := instance.Group("/api")
 	api.RegisterHandlers(apiInstance, server)
 
+	// まとめて賢くルーティングするのは厳しそうなので
 	instance.Static("/", "dist")
-	instance.File("/*", "dist/index.html")
+	instance.File("/words", "dist/index.html")
+	instance.File("/words/add", "dist/index.html")
 
 	model.SetUp()
 
