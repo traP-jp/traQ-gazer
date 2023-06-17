@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ../..
+      dockerfile: dockerfiles/dev/server.Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - "./server:/github.com/traP-jp/h23s_15"
+    command: air -c /github.com/traP-jp/h23s_15/.air.toml
