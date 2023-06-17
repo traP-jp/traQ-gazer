@@ -19,13 +19,13 @@ watch(newSelfNotify, () => {
       <p>自分の発言を通知する</p>
       <Switch
         v-model="newSelfNotify"
-        :class="newSelfNotify ? 'bg-blue-600' : 'bg-gray-200'"
-        class="relative inline-flex h-6 w-11 items-center rounded-full"
+        :class="newSelfNotify ? 'bg-emerald-400' : 'bg-gray-200'"
+        class="relative inline-flex h-[38px] w-[74px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 p-0"
       >
         <span class="sr-only">自分の発言を通知する</span>
         <span
-          :class="newSelfNotify ? 'translate-x-6' : 'translate-x-1'"
-          class="inline-block h-4 w-4 transform rounded-full bg-white transition"
+          :class="newSelfNotify ? 'translate-x-9' : 'translate-x-0'"
+          class="pointer-events-none inline-block h-[34px] w-[34px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
         />
       </Switch>
     </label>
