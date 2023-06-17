@@ -6,12 +6,22 @@ import (
 	"h23s_15/model"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
 	instance := echo.New()
+	instance.Use(middleware.Logger())
+
 	server := handler.Server{}
-	api.RegisterHandlers(instance, server)
+
+	apiInstance := instance.Group("/api")
+	api.RegisterHandlers(apiInstance, server)
+
+	// まとめて賢くルーティングするのは厳しそうなので
+	instance.Static("/", "dist")
+	instance.File("/words", "dist/index.html")
+	instance.File("/words/add", "dist/index.html")
 
 	model.SetUp()
 
