@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Switch } from '@headlessui/vue'
+import BotNotify from '../components/BotNotify.vue'
+import SelfNotify from '../components/SelfNotify.vue'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 
 const newBotNotify = ref(true)
@@ -53,6 +54,7 @@ const addWord = () => {
   </header>
   <div class="expression">
     <h1>新規単語の登録</h1>
+    <p><a href="./add">新規単語登録</a> / <a href="../../words">登録単語の一覧</a> / <a href="../../words">他の人が登録している単語</a></p>
     <br />
     <p>以下のフォームで登録した単語がtraQ上に投稿された際、DMに通知を送信します。</p>
   </div>
@@ -66,41 +68,31 @@ const addWord = () => {
       />
     </label>
   </div>
-  <div class="bot">
-    <label>
-      <p>botの発言を通知する</p>
-      <Switch
-        v-model="newBotNotify"
-        :class="newBotNotify ? 'bg-teal-900' : 'bg-teal-700'"
-        class="relative inline-flex h-[38px] w-[74px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-      >
-        <span class="sr-only">Use setting</span>
-        <span
-          aria-hidden="true"
-          :class="newBotNotify ? 'translate-x-9' : 'translate-x-0'"
-          class="pointer-events-none inline-block h-[34px] w-[34px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
-        ></span>
-      </Switch>
-    </label>
-  </div>
-  <div class="myself">
-    <label>
-      <p>自分の発言を通知する</p>
-      <Switch
-        v-model="newSelfNotify"
-        :class="newSelfNotify ? 'bg-blue-600' : 'bg-gray-200'"
-        class="relative inline-flex h-6 w-11 items-center rounded-full"
-      >
-        <span class="sr-only">Enable notifications</span>
-        <span
-          :class="newSelfNotify ? 'translate-x-6' : 'translate-x-1'"
-          class="inline-block h-4 w-4 transform rounded-full bg-white transition"
-        />
-      </Switch>
-    </label>
+  <div>
+    <BotNotify />
+    <SelfNotify />
   </div>
   <div class="registerButton">
     <button @click="addWord">登録</button>
+  </div>
+  
+  <div class="table">
+    <table class="wordList">
+      <tr>
+        <th>単語</th>
+        <th>bot通知</th>
+        <th>自分の発言の通知</th>
+        <th>他の登録者</th>
+        <th></th>
+      </tr>
+      <tr v-for="item in words" :key="item.word">
+        <td>{{ item.word }}</td>
+        <td v-if="item.botNotify === true">ON</td>
+        <td v-if="item.botNotify === false">OFF</td>
+        <td v-if="item.selfNotify === true">ON</td>
+        <td v-if="item.selfNotify === false">OFF</td>
+      </tr>
+    </table>
   </div>
 
   <div>
