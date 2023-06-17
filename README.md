@@ -1,7 +1,18 @@
 # h23s_15
 
+## 開発用
 
+### サーバーサイド
+
+開発環境の立ち上げ
+```
+docker compose -f dockerfiles/dev/compose.yml up --build
+```
+
+openapi-codegenの実行
 ```
 go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
 oapi-codegen -package api docs/openapi.yaml > server/api/server.gen.go
 ```
+
+### クライアントサイド
