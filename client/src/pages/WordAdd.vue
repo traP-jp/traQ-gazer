@@ -89,7 +89,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
       />
     </label>
   </div>
-  <div>
+  <div class="flex justify-around">
     <BotNotify @updete-bot-notify="(newValue) => updateNewBotNotify(newValue)" />
     <SelfNotify @updete-self-notify="(newValue) => updateNewSelfNotify(newValue)" />
   </div>
