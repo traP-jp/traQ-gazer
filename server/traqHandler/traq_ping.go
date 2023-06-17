@@ -1,6 +1,9 @@
 package traqHandler
 
-import "github.com/traPtitech/go-traq"
+import (
+	"github.com/traPtitech/go-traq"
+	"golang.org/x/exp/slog"
+)
 
 // traQからのイベントを受け取るためのHTTPサーバー
 type TraqServer struct {
@@ -8,5 +11,6 @@ type TraqServer struct {
 }
 
 func (t TraqServer) SetPingHandler() error {
+	slog.Info("traQ ping received")
 	return nil
 }
