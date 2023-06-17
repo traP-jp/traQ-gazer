@@ -1,6 +1,10 @@
 package handler
 
-import "github.com/labstack/echo/v4"
+import (
+	"h23s_15/model"
+
+	"github.com/labstack/echo/v4"
+)
 
 // wordの登録
 // (POST /words)
@@ -17,5 +21,9 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 // 全データの取得
 // (GET /words)
 func (s Server) GetWords(ctx echo.Context) error {
-	return nil
+	wordlist, err := model.GetWords()
+	if err != nil {
+		return ctx.JSON(500, err)
+	}
+	return ctx.JSON(200, wordlist)
 }
