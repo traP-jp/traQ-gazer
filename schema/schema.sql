@@ -10,5 +10,5 @@ CREATE TABLE `words` (
 -- TODO:FOREIGN KEY for user_name
 CREATE TABLE `users` (
     `user_name` VARCHAR(32) NOT NULL PRIMARY KEY,
-    `traq_uuid` VARCHAR(36) NOT NULL,
+    `traq_uuid` VARCHAR(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
