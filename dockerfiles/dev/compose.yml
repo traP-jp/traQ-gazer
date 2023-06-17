@@ -8,7 +8,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - "./server:/github.com/traP-jp/h23s_15"
+      - "../../server:/github.com/traP-jp/h23s_15"
     command: air -c /github.com/traP-jp/h23s_15/.air.toml
     depends_on:
       mariadb:
@@ -30,7 +30,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - "./schema/schema.sql:/docker-entrypoint-initdb.d/init.sql"
+      - "../../schema/schema.sql:/docker-entrypoint-initdb.d/init.sql"
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD
       interval: 1s
