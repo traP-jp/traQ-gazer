@@ -17,23 +17,32 @@ func (s Server) PostWords(ctx echo.Context) error {
 	err := ctx.Bind(data)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// traPIdの取得
 	userId, err := getUserIdFromSession(ctx)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	err = model.PostWords(data, userId)
+	exist, err := model.ExistWord(data.Word, userId)
 	if err != nil {
-		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return ctx.JSON(200, "Successful registration")
+	if exist {
+		// 同じword user_idが存在する
+		return echo.NewHTTPError(http.StatusBadRequest, "Already Resistered")
+	}
+
+	err = model.ResisterWord(data.Word, data.IncludeBot, data.IncludeMe, userId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return ctx.JSON(http.StatusOK, "Successful registration")
 }
 
 // wordの削除
@@ -45,23 +54,31 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// traPIdの取得
 	userId, err := getUserIdFromSession(ctx)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	err = model.DeleteWords(data, userId)
+	exist, err := model.ExistWord(data.Word, userId)
 	if err != nil {
-		// 正常でないためステータスコード 400 "Invalid Input"
-		return ctx.JSON(400, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return ctx.JSON(200, "Successful deletion")
+	if !exist {
+		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
+	}
+
+	err = model.DeleteWord(data.Word, userId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return ctx.JSON(http.StatusOK, "Successful deletion")
 }
 
 // 全データの取得

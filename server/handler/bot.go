@@ -26,12 +26,21 @@ func (s Server) PutWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
+	exist, err := model.ExistWord(data.Word, userId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	if !exist {
+		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
+	}
+
 	err = model.ChengeBotNotification(data.Word, data.IncludeBot, userId)
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	
-	return ctx.JSON(http.StatusOK, err)
+	return ctx.JSON(http.StatusOK, "Successful Change")
 }
 
 // bot投稿に対する通知の一括設定
@@ -52,10 +61,10 @@ func (s Server) PostWordsBot(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	err = model.PostWordsBot(data, userId)
+	err = model.ChangeAllBotNotification(data.IncludeBot, userId)
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return ctx.JSON(http.StatusOK, err)
+	return ctx.JSON(http.StatusOK, "Successful Change")
 }
