@@ -88,7 +88,7 @@ func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params ap
 	if params.Limit != nil {
 		limit = *params.Limit
 	}
-	
+
 	trends, err := model.GetTrendOneYear(year, limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -108,5 +108,3 @@ func ConvertSliceTrendingWord(modelList model.TrendingWords) api.TrendingWords {
 	}
 	return apiList
 }
-
-
