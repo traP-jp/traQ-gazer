@@ -2,7 +2,6 @@ package handler
 
 import (
 	"h23s_15/model"
-
 	"github.com/labstack/echo/v4"
 )
 
