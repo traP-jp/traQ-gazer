@@ -6,3 +6,8 @@ tasks:
     ignore_error: true
   server-dev-down:
     cmd: docker compose -f dockerfiles/dev/compose.yml down
+
+  install-server-openapi-codegen:
+    cmd: go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
+  server-openapi-codegen:
+    cmd: oapi-codegen -package api docs/openapi.yaml > server/api/server.gen.go
