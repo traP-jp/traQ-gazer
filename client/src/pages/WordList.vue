@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import PageLink from '../components/PageLink.vue'
 
 interface Word {
   word: string
@@ -21,11 +22,7 @@ const words = ref<Word[]>([
   <header>traQエゴサ支援ツール</header>
   <div class="expression">
     <h1>登録単語の閲覧ページ</h1>
-    <p>
-      <router-link to="./words/add">新規単語登録</router-link> /
-      <router-link to="./words">登録単語の一覧</router-link> /
-      <router-link to="./words">他の人が登録している単語</router-link>
-    </p>
+    <PageLink />
   </div>
   <div class="table">
     <table class="wordList">
