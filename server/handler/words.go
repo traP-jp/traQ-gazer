@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"golang.org/x/exp/slog"
 )
 
 // wordの登録
@@ -28,12 +27,20 @@ func (s Server) PostWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
+	exist, err := model.ExistWord(data.Word, userId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	if exist {
+		// 同じword user_idが存在する
+		return echo.NewHTTPError(http.StatusBadRequest, "Already Resistered")
+	}
+
 	err = model.ResisterWord(data.Word, data.IncludeBot, data.IncludeMe, userId)
 	if err != nil {
-		slog.Info(err.Error())
-		return err
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	
 
 	return ctx.JSON(http.StatusOK, "Successful registration")
 }
@@ -57,9 +64,18 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
+	exist, err := model.ExistWord(data.Word, userId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	if !exist {
+		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
+	}
+
 	err = model.DeleteWord(data.Word, userId)
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
 	return ctx.JSON(http.StatusOK, "Successful deletion")
