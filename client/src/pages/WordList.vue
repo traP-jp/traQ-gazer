@@ -21,7 +21,10 @@ const words = ref<Word[]>([
   <header>traQエゴサ支援ツール</header>
   <div class="expression">
     <h1>登録単語の閲覧ページ</h1>
-    <p><a href="./words/add">新規単語登録</a> / <a href="./words">登録単語の一覧</a> / <a href="./words">他の人が登録している単語</a></p>
+    <p>
+      <a href="./words/add">新規単語登録</a> / <a href="./words">登録単語の一覧</a> /
+      <a href="./words">他の人が登録している単語</a>
+    </p>
   </div>
   <div class="table">
     <table class="wordList">

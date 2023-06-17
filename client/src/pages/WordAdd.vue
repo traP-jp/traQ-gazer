@@ -54,7 +54,10 @@ const addWord = () => {
   </header>
   <div class="expression">
     <h1>新規単語の登録</h1>
-    <p><a href="./add">新規単語登録</a> / <a href="../../words">登録単語の一覧</a> / <a href="../../words">他の人が登録している単語</a></p>
+    <p>
+      <a href="./add">新規単語登録</a> / <a href="../../words">登録単語の一覧</a> /
+      <a href="../../words">他の人が登録している単語</a>
+    </p>
     <br />
     <p>以下のフォームで登録した単語がtraQ上に投稿された際、DMに通知を送信します。</p>
   </div>
@@ -75,7 +78,7 @@ const addWord = () => {
   <div class="registerButton">
     <button @click="addWord">登録</button>
   </div>
-  
+
   <div class="table">
     <table class="wordList">
       <tr>
