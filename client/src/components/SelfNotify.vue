@@ -6,7 +6,7 @@ const emit = defineEmits<{
   (e: 'updeteSelfNotify', value: boolean): boolean
 }>()
 
-const newSelfNotify = ref(false);
+const newSelfNotify = ref(false)
 
 watch(newSelfNotify, () => {
   emit('updeteSelfNotify', newSelfNotify.value)

@@ -22,8 +22,9 @@ const words = ref<Word[]>([
   <div class="expression">
     <h1>登録単語の閲覧ページ</h1>
     <p>
-      <a href="./words/add">新規単語登録</a> / <a href="./words">登録単語の一覧</a> /
-      <a href="./words">他の人が登録している単語</a>
+      <router-link to="./words/add">新規単語登録</router-link> /
+      <router-link to="./words">登録単語の一覧</router-link> /
+      <router-link to="./words">他の人が登録している単語</router-link>
     </p>
   </div>
   <div class="table">
