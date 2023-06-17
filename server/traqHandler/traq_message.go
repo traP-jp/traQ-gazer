@@ -1,11 +1,14 @@
 package traqHandler
 
 import (
+	"h23s_15/model"
+
 	traqbot "github.com/traPtitech/traq-bot"
 	"golang.org/x/exp/slog"
 )
 
 func (t TraqServer) SetMessageCreatedHandler(p *traqbot.MessageCreatedPayload) error {
+	model.CheckMessageFromWords(p.Message.Text)
 	// // TODO: userIdを取得する
 	// v, _, err := t.client.MessageApi.PostDirectMessage(context.Background(), "userId").
 	// 	PostMessageRequest(traq.PostMessageRequest{
