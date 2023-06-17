@@ -98,7 +98,7 @@ paths:
           description: Successful deletion
         '404':
           description: User not found
-  /words/me/one:
+  /words/me/:
     put:
       tags:
         - me
@@ -115,7 +115,7 @@ paths:
           description: Successful deletion
         '400':
           description: Invalid input
-  /words/me:
+  /words/me/all:
     post:
       tags:
         - me
@@ -589,4 +589,5 @@ components:
           example: true
       required:
         - includeMe
+
 
