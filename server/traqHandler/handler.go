@@ -4,7 +4,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/traPtitech/go-traq"
 	traqbot "github.com/traPtitech/traq-bot"
+	"golang.org/x/exp/slog"
 )
 
 type traqServerInterface interface {
@@ -13,11 +15,20 @@ type traqServerInterface interface {
 	SetChannelCreatedHandler() error
 }
 
+const TOKEN = "/* your token */"
+
 func Start() *traqbot.BotServer {
-	log.Println("traQ http server started on 8000")
-	vt := os.Getenv("VERIFICATION_TOKEN")
+	slog.Info("traQ http server started on 8000")
+
+	client := traq.NewAPIClient(traq.NewConfiguration())
+	// auth := context.WithValue(context.Background(), traq.ContextAccessToken, TOKEN)
+
+	traQBotVrToken := os.Getenv("VERIFICATION_TOKEN")
 
 	var traqServer traqServerInterface
+	traqServer = TraqServer{
+		client: client,
+	}
 
 	handlers := traqbot.EventHandlers{}
 	handlers.SetPingHandler(func(payload *traqbot.PingPayload) {
@@ -39,6 +50,6 @@ func Start() *traqbot.BotServer {
 		}
 	})
 
-	server := traqbot.NewBotServer(vt, handlers)
+	server := traqbot.NewBotServer(traQBotVrToken, handlers)
 	return server
 }
