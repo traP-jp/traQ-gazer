@@ -2,9 +2,7 @@ version: '3'
 
 tasks:
   server-dev:
-    cmds:
-      - docker compose -f dockerfiles/dev/compose.yml up --build
+    cmd: docker compose -f dockerfiles/dev/compose.yml up --build
     ignore_error: true
   server-dev-down:
-    cmds:
-      - docker compose -f dockerfiles/dev/compose.yml down
+    cmd: docker compose -f dockerfiles/dev/compose.yml down
