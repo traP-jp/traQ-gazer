@@ -10,7 +10,7 @@
     "fmt": "prettier --write src/",
     "fmt:check": "prettier --check src/",
     "lint": "eslint src/ --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-    "openapi-gen": "openapi --input ../docs/openapi.yaml --output src/apis --client fetch"
+    "openapi-gen": "openapi --input ../docs/openapi.yaml --output src/apis/generated --client fetch --name AppClient"
   },
   "dependencies": {
     "vue": "^3.2.47",
