@@ -228,7 +228,7 @@ paths:
       description: 今日最も追加されたwordの取得
       operationId: getTodayTrendingWords
       parameters:
-        - name: n
+        - name: limit
           in: query
           description: 返すwordの数
           required: false
@@ -260,7 +260,7 @@ paths:
       description: 特定の日に最も追加されたwordの取得
       operationId: getTrendingWordsForDay
       parameters:
-        - name: n
+        - name: limit
           in: query
           description: 返すwordの数
           required: false
@@ -292,7 +292,7 @@ paths:
       description: 特定の月に最も追加されたwordの取得
       operationId: getTrendingWordsForMonth
       parameters:
-        - name: n
+        - name: limit
           in: query
           description: 返すwordの数
           required: false
@@ -323,7 +323,7 @@ paths:
       description: 特定の年に最も追加されたwordの取得
       operationId: getTrendingWordsForYear
       parameters:
-        - name: n
+        - name: limit
           in: query
           description: 返すwordの数
           required: false
