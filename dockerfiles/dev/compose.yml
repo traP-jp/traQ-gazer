@@ -6,7 +6,7 @@ services:
       context: ../..
       dockerfile: dockerfiles/dev/server.Dockerfile
     ports:
-      - 3000:3000
+      - 8080:8080
     volumes:
       - "../../server:/github.com/traP-jp/h23s_15"
     command: air -c /github.com/traP-jp/h23s_15/.air.toml
