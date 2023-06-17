@@ -7,9 +7,10 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "fmt": "prettier --write src/",
-    "fmt:check": "prettier --check src/",
-    "lint": "eslint src/ --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix"
+    "fmt": "prettier --write --ignore-path ./.prettierignore src/",
+    "fmt:check": "prettier --check --ignore-path ./.prettierignore src/",
+    "lint": "eslint src/ --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "openapi-gen": "openapi --input ../docs/openapi.yaml --output src/apis/generated --client fetch --name AppClient"
   },
   "dependencies": {
     "vue": "^3.2.47",
@@ -24,6 +25,7 @@
     "@vue/eslint-config-typescript": "^11.0.3",
     "eslint": "^8.42.0",
     "eslint-plugin-vue": "^9.14.1",
+    "openapi-typescript-codegen": "^0.24.0",
     "prettier": "2.8.8",
     "typescript": "^5.0.2",
     "vite": "^4.3.9",
