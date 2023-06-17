@@ -1,0 +1,16 @@
+handle /api/* {
+    rewrite /api/* {uri}
+    reverse_proxy localhost:8080
+}
+
+handle /traq-event/* {
+    rewrite /traq-event/* {uri}
+    reverse_proxy localhost:8100
+}
+
+handle {
+    file_server
+    root * /usr/share/caddy
+
+    try_files {path} /index.html
+}

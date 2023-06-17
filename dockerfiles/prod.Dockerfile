@@ -29,14 +29,15 @@ RUN go build -o app .
 
 
 # 最終的な配信用
-FROM alpine:3.18.2
+FROM caddy:2.6.4-alpine
 
 WORKDIR /
 
-COPY --from=client-build /app/dist dist
+COPY config/Caddyfile /etc/caddy/Caddyfile
+
+COPY --from=client-build /app/dist /usr/share/caddy
 COPY --from=server-build /github.com/traP-jp/h23s_15/app app
 
-EXPOSE 8080
-EXPOSE 8100
+EXPOSE 80
 
 ENTRYPOINT [ "./app" ]
