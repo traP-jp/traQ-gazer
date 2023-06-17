@@ -11,6 +11,8 @@ tags:
     description: このサービスの根幹のAPI集
   - name: bot
     description: botの通知の設定のAPI集
+  - name: me
+    description: 自分の通知の設定のAPI集
   - name: list
     description: 一覧を見るためのAPI集
   - name: trend
@@ -91,6 +93,40 @@ paths:
           application/json:
               schema:
                 $ref: '#/components/schemas/Bot'
+      responses:
+        '200':
+          description: Successful deletion
+        '404':
+          description: User not found
+  /words/me/:
+    put:
+      tags:
+        - me
+      summary: 自分の投稿に対する通知の設定
+      description: 各wordに対して自分が投稿したものについても通知するか決める
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WordMeSetting'
+      responses:
+        '200':
+          description: Successful deletion
+        '400':
+          description: Invalid input
+  /words/me/all:
+    post:
+      tags:
+        - me
+      summary: 自分の投稿に対する通知の一括設定
+      description: 自分が投稿したもの全てについて通知するか決める
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
       responses:
         '200':
           description: Successful deletion
@@ -214,7 +250,9 @@ paths:
         required: true
         schema:
           type: string
-          format: date
+          examples: 
+            - "YYYY-MM-DD"
+          
     get:
       tags:
         - trend
@@ -244,7 +282,9 @@ paths:
         required: true
         schema:
           type: string
-          format: date
+          examples: 
+            - "YYYY-MM"
+          
     get:
       tags:
         - trend
@@ -274,7 +314,8 @@ paths:
         required: true
         schema:
           type: string
-          format: date
+          examples: 
+            - "YYYY"
     get:
       tags:
         - trend
@@ -349,9 +390,12 @@ components:
           type: string
         includeBot:
           type: boolean
+        includeMe:
+          type: boolean
       required:
         - word
         - includeBot
+        - includeMe
     WordDelete:
       type: object
       description: sessionからuserIdを取る
@@ -371,6 +415,17 @@ components:
       required:
         - word
         - includeBot
+    WordMeSetting:
+      type: object
+      description: sessionからuserIdを取る
+      properties:
+        word:
+          type: string
+        includeMe:
+          type: boolean
+      required:
+        - word
+        - includeMe
     WordsAllList:
       type: array
       items:
@@ -388,11 +443,14 @@ components:
           format: date-time
         includeBot:
           type: boolean
+        includeMe:
+          type: boolean
       required:
         - userId
         - word
         - time
         - includeBot
+        - includeMe
     WordsList:
       type: array
       items:
@@ -407,10 +465,13 @@ components:
           format: date-time
         includeBot:
           type: boolean
+        includeMe:
+          type: boolean
       required:
         - word
         - time
         - includeBot
+        - includeMe
     UsersList:
       type: array
       items:
@@ -426,10 +487,13 @@ components:
           format: date-time
         includeBot:
           type: boolean
+        includeMe:
+          type: boolean
       required:
         - userId
         - time
         - includeBot
+        - includeMe
     UsersOfWordListItem:
       type: object
       properties:
@@ -516,4 +580,14 @@ components:
           example: true
       required:
         - includeBot
+    Me:
+      type: object
+      description: sessionからuserIdを取る
+      properties:
+        includeMe:
+          type: boolean
+          example: true
+      required:
+        - includeMe
+
 
