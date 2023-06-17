@@ -2,6 +2,15 @@
 
 ## 開発用
 
+### 共通
+
+#### Taskのインストール
+必須です
+
+```
+go install github.com/go-task/task/v3/cmd/task@v3.26.0
+```
+
 ### サーバーサイド
 
 開発環境の立ち上げ
