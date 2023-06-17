@@ -19,9 +19,7 @@ func main() {
 	api.RegisterHandlers(apiInstance, server)
 
 	instance.Static("/", "dist")
-	instance.Any("/*", func(c echo.Context) error {
-		return c.File("dist/index.html")
-	})
+	instance.File("/*", "dist/index.html")
 
 	model.SetUp()
 
