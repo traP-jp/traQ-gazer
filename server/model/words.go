@@ -22,22 +22,5 @@ func GetWords() (WordsAllList, error) {
 		log.Printf("Error: %s\n", err)
 		return nil, err
 	}
-
-	// change := ConvertSliceToA1(words)
-
 	return words, nil
 }
-
-// func ConvertSliceToA1(WordsListSlice WordsAllList) api.WordsAllList {
-// 	WordsAllListSlice := make([]api.WordAllListItem, len(WordsListSlice))
-// 	for i, WordType := range WordsListSlice {
-// 		WordsAllListSlice[i] = api.WordAllListItem{
-// 			IncludeBot: WordType.IncludeBot,
-// 			IncludeMe:  WordType.IncludeMe,
-// 			Time:       WordType.Time,
-// 			UserId:     WordType.UserId,
-// 			Word:       WordType.Word,
-// 		}
-// 	}
-// 	return WordsAllListSlice
-// }
