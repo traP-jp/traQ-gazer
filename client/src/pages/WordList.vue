@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import PageLink from '../components/PageLink.vue'
-import TitleLogo from '../components/title-logo.vue'
 import apiClient from '../apis'
 import { WordsList } from '../apis/generated'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
@@ -49,33 +47,27 @@ const deleteWord = () => {
 </script>
 
 <template>
-  <header>
-    <title-logo />
-  </header>
-  <div class="expression">
+  <div class="m-2 mb-8">
     <h1>登録単語の閲覧ページ</h1>
-    <PageLink />
   </div>
   <div class="table">
-    <table class="wordList">
+    <table class="wordList border">
       <tr>
-        <th>単語</th>
-        <th>bot通知</th>
-        <th>自分の発言の通知</th>
-        <th>他の登録者</th>
+        <th class="border">単語</th>
+        <th class="border">bot通知</th>
+        <th class="border">自分の発言の通知</th>
         <th></th>
       </tr>
       <tr v-for="item in words" :key="item.word">
-        <td>{{ item.word }}</td>
-        <td>{{ item.includeBot ? 'ON' : 'OFF' }}</td>
-        <td>{{ item.includeMe ? 'ON' : 'OFF' }}</td>
-        <td></td>
-        <td>
+        <td class="border">{{ item.word }}</td>
+        <td class="border">{{ item.includeBot ? 'ON' : 'OFF' }}</td>
+        <td class="border">{{ item.includeMe ? 'ON' : 'OFF' }}</td>
+        <td class="border">
           <div class="editDialog">
             <Popover v-slot="{ open }" class="relative">
               <PopoverButton
                 :class="open ? '' : 'text-opacity-90'"
-                class="group inline-flex items-center rounded-md bg-orange-700 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                class="group inline-flex items-center rounded-md bg-gray-300 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
                 @click="changeDel(item.word)"
               >
                 <span>︙</span>
@@ -176,10 +168,6 @@ const deleteWord = () => {
 </template>
 
 <style>
-.expression {
-  text-align: left;
-  display: flex;
-}
 .table {
   overflow-x: scroll;
   overflow-y: scroll;
