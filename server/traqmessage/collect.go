@@ -65,7 +65,7 @@ func sendMessage(message model.Send) error {
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
 	_, _, err := client.UserApi.PostDirectMessage(auth, message.UserUUID).PostMessageRequest(traq.PostMessageRequest{
-		Content: "ワード:" + message.Word + "\n https://q.trap.jp/messages/" + message.MessageId,
+		Content: "「 " + message.Word + " 」\n https://q.trap.jp/messages/" + message.MessageId,
 	}).Execute()
 	if err != nil {
 		slog.Info("Error sending message: %v", err)
