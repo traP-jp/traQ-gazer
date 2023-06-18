@@ -16,7 +16,7 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 	usersItem := []UsersItem{}
 	err = db.Select(&usersItem, `
 		SELECT 
-			traq_uuid, traq_id, is_bot 
+			traq_uuid, trap_id, is_bot 
 		FROM
 			users`)
 	if err != nil {
