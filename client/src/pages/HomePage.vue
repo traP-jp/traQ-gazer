@@ -1,5 +1,5 @@
 <script setup lang="ts"></script>
 
 <template>
-  <h1>Home</h1>
+  <p>traQを監視しよう！</p>
 </template>

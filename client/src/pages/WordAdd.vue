@@ -92,17 +92,17 @@ const updateNewSelfNotify = (newValue: boolean) => {
   </div>
 
   <div class="table">
-    <table class="wordList border">
+    <table class="wordList ">
       <tr>
-        <th class="border">単語</th>
-        <th class="border">bot通知</th>
-        <th class="border">自分の発言の通知</th>
+        <th class="">単語</th>
+        <th class="">bot通知</th>
+        <th class="">自分の発言の通知</th>
         <!-- <th>他の登録者</th> -->
       </tr>
       <tr v-for="item in words" :key="item.word">
-        <td class="border">{{ item.word }}</td>
-        <td class="border">{{ item.includeBot ? 'ON' : 'OFF' }}</td>
-        <td class="border">{{ item.includeMe ? 'ON' : 'OFF' }}</td>
+        <td class="">{{ item.word }}</td>
+        <td class="">{{ item.includeBot ? 'ON' : 'OFF' }}</td>
+        <td class="">{{ item.includeMe ? 'ON' : 'OFF' }}</td>
       </tr>
     </table>
   </div>
