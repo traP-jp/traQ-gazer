@@ -3,18 +3,14 @@ package model
 import "strings"
 
 func TraqMessageProcessor(messageList MessageList) (SendList, error) {
-	wordsItem := []WordsItem{}
-	err := db.Select(&wordsItem, `
+	wordsList := []WordsItem{}
+	err := db.Select(&wordsList, `
 		SELECT 
 			word, bot_notification, me_notification, trap_id 
 		FROM
 			words`)
 	if err != nil {
 		return nil, err
-	}
-	wordsItemMap := make(map[string]WordsItem)
-	for _, item := range wordsItem {
-		wordsItemMap[item.UserId] = item
 	}
 
 	usersItem := []UsersItem{}
@@ -34,7 +30,7 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 	var sendList SendList
 	// TODO: Sotatsu リファクタリングと確認頼んだ！
 	for _, message := range messageList {
-		for _, wordsItem := range wordsItemMap {
+		for _, wordsItem := range wordsList {
 			if strings.Contains(message.Content, wordsItem.Word) {
 				if message.UserId == wordsItem.UserId {
 					if !wordsItem.IncludeMe {
