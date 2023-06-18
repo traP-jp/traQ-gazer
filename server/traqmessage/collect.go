@@ -44,6 +44,9 @@ func messageProcessor(messages []traq.Message) {
 		slog.Error(fmt.Sprintf("Failled to process messages: %v", err))
 		return
 	}
+
+	slog.Info(fmt.Sprintf("Sending %d DMs...", len(sendList)))
+
 	for _, message := range sendList {
 		err := sendMessage(*message)
 		if err != nil {
@@ -51,6 +54,8 @@ func messageProcessor(messages []traq.Message) {
 			continue
 		}
 	}
+
+	slog.Info("End of send DMs")
 }
 
 func sendMessage(message model.Send) error {
