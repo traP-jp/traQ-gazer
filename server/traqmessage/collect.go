@@ -68,6 +68,7 @@ func sendMessage(message model.Send) error {
 		Content: "ワード:" + message.Word + "\n https://q.trap.jp/messages/" + message.MessageId,
 	}).Execute()
 	if err != nil {
+		slog.Info("Error sending message: %v", err)
 		return err
 	}
 	return nil
