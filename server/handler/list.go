@@ -3,9 +3,28 @@ package handler
 import (
 	"h23s_15/api"
 	"h23s_15/model"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
+
+// 今見てるuserのwordたち
+// (GET /list/user/{userId})
+func (s Server) GetListUserMe(ctx echo.Context, userId string) error {
+	// traPIdの取得
+	userId, err := getUserIdFromSession(ctx)
+	if err != nil {
+		// 正常でないためステータスコード 400 "Invalid Input"
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	wordsListMode, err := model.GetListUserUserId(userId)
+	if err != nil {
+		return err
+	}
+	wordsListApi := ConvertWordList(wordsListMode)
+	return ctx.JSON(200, wordsListApi)
+}
 
 // あるuserのwordたち
 // (GET /list/user/{userId})
