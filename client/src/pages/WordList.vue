@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import PageLink from '../components/PageLink.vue'
+import TitleLogo from '../components/title-logo.vue'
 import apiClient from '../apis'
 import { WordsList } from '../apis/generated'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
@@ -15,6 +16,10 @@ const isDeleteOpen = ref(false)
 const delWord = ref('')
 
 apiClient.words.getWords().then((res) => (words.value = res))
+
+const changeDel = (word: string) => {
+  delWord.value = word
+}
 
 const openEditDialog = () => {}
 
@@ -35,7 +40,7 @@ const deleteWord = () => {
     .catch((v) => console.log(v))
     .then(() => {
       // 登録後のリストで更新
-      apiClient.words.getWords().then((res) => (words.value = res))
+      apiClient.list.getListUserMe().then((res) => (words.value = res))
     })
 
   closeDeleteDialog()
@@ -55,7 +60,9 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
 </script>
 
 <template>
-  <header>traQエゴサ支援ツール</header>
+  <header>
+    <title-logo />
+  </header>
   <div class="expression">
     <h1>登録単語の閲覧ページ</h1>
     <PageLink />
@@ -80,6 +87,7 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
               <PopoverButton
                 :class="open ? '' : 'text-opacity-90'"
                 class="group inline-flex items-center rounded-md bg-orange-700 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                @click="changeDel(item.word)"
               >
                 <span>︙</span>
                 <ChevronDownIcon
