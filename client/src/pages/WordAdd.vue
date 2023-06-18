@@ -31,9 +31,7 @@ const newWord = ref('')
 apiClient.list.getListUserMe().then((res) => (words.value = res))
 
 const registerNewWord = () => {
-  if (newWord.value.length == 0) {
-    return
-  } else if (newWord.value.length > 50) {
+  if (newWord.value.length > 50) {
     openFailedDialog()
     return
   }
@@ -88,7 +86,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
     <SelfNotify @updete-self-notify="(newValue) => updateNewSelfNotify(newValue)" />
   </div>
   <div class="registerButton mb-16 mt-4">
-    <button @click="registerNewWord">登録</button>
+    <v-btn :disabled="newWord===''" @click="registerNewWord">登録</v-btn>
   </div>
 
   <div class="table">
@@ -233,8 +231,5 @@ p {
   min-width: 10em;
   max-width: 100%;
   padding: 1.2em;
-}
-.regiserButton {
-  display: flex;
 }
 </style>
