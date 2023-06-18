@@ -46,10 +46,13 @@ const registerNewWord = () => {
   }
 
   // wordの登録リクエスト
-  apiClient.words.postWords(reqBody).catch((v) => console.log(v))
-
-  // 登録後のリストで更新
-  apiClient.words.getWords().then((res) => (words.value = res))
+  apiClient.words
+    .postWords(reqBody)
+    .catch((v) => console.log(v))
+    .then(() => {
+      // 登録後のリストで更新
+      apiClient.words.getWords().then((res) => (words.value = res))
+    })
 
   newWord.value = ''
   openClearedDialog()
@@ -86,7 +89,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
       />
     </label>
   </div>
-  <div>
+  <div class="flex justify-around">
     <BotNotify @updete-bot-notify="(newValue) => updateNewBotNotify(newValue)" />
     <SelfNotify @updete-self-notify="(newValue) => updateNewSelfNotify(newValue)" />
   </div>

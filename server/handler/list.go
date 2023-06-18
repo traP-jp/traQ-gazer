@@ -10,7 +10,7 @@ import (
 
 // 今見てるuserのwordたち
 // (GET /list/user/{userId})
-func (s Server) GetListUserMe(ctx echo.Context, userId string) error {
+func (s Server) GetListUserMe(ctx echo.Context) error {
 	// traPIdの取得
 	userId, err := getUserIdFromSession(ctx)
 	if err != nil {
@@ -40,12 +40,13 @@ func (s Server) GetListUserUserId(ctx echo.Context, userId string) error {
 // あるuserのwordたちを登録しているuserたち
 // (GET /list/user/{userId}/users)
 func (s Server) GetListUserUserIdUsers(ctx echo.Context, userId string) error {
-	usersOfWordsListMode, err := model.GetListUserUserIdUsers(userId)
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-	usersOfWordsListApi := ConvertUsersOfWordsList(usersOfWordsListMode)
-	return ctx.JSON(200, usersOfWordsListApi)
+	// usersOfWordsListMode, err := model.GetListUserUserIdUsers(userId)
+	// if err != nil {
+	// 	return echo.NewHTTPError(500, err.Error())
+	// }
+	// usersOfWordsListApi := ConvertUsersOfWordsList(usersOfWordsListMode)
+	// return ctx.JSON(200, usersOfWordsListApi)
+	return nil
 }
 
 // model.WordsListからapi.WordsListへの型の変換
