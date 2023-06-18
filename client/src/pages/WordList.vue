@@ -47,16 +47,6 @@ const deleteWord = () => {
   closeDeleteDialog()
 }
 
-const editMenu = [
-  {
-    name: '編集・設定',
-    onClick: openEditDialog
-  },
-  {
-    name: '削除',
-    onClick: openDeleteDialog
-  }
-]
 apiClient.list.getListUserMe().then((res) => (words.value = res))
 </script>
 
@@ -106,12 +96,17 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
                   >
                     <div class="relative grid gap-8 bg-white p-7 lg:grid-cols-2">
                       <button
-                        v-for="item in editMenu"
-                        :key="item.name"
+                        disabled
                         class="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
-                        @click="item.onClick"
+                        @click="openEditDialog"
                       >
-                        {{ item.name }}
+                        編集
+                      </button>
+                      <button
+                        class="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
+                        @click="openDeleteDialog"
+                      >
+                        削除
                       </button>
                     </div>
                   </div>
