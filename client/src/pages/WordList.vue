@@ -31,7 +31,7 @@ const closeDeleteDialog = () => {
 }
 
 const deleteWord = () => {
-  if(delWord.value.length>0){
+  if (delWord.value.length > 0) {
     const delBody: WordDelete = {
       word: delWord.value
     }
