@@ -1,6 +1,10 @@
 package model
 
-import "strings"
+import (
+	"strings"
+
+	"golang.org/x/exp/slog"
+)
 
 func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 	wordsList := []WordsItem{}
@@ -10,6 +14,7 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 		FROM
 			words`)
 	if err != nil {
+		slog.Info("Error selecting words: %v", err)
 		return nil, err
 	}
 
@@ -20,6 +25,7 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 		FROM
 			users`)
 	if err != nil {
+		slog.Info("Error selecting users: %v", err)
 		return nil, err
 	}
 	usersItemMap := make(map[string]UsersItem)
@@ -55,6 +61,7 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 			}
 		}
 	}
+	// slog.Info("sendList: %v", sendList)
 	return sendList, nil
 }
 

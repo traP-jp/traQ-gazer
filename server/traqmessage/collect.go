@@ -12,7 +12,7 @@ import (
 
 // go routineの中で呼ぶこと
 func PollingMessages() {
-	pollingInterval := time.Minute * 5
+	pollingInterval := time.Minute * 3
 
 	lastCheckpoint := time.Now()
 	ticker := time.Tick(pollingInterval)
