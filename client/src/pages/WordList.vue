@@ -49,7 +49,7 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
 </script>
 
 <template>
-  <div class="expression">
+  <div class="m-2 mb-8">
     <h1>登録単語の閲覧ページ</h1>
   </div>
   <div class="table">
@@ -172,10 +172,6 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
 </template>
 
 <style>
-.expression {
-  text-align: left;
-  display: flex;
-}
 .table {
   overflow-x: scroll;
   overflow-y: scroll;

@@ -67,9 +67,8 @@ const updateNewSelfNotify = (newValue: boolean) => {
 
 <template>
   <title>新規単語追加ページ</title>
-  <div class="expression">
+  <div class="m-2 mb-8">
     <h1>新規単語の登録</h1>
-    <br />
   </div>
   <div>
     <p>以下のフォームで登録した単語がtraQ上に投稿された際、DMに通知を送信します。</p>
@@ -218,9 +217,6 @@ const updateNewSelfNotify = (newValue: boolean) => {
 </template>
 
 <style>
-.expression {
-  display: flex;
-}
 p {
   font-size: 20px;
 }
