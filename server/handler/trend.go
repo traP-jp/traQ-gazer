@@ -2,10 +2,13 @@ package handler
 
 import (
 	"h23s_15/api"
+	"h23s_15/model"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
+
+const LIMIT_DEFAULT = 10
 
 // 今日のトレンド
 // (GET /trend/day/today)
