@@ -2,13 +2,13 @@
 import { ref } from 'vue'
 import PageLink from '../components/PageLink.vue'
 import apiClient from '../apis'
-import { WordsAllList } from '../apis/generated'
+import { WordsList } from '../apis/generated'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
 import { WordDelete } from '../apis/generated'
 
-const words = ref<WordsAllList>([])
+const words = ref<WordsList>([])
 
 const isDeleteOpen = ref(false)
 
@@ -51,6 +51,7 @@ const editMenu = [
     onClick: openDeleteDialog
   }
 ]
+apiClient.list.getListUserMe().then((res) => (words.value = res))
 </script>
 
 <template>

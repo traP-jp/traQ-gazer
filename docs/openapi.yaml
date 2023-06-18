@@ -132,6 +132,19 @@ paths:
           description: Successful deletion
         '404':
           description: User not found
+  /list/user/me:
+    get:
+      tags:
+        - list
+      summary: アクセスしているuserのwordたち
+      description: アクセスしているuserの登録しているwordの取得
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WordsList'
   /list/user/{userId}:
     get:
       tags:
