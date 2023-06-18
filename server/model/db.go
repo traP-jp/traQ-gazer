@@ -32,6 +32,11 @@ func SetUp() error {
 var ACCESS_TOKEN = os.Getenv("BOT_ACCESS_TOKEN")
 
 func initUsersTable() error {
+	if ACCESS_TOKEN == "" {
+		slog.Info("Skip initUsersTable")
+		return nil
+	}
+
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, ACCESS_TOKEN)
 

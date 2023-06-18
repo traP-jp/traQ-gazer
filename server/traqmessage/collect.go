@@ -34,24 +34,21 @@ func PollingMessages() {
 }
 
 func messageProcessor(messages []traq.Message) {
-	check := true
 	messageList, err := ConvertMessageHits(messages)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failled to convert messages: %v", err))
-		check = false
+		return
 	}
 	sendList, err := model.TraqMessageProcessor(messageList)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failled to process messages: %v", err))
-		check = false
+		return
 	}
-	if check {
-		for _, message := range sendList {
-			err := sendMessage(*message)
-			if err != nil {
-				slog.Error(fmt.Sprintf("Failled to send message: %v", err))
-				continue
-			}
+	for _, message := range sendList {
+		err := sendMessage(*message)
+		if err != nil {
+			slog.Error(fmt.Sprintf("Failled to send message: %v", err))
+			continue
 		}
 	}
 }
@@ -60,6 +57,11 @@ func sendMessage(message model.Send) error {
 	// TODO: 送信処理
 	// 送信先User: message.userId 送信先: message.dmId
 	// 送信内容: "ワード:"+message.word+"\n https://q.trap.jp/messages/"+message.messageId
+	if model.ACCESS_TOKEN == "" {
+		slog.Info("Skip sendMessage")
+		return nil
+	}
+
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
 	_, _, err := client.UserApi.PostDirectMessage(auth, message.UserUUID).PostMessageRequest(traq.PostMessageRequest{
