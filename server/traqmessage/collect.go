@@ -83,7 +83,9 @@ func collectMessages(from time.Time, to time.Time) (*traq.MessageSearchResult, e
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
 
-	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(200).Execute()
+	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
+	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
+	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(100).Execute()
 	if err != nil {
 		return nil, err
 	}
