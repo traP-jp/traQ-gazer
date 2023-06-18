@@ -2,6 +2,12 @@ package handler
 
 import "github.com/labstack/echo/v4"
 
+// アクセスしているuserのwordたち
+// (GET /list/user/me)
+func (s Server) GetListUserMe(ctx echo.Context) error {
+	return nil
+}
+
 // あるuserのwordたち
 // (GET /list/user/{userId})
 func (s Server) GetListUserUserId(ctx echo.Context, userId string) error {
