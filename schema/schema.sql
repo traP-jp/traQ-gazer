@@ -10,6 +10,6 @@ CREATE TABLE `words` (
 -- TODO:FOREIGN KEY for trap_id
 CREATE TABLE `users` (
     `trap_id` VARCHAR(32) NOT NULL PRIMARY KEY,
-    `traq_uuid` VARCHAR(36) NOT NULL
-    `is_bot` BOOLEAN,
+    `traq_uuid` VARCHAR(36) NOT NULL,
+    `is_bot` BOOLEAN
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
