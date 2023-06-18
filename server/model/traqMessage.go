@@ -31,12 +31,12 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 				sendList = append(sendList, &Send{
 					// wordがワードを登録しているUserの情報
 					// messageが投稿されたワードの情報
-					word:      word.Word,
-					userId:    word.UserId,
-					userUUID:  word.UserUUID,
-					messageId: message.Id,
-					isBot:     word.IsBot,
-					dmId:      word.DmId,
+					Word:      word.Word,
+					UserId:    word.UserId,
+					UserUUID:  word.UserUUID,
+					MessageId: message.Id,
+					IsBot:     word.IsBot,
+					DmId:      word.DmId,
 				})
 			}
 		}
@@ -77,17 +77,17 @@ type Words struct {
 
 type Send struct {
 	// 含んでいた単語
-	word string
+	Word string
 	// 送信先のuser
-	userId string
+	UserId string
 	// 送信先のuserUUID
-	userUUID string
+	UserUUID string
 	// 送信するメッセージのID
-	messageId string
+	MessageId string
 	// BOTかどうか
-	isBot bool
+	IsBot bool
 	// 送信先のDMのID
-	dmId string
+	DmId string
 }
 
 type SendList []*Send

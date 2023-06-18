@@ -60,13 +60,14 @@ func sendMessage(message model.Send) error {
 	// TODO: 送信処理
 	// 送信先User: message.userId 送信先: message.dmId
 	// 送信内容: "ワード:"+message.word+"\n https://q.trap.jp/messages/"+message.messageId
-	// client := traq.NewAPIClient(traq.NewConfiguration())
-	// auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
-	// _, _, err := client.UserApi.PostDirectMessage(auth, message.userUUID).PostMessageRequest(&Post
-	// )
-	// if err != nil {
-	// 	return err
-	// }
+	client := traq.NewAPIClient(traq.NewConfiguration())
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
+	_, _, err := client.UserApi.PostDirectMessage(auth, message.UserUUID).PostMessageRequest(traq.PostMessageRequest{
+		Content: "ワード:" + message.Word + "\n https://q.trap.jp/messages/" + message.MessageId,
+	}).Execute()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
