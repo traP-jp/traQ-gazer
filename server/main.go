@@ -8,6 +8,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/exp/slog"
 )
 
 func main() {
@@ -24,7 +25,10 @@ func main() {
 	instance.File("/words", "dist/index.html")
 	instance.File("/words/add", "dist/index.html")
 
-	model.SetUp()
+	err := model.SetUp()
+	if err != nil {
+		slog.Info("Error setting up: %v", err)
+	}
 
 	go func() {
 		traqmessage.PollingMessages()
