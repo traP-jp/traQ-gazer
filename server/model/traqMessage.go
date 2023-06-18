@@ -28,24 +28,32 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 		slog.Info("Error selecting users: %v", err)
 		return nil, err
 	}
-	usersItemMap := make(map[string]UsersItem)
+
+	traqUuidToTrapId := make(map[string]UsersItem)
+	trapIdToTraqUuid := make(map[string]UsersItem)
+
 	for _, item := range usersItem {
-		usersItemMap[item.UserUUID] = item
+		trapIdToTraqUuid[item.TrapID] = item
+		traqUuidToTrapId[item.TraqUUID] = item
 	}
 
 	var sendList SendList
 	// TODO: Sotatsu リファクタリングと確認頼んだ！
 	for _, message := range messageList {
 		var messageOwnerTrapId string
-		messageOwner, ok := usersItemMap[message.UserId]
+		messageOwner, ok := traqUuidToTrapId[message.TraqUuid]
 		if ok {
-			messageOwnerTrapId = messageOwner.UserId
+			messageOwnerTrapId = messageOwner.TrapID
 		}
 
 		for _, wordsItem := range wordsList {
+			notifyTarget, ok := trapIdToTraqUuid[wordsItem.TrapId]
+			if !ok {
+				continue
+			}
 			if strings.Contains(message.Content, wordsItem.Word) {
 				if !wordsItem.IncludeMe {
-					if messageOwnerTrapId == wordsItem.UserId {
+					if messageOwnerTrapId == notifyTarget.TrapID {
 						continue
 					}
 				}
@@ -59,11 +67,11 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 				sendList = append(sendList, &Send{
 					// wordがワードを登録しているUserの情報
 					// messageが投稿されたワードの情報
-					Word:      wordsItem.Word,
-					UserId:    wordsItem.UserId,
-					UserUUID:  usersItemMap[wordsItem.UserId].UserUUID,
-					MessageId: message.Id,
-					IsBot:     usersItemMap[wordsItem.UserId].IsBot,
+					Word:                 wordsItem.Word,
+					NotifyTargetTrapId:   notifyTarget.TrapID,
+					NotifyTargetTraqUuid: notifyTarget.TraqUUID,
+					MessageId:            message.Id,
+					IsBot:                messageOwner.IsBot,
 				})
 			}
 		}
@@ -76,7 +84,7 @@ type MessageItem struct {
 	// メッセージUUID
 	Id string `json:"id"`
 	// 投稿者UUID
-	UserId string `json:"userId"`
+	TraqUuid string `json:"userId"`
 	// メッセージ本文
 	Content string `json:"content"`
 }
@@ -86,13 +94,13 @@ type MessageList []MessageItem
 type WordsItem struct {
 	IncludeBot bool   `db:"bot_notification"`
 	IncludeMe  bool   `db:"me_notification"`
-	UserId     string `db:"trap_id"`
+	TrapId     string `db:"trap_id"`
 	Word       string `db:"word"`
 }
 
 type UsersItem struct {
-	UserId   string `db:"trap_id"`
-	UserUUID string `db:"traq_uuid"`
+	TrapID   string `db:"trap_id"`
+	TraqUUID string `db:"traq_uuid"`
 	IsBot    bool   `db:"is_bot"`
 }
 
@@ -100,9 +108,9 @@ type Send struct {
 	// 含んでいた単語
 	Word string
 	// 送信先のuser
-	UserId string
+	NotifyTargetTrapId string
 	// 送信先のuserUUID
-	UserUUID string
+	NotifyTargetTraqUuid string
 	// 送信するメッセージのID
 	MessageId string
 	// BOTかどうか
