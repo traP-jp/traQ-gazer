@@ -92,7 +92,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
   </div>
 
   <div class="table">
-    <table class="wordList ">
+    <table class="wordList">
       <tr>
         <th class="">単語</th>
         <th class="">bot通知</th>
