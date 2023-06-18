@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import PageLink from '../components/PageLink.vue'
-import TitleLogo from '../components/title-logo.vue'
 import apiClient from '../apis'
 import { WordsList } from '../apis/generated'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
@@ -51,9 +50,6 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
 </script>
 
 <template>
-  <header>
-    <title-logo />
-  </header>
   <div class="expression">
     <h1>登録単語の閲覧ページ</h1>
     <PageLink />
