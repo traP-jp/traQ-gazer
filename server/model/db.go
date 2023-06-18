@@ -49,8 +49,17 @@ func initUsersTable() error {
 	for _, user := range result {
 		userList = append(userList, User{traq_uuid: user.Id, trap_id: user.Name, is_bot: user.Bot})
 	}
-	for i := 0; i < len(userList); i += 50 {
-		_, err := db.NamedExec("INSERT INTO users (traq_uuid, trap_id, is_bot) VALUES (:traq_uuid, :trap_id, :is_bot)", userList[i:min(i+50, len(userList))])
+
+	alreadyExistUserList := UserList{}
+	err = db.Select(&alreadyExistUserList, "SELECT traq_uuid, trap_id, is_bot FROM users")
+	if err != nil {
+		return err
+	}
+
+	newUserList := removeAlreadyExistUsers(userList, alreadyExistUserList)
+
+	for i := 0; i < len(newUserList); i += 50 {
+		_, err := db.NamedExec("INSERT INTO users (traq_uuid, trap_id, is_bot) VALUES (:traq_uuid, :trap_id, :is_bot)", newUserList[i:min(i+50, len(newUserList))])
 		if err != nil {
 			return err
 		}
@@ -71,4 +80,21 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func removeAlreadyExistUsers(allUsers UserList, alreadyUsers UserList) UserList {
+	newUserList := make(UserList, 0)
+	for _, all := range allUsers {
+		for _, already := range alreadyUsers {
+			if all.traq_uuid == already.traq_uuid {
+				continue
+			}
+		}
+		newUserList = append(newUserList, User{
+			traq_uuid: all.traq_uuid,
+			trap_id:   all.trap_id,
+			is_bot:    all.is_bot,
+		})
+	}
+	return newUserList
 }
