@@ -31,9 +31,9 @@ const newWord = ref('')
 apiClient.list.getListUserMe().then((res) => (words.value = res))
 
 const registerNewWord = () => {
-  if (newWord.value.length===0){
+  if (newWord.value.length === 0) {
     return
-  }else if (newWord.value.length > 50) {
+  } else if (newWord.value.length > 50) {
     openFailedDialog()
     return
   }
