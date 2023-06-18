@@ -14,6 +14,19 @@ export class ListService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
+     * アクセスしているuserのwordたち
+     * アクセスしているuserの登録しているwordの取得
+     * @returns WordsList Successful retrieval
+     * @throws ApiError
+     */
+    public getListUserMe(): CancelablePromise<WordsList> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/list/user/me',
+        });
+    }
+
+    /**
      * あるuserのwordたち
      * userの登録しているwordの取得
      * @param userId ID of the user
