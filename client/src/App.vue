@@ -6,7 +6,9 @@ import TitleLogo from './components/TitleLogo.vue'
 <template>
   <TitleLogo />
   <PageLink />
-  <RouterView />
+  <div class="my-4">
+    <RouterView />
+  </div>
 </template>
 
 <style scoped></style>
