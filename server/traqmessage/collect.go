@@ -44,6 +44,9 @@ func messageProcessor(messages []traq.Message) {
 		slog.Error(fmt.Sprintf("Failled to process messages: %v", err))
 		return
 	}
+
+	slog.Info(fmt.Sprintf("Sending %d DMs...", len(sendList)))
+
 	for _, message := range sendList {
 		err := sendMessage(*message)
 		if err != nil {
@@ -51,6 +54,8 @@ func messageProcessor(messages []traq.Message) {
 			continue
 		}
 	}
+
+	slog.Info("End of send DMs")
 }
 
 func sendMessage(message model.Send) error {
@@ -64,7 +69,7 @@ func sendMessage(message model.Send) error {
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
-	_, _, err := client.UserApi.PostDirectMessage(auth, message.UserUUID).PostMessageRequest(traq.PostMessageRequest{
+	_, _, err := client.UserApi.PostDirectMessage(auth, message.NotifyTargetTraqUuid).PostMessageRequest(traq.PostMessageRequest{
 		Content: "「 " + message.Word + " 」\n https://q.trap.jp/messages/" + message.MessageId,
 	}).Execute()
 	if err != nil {
@@ -83,7 +88,9 @@ func collectMessages(from time.Time, to time.Time) (*traq.MessageSearchResult, e
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
 
-	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Execute()
+	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
+	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
+	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(100).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -95,9 +102,9 @@ func ConvertMessageHits(messages []traq.Message) (model.MessageList, error) {
 	messageList := model.MessageList{}
 	for _, message := range messages {
 		messageList = append(messageList, model.MessageItem{
-			Id:      message.Id,
-			UserId:  message.UserId,
-			Content: message.Content,
+			Id:       message.Id,
+			TraqUuid: message.UserId,
+			Content:  message.Content,
 		})
 	}
 	return messageList, nil

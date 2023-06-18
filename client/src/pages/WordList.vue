@@ -48,7 +48,8 @@ const deleteWord = () => {
 
 <template>
   <div class="m-2 mb-8">
-    <h1>登録単語の閲覧ページ</h1>
+    <h1>登録単語の閲覧</h1>
+    <PageLink />
   </div>
   <div class="table">
     <table class="wordList">
