@@ -8,6 +8,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.10.2
+	github.com/traPtitech/go-traq v0.0.0-20230615103803-82fa0621d359
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )
 
@@ -41,7 +42,6 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/perimeterx/marshmallow v1.1.4 // indirect
-	github.com/traPtitech/go-traq v0.0.0-20230615103803-82fa0621d359 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
