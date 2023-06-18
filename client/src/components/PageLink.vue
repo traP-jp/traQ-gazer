@@ -1,9 +1,8 @@
 <script setup lang="ts"></script>
 
 <template>
-  <p>
+  <p class="p-2">
     <router-link to="/words/add">新規単語登録</router-link> /
-    <router-link to="/words">登録単語の一覧</router-link> /
-    <router-link to="/words">他の人が登録している単語</router-link>
+    <router-link to="/words">登録単語の一覧</router-link>
   </p>
 </template>

@@ -15,7 +15,7 @@ watch(newBotNotify, () => {
 
 <template>
   <div class="bot">
-    <label>
+    <label class="flex flex-col items-center">
       <p>botの発言を通知する</p>
       <Switch
         v-model="newBotNotify"

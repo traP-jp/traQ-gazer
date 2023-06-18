@@ -2,8 +2,6 @@
 import { ref } from 'vue'
 import BotNotify from '../components/BotNotify.vue'
 import SelfNotify from '../components/SelfNotify.vue'
-import TitleLogo from '../components/title-logo.vue'
-import PageLink from '../components/PageLink.vue'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 import apiClient from '../apis'
 import { WordRequest, WordsList } from '../apis/generated'
@@ -69,18 +67,13 @@ const updateNewSelfNotify = (newValue: boolean) => {
 
 <template>
   <title>新規単語追加ページ</title>
-  <header>
-    <TitleLogo />
-  </header>
-  <div class="expression">
+  <div class="m-2 mb-8">
     <h1>新規単語の登録</h1>
-    <PageLink />
-    <br />
   </div>
   <div>
     <p>以下のフォームで登録した単語がtraQ上に投稿された際、DMに通知を送信します。</p>
   </div>
-  <div>
+  <div class="mb-4">
     <label>
       <input
         v-model="newWord"
@@ -90,27 +83,26 @@ const updateNewSelfNotify = (newValue: boolean) => {
       />
     </label>
   </div>
-  <div class="flex justify-around">
+  <div class="flex justify-around my-4">
     <BotNotify @updete-bot-notify="(newValue) => updateNewBotNotify(newValue)" />
     <SelfNotify @updete-self-notify="(newValue) => updateNewSelfNotify(newValue)" />
   </div>
-  <div class="registerButton">
+  <div class="registerButton mb-16 mt-4">
     <button @click="registerNewWord">登録</button>
   </div>
 
   <div class="table">
-    <table class="wordList">
+    <table class="wordList ">
       <tr>
-        <th>単語</th>
-        <th>bot通知</th>
-        <th>自分の発言の通知</th>
-        <th>他の登録者</th>
-        <th></th>
+        <th class="">単語</th>
+        <th class="">bot通知</th>
+        <th class="">自分の発言の通知</th>
+        <!-- <th>他の登録者</th> -->
       </tr>
       <tr v-for="item in words" :key="item.word">
-        <td>{{ item.word }}</td>
-        <td>{{ item.includeBot ? 'ON' : 'OFF' }}</td>
-        <td>{{ item.includeMe ? 'ON' : 'OFF' }}</td>
+        <td class="">{{ item.word }}</td>
+        <td class="">{{ item.includeBot ? 'ON' : 'OFF' }}</td>
+        <td class="">{{ item.includeMe ? 'ON' : 'OFF' }}</td>
       </tr>
     </table>
   </div>
@@ -224,9 +216,6 @@ const updateNewSelfNotify = (newValue: boolean) => {
 </template>
 
 <style>
-.expression {
-  display: flex;
-}
 p {
   font-size: 20px;
 }

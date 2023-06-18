@@ -1,10 +1,5 @@
-<script setup lang="ts">
-import PageLink from '../components/PageLink.vue'
-import TitleLogo from '../components/title-logo.vue'
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <TitleLogo />
-  <PageLink />
-  <h1>Home</h1>
+  <p>traQを監視しよう！</p>
 </template>
