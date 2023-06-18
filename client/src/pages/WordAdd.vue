@@ -5,7 +5,7 @@ import SelfNotify from '../components/SelfNotify.vue'
 import PageLink from '../components/PageLink.vue'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 import apiClient from '../apis'
-import { WordRequest, WordsAllList } from '../apis/generated'
+import { WordRequest, WordsList } from '../apis/generated'
 
 const newBotNotify = ref(true)
 const newSelfNotify = ref(false)
@@ -26,10 +26,10 @@ function openClearedDialog() {
   isClearedOpen.value = true
 }
 
-const words = ref<WordsAllList>([])
+const words = ref<WordsList>([])
 const newWord = ref('')
 
-apiClient.words.getWords().then((res) => (words.value = res))
+apiClient.list.getListUserMe().then((res) => (words.value = res))
 
 const registerNewWord = () => {
   if (newWord.value.length == 0) {
@@ -51,7 +51,7 @@ const registerNewWord = () => {
     .catch((v) => console.log(v))
     .then(() => {
       // 登録後のリストで更新
-      apiClient.words.getWords().then((res) => (words.value = res))
+      apiClient.list.getListUserMe().then((res) => (words.value = res))
     })
 
   newWord.value = ''
