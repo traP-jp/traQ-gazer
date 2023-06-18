@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import BotNotify from '../components/BotNotify.vue'
 import SelfNotify from '../components/SelfNotify.vue'
-import PageLink from '../components/PageLink.vue'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 import apiClient from '../apis'
 import { WordRequest, WordsList } from '../apis/generated'
@@ -70,7 +69,6 @@ const updateNewSelfNotify = (newValue: boolean) => {
   <title>新規単語追加ページ</title>
   <div class="expression">
     <h1>新規単語の登録</h1>
-    <PageLink />
     <br />
   </div>
   <div>
