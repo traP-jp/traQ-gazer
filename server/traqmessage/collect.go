@@ -55,8 +55,8 @@ func messageProcessor(messages []traq.Message) {
 
 func sendMessage(message model.Send) error {
 	// TODO: 送信処理
-	// 送信先User: message.userId 送信先: message.dmId
-	// 送信内容: "ワード:"+message.word+"\n https://q.trap.jp/messages/"+message.messageId
+	// 送信先User: message.UserUUID
+	// 送信内容: "ワード:"+message.Word+"\n https://q.trap.jp/messages/"+message.MessageId
 	if model.ACCESS_TOKEN == "" {
 		slog.Info("Skip sendMessage")
 		return nil
