@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import BotNotify from '../components/BotNotify.vue'
 import SelfNotify from '../components/SelfNotify.vue'
+import TitleLogo from '../components/title-logo.vue'
 import PageLink from '../components/PageLink.vue'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 import apiClient from '../apis'
@@ -69,7 +70,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
 <template>
   <title>新規単語追加ページ</title>
   <header>
-    <p>traQエゴサ支援ツール</p>
+    <TitleLogo />
   </header>
   <div class="expression">
     <h1>新規単語の登録</h1>
