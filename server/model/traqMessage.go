@@ -30,21 +30,28 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 	}
 	usersItemMap := make(map[string]UsersItem)
 	for _, item := range usersItem {
-		usersItemMap[item.UserId] = item
+		usersItemMap[item.UserUUID] = item
 	}
 
 	var sendList SendList
 	// TODO: Sotatsu リファクタリングと確認頼んだ！
 	for _, message := range messageList {
+		var messageOwnerTrapId string
+		messageOwner, ok := usersItemMap[message.Id]
+		if ok {
+			messageOwnerTrapId = messageOwner.UserId
+		}
+
 		for _, wordsItem := range wordsList {
 			if strings.Contains(message.Content, wordsItem.Word) {
-				if message.UserId == wordsItem.UserId {
-					if !wordsItem.IncludeMe {
+				if !wordsItem.IncludeMe {
+					if messageOwnerTrapId == wordsItem.UserId {
 						continue
 					}
 				}
+
 				if !wordsItem.IncludeBot {
-					if usersItemMap[message.UserId].IsBot {
+					if messageOwner.IsBot {
 						continue
 					}
 				}
