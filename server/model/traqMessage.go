@@ -37,7 +37,7 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 	// TODO: Sotatsu リファクタリングと確認頼んだ！
 	for _, message := range messageList {
 		var messageOwnerTrapId string
-		messageOwner, ok := usersItemMap[message.Id]
+		messageOwner, ok := usersItemMap[message.UserId]
 		if ok {
 			messageOwnerTrapId = messageOwner.UserId
 		}
