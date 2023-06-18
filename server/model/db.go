@@ -44,13 +44,6 @@ func initUsersTable() error {
 	if err != nil {
 		return err
 	}
-	for _, user := range result {
-		// TODO: 50個ごとにバルクインサートするように変更する
-		_, err = db.Exec("INSERT INTO users (traq_uuid, trap_id, is_bot) VALUES (?, ?, ?)", user.Id, user.Name, user.Bot)
-		if err != nil {
-			return err
-		}
-	}
 
 	userList := UserList{}
 	for _, user := range result {
