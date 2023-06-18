@@ -43,6 +43,7 @@ func initUsersTable() error {
 
 	result, _, err := client.UserApi.GetUsers(auth).Execute()
 	if err != nil {
+		slog.Info("Error getting users: %v", err)
 		return err
 	}
 
@@ -54,6 +55,7 @@ func initUsersTable() error {
 	alreadyExistUsersUUIDList := []string{}
 	err = db.Select(&alreadyExistUsersUUIDList, "SELECT traq_uuid FROM users")
 	if err != nil {
+		slog.Info("Error Select alreadyExistUsersUUIDList: %v", err)
 		return err
 	}
 
@@ -62,6 +64,7 @@ func initUsersTable() error {
 	for i := 0; i < len(newUserList); i += 50 {
 		_, err := db.NamedExec("INSERT INTO users (traq_uuid, trap_id, is_bot) VALUES (:traq_uuid, :trap_id, :is_bot)", newUserList[i:min(i+50, len(newUserList))])
 		if err != nil {
+			slog.Info("Error Insert: %v", err)
 			return err
 		}
 	}
