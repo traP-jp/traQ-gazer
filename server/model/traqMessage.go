@@ -3,35 +3,46 @@ package model
 import "strings"
 
 func TraqMessageProcessor(messageList MessageList) (SendList, error) {
-	words := []Words{}
-	err := db.Select(&words, `
+	wordsItem := []WordsItem{}
+	err := db.Select(&wordsItem, `
 		SELECT 
-			words.word, words.bot_notification, words.me_notification, words.trap_id, users.traq_uuid, users.is_bot 
+			word, bot_notification, me_notification, trap_id 
 		FROM
-			words 
-		INNER JOIN 
-			users 
-		ON 
-			users.trap_id = words.trap_id`)
+			words`)
 	if err != nil {
 		return nil, err
 	}
+	wordsItemMap := make(map[string]WordsItem)
+	for _, item := range wordsItem {
+		wordsItemMap[item.UserId] = item
+	}
+
+	usersItem := []UsersItem{}
+	err = db.Select(&usersItem, `
+		SELECT 
+			traq_uuid, traq_id, is_bot 
+		FROM
+			users`)
+	if err != nil {
+		return nil, err
+	}
+	usersItemMap := make(map[string]UsersItem)
+	for _, item := range usersItem {
+		usersItemMap[item.UserId] = item
+	}
+
 	var sendList SendList
 	// TODO: Sotatsu リファクタリングと確認頼んだ！
 	for _, message := range messageList {
-		for _, word := range words {
-			if strings.Contains(message.Content, word.Word) {
-				if message.UserId == word.UserId {
-					if !word.IncludeMe {
+		for _, wordsItem := range wordsItemMap {
+			if strings.Contains(message.Content, wordsItem.Word) {
+				if message.UserId == wordsItem.UserId {
+					if !wordsItem.IncludeMe {
 						continue
 					}
 				}
-				if !word.IncludeBot {
-					isBot, err := IsBot(message.UserId)
-					if err != nil {
-						continue
-					}
-					if isBot {
+				if !wordsItem.IncludeBot {
+					if usersItemMap[message.UserId].IsBot {
 						continue
 					}
 				}
@@ -39,26 +50,16 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 				sendList = append(sendList, &Send{
 					// wordがワードを登録しているUserの情報
 					// messageが投稿されたワードの情報
-					Word:      word.Word,
-					UserId:    word.UserId,
-					UserUUID:  word.UserUUID,
+					Word:      wordsItem.Word,
+					UserId:    wordsItem.UserId,
+					UserUUID:  usersItemMap[wordsItem.UserId].UserUUID,
 					MessageId: message.Id,
-					IsBot:     word.IsBot,
+					IsBot:     usersItemMap[wordsItem.UserId].IsBot,
 				})
 			}
 		}
 	}
 	return sendList, nil
-}
-
-func IsBot(userId string) (bool, error) {
-	// TODO: botかどうか判定する
-	var isBot IsBotStruct
-	err := db.Get(&isBot, "SELECT is_bot FROM users WHERE user_id = ?", userId)
-	if err != nil {
-		return true, err
-	}
-	return isBot.IsBot, nil
 }
 
 type MessageItem struct {
@@ -72,13 +73,17 @@ type MessageItem struct {
 
 type MessageList []MessageItem
 
-type Words struct {
+type WordsItem struct {
 	IncludeBot bool   `db:"bot_notification"`
 	IncludeMe  bool   `db:"me_notification"`
 	UserId     string `db:"trap_id"`
-	UserUUID   string `db:"traq_uuid"`
 	Word       string `db:"word"`
-	IsBot      bool   `db:"is_bot"`
+}
+
+type UsersItem struct {
+	UserId   string `db:"trap_id"`
+	UserUUID string `db:"traq_uuid"`
+	IsBot    bool   `db:"is_bot"`
 }
 
 type Send struct {
@@ -95,7 +100,3 @@ type Send struct {
 }
 
 type SendList []*Send
-
-type IsBotStruct struct {
-	IsBot bool `db:"is_bot"`
-}
