@@ -2,11 +2,11 @@
 import { ref } from 'vue'
 import PageLink from '../components/PageLink.vue'
 import apiClient from '../apis'
-import { WordsAllList } from '../apis/generated'
+import { WordsList } from '../apis/generated'
 
-const words = ref<WordsAllList>([])
+const words = ref<WordsList>([])
 
-apiClient.words.getWords().then((res) => (words.value = res))
+apiClient.list.getListUserMe().then((res) => (words.value = res))
 </script>
 
 <template>
