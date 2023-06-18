@@ -83,7 +83,7 @@ func collectMessages(from time.Time, to time.Time) (*traq.MessageSearchResult, e
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
 
-	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(1000).Execute()
+	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(200).Execute()
 	if err != nil {
 		return nil, err
 	}
