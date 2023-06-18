@@ -31,18 +31,19 @@ const closeDeleteDialog = () => {
 }
 
 const deleteWord = () => {
-  const delBody: WordDelete = {
-    word: delWord.value
+  if(delWord.value.length>0){
+    const delBody: WordDelete = {
+      word: delWord.value
+    }
+
+    apiClient.words
+      .deleteWords(delBody)
+      .catch((v) => console.log(v))
+      .then(() => {
+        // 登録後のリストで更新
+        apiClient.list.getListUserMe().then((res) => (words.value = res))
+      })
   }
-
-  apiClient.words
-    .deleteWords(delBody)
-    .catch((v) => console.log(v))
-    .then(() => {
-      // 登録後のリストで更新
-      apiClient.list.getListUserMe().then((res) => (words.value = res))
-    })
-
   closeDeleteDialog()
 }
 
