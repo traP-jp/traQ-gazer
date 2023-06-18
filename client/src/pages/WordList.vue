@@ -51,7 +51,7 @@ const deleteWord = () => {
     <h1>登録単語の閲覧ページ</h1>
   </div>
   <div class="table">
-    <table class="wordList ">
+    <table class="wordList">
       <tr>
         <th class="">単語</th>
         <th class="">bot通知</th>

@@ -86,11 +86,11 @@ const updateNewSelfNotify = (newValue: boolean) => {
     <SelfNotify @updete-self-notify="(newValue) => updateNewSelfNotify(newValue)" />
   </div>
   <div class="registerButton mb-16 mt-4">
-    <v-btn :disabled="newWord===''" @click="registerNewWord">登録</v-btn>
+    <v-btn :disabled="newWord === ''" @click="registerNewWord">登録</v-btn>
   </div>
 
   <div class="table">
-    <table class="wordList ">
+    <table class="wordList">
       <tr>
         <th class="">単語</th>
         <th class="">bot通知</th>
