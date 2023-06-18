@@ -235,7 +235,7 @@ type ServerInterface interface {
 	// bot投稿に対する通知の設定
 	// (PUT /words)
 	PutWords(ctx echo.Context) error
-	// bot投稿に対する通知の一括設定error
+	// bot投稿に対する通知の一括設定
 	// (POST /words/bot)
 	PostWordsBot(ctx echo.Context) error
 	// 自分の投稿に対する通知の設定

@@ -15,7 +15,7 @@ const LIMIT_DEFAULT = 10
 func (s Server) GetTodayTrendingWords(ctx echo.Context, params api.GetTodayTrendingWordsParams) error {
 	err := ctx.Bind(&params)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// limit(初期値LIMIT_DEFAULT)を更新
@@ -37,7 +37,7 @@ func (s Server) GetTodayTrendingWords(ctx echo.Context, params api.GetTodayTrend
 func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params api.GetTrendingWordsForDayParams) error {
 	err := ctx.Bind(&params)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// limit(初期値LIMIT_DEFAULT)を更新
@@ -58,7 +58,7 @@ func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params api.
 func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params api.GetTrendingWordsForMonthParams) error {
 	err := ctx.Bind(&params)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// limit(初期値LIMIT_DEFAULT)を更新
@@ -80,7 +80,7 @@ func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params 
 func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params api.GetTrendingWordsForYearParams) error {
 	err := ctx.Bind(&params)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// limit(初期値LIMIT_DEFAULT)を更新
