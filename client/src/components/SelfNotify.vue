@@ -15,7 +15,7 @@ watch(newSelfNotify, () => {
 
 <template>
   <div class="myself">
-    <label>
+    <label class="flex flex-col items-center">
       <p>自分の発言を通知する</p>
       <Switch
         v-model="newSelfNotify"

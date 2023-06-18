@@ -73,7 +73,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
   <div>
     <p>以下のフォームで登録した単語がtraQ上に投稿された際、DMに通知を送信します。</p>
   </div>
-  <div>
+  <div class="mb-4">
     <label>
       <input
         v-model="newWord"
@@ -83,27 +83,26 @@ const updateNewSelfNotify = (newValue: boolean) => {
       />
     </label>
   </div>
-  <div class="flex justify-around">
+  <div class="flex justify-around my-4">
     <BotNotify @updete-bot-notify="(newValue) => updateNewBotNotify(newValue)" />
     <SelfNotify @updete-self-notify="(newValue) => updateNewSelfNotify(newValue)" />
   </div>
-  <div class="registerButton">
+  <div class="registerButton mb-16 mt-4">
     <button @click="registerNewWord">登録</button>
   </div>
 
   <div class="table">
-    <table class="wordList">
+    <table class="wordList border">
       <tr>
-        <th>単語</th>
-        <th>bot通知</th>
-        <th>自分の発言の通知</th>
-        <th>他の登録者</th>
-        <th></th>
+        <th class="border">単語</th>
+        <th class="border">bot通知</th>
+        <th class="border">自分の発言の通知</th>
+        <!-- <th>他の登録者</th> -->
       </tr>
       <tr v-for="item in words" :key="item.word">
-        <td>{{ item.word }}</td>
-        <td>{{ item.includeBot ? 'ON' : 'OFF' }}</td>
-        <td>{{ item.includeMe ? 'ON' : 'OFF' }}</td>
+        <td class="border">{{ item.word }}</td>
+        <td class="border">{{ item.includeBot ? 'ON' : 'OFF' }}</td>
+        <td class="border">{{ item.includeMe ? 'ON' : 'OFF' }}</td>
       </tr>
     </table>
   </div>
