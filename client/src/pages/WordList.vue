@@ -15,7 +15,7 @@ const isDeleteOpen = ref(false)
 
 const delWord = ref('')
 
-apiClient.words.getWords().then((res) => (words.value = res))
+apiClient.list.getListUserMe().then((res) => (words.value = res))
 
 const changeDel = (word: string) => {
   delWord.value = word
@@ -46,8 +46,6 @@ const deleteWord = () => {
   }
   closeDeleteDialog()
 }
-
-apiClient.list.getListUserMe().then((res) => (words.value = res))
 </script>
 
 <template>
