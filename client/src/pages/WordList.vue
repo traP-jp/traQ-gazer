@@ -51,18 +51,18 @@ const deleteWord = () => {
     <h1>登録単語の閲覧ページ</h1>
   </div>
   <div class="table">
-    <table class="wordList border">
+    <table class="wordList ">
       <tr>
-        <th class="border">単語</th>
-        <th class="border">bot通知</th>
-        <th class="border">自分の発言の通知</th>
+        <th class="">単語</th>
+        <th class="">bot通知</th>
+        <th class="">自分の発言の通知</th>
         <th></th>
       </tr>
       <tr v-for="item in words" :key="item.word">
-        <td class="border">{{ item.word }}</td>
-        <td class="border">{{ item.includeBot ? 'ON' : 'OFF' }}</td>
-        <td class="border">{{ item.includeMe ? 'ON' : 'OFF' }}</td>
-        <td class="border">
+        <td class="">{{ item.word }}</td>
+        <td class="">{{ item.includeBot ? 'ON' : 'OFF' }}</td>
+        <td class="">{{ item.includeMe ? 'ON' : 'OFF' }}</td>
+        <td class="">
           <div class="editDialog">
             <Popover v-slot="{ open }" class="relative">
               <PopoverButton
