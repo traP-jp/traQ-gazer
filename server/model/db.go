@@ -51,5 +51,31 @@ func initUsersTable() error {
 			return err
 		}
 	}
+
+	userList := UserList{}
+	for _, user := range result {
+		userList = append(userList, User{traq_uuid: user.Id, trap_id: user.Name, is_bot: user.Bot})
+	}
+	for i := 0; i < len(userList); i += 50 {
+		_, err := db.NamedExec("INSERT INTO users (traq_uuid, trap_id, is_bot) VALUES (:traq_uuid, :trap_id, :is_bot)", userList[i:min(i+50, len(userList))])
+		if err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+type User struct {
+	traq_uuid string `db:"traq_uuid"`
+	trap_id   string `db:"trap_id"`
+	is_bot    bool   `db:"is_bot"`
+}
+
+type UserList []User
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

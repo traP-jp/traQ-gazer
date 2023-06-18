@@ -4,7 +4,15 @@ import "strings"
 
 func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 	words := []Words{}
-	err := db.Select(&words, "SELECT words.word, words.bot_notification, words.me_notification, words.trap_id, users.traq_uuid, users.is_bot, users.dm_id FROM words INNER JOIN users ON users.trap_id = words.trap_id")
+	err := db.Select(&words, `
+		SELECT 
+			words.word, words.bot_notification, words.me_notification, words.trap_id, users.traq_uuid, users.is_bot 
+		FROM
+			words 
+		INNER JOIN 
+			users 
+		ON 
+			users.trap_id = words.trap_id`)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +44,6 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 					UserUUID:  word.UserUUID,
 					MessageId: message.Id,
 					IsBot:     word.IsBot,
-					DmId:      word.DmId,
 				})
 			}
 		}
@@ -72,7 +79,6 @@ type Words struct {
 	UserUUID   string `db:"traq_uuid"`
 	Word       string `db:"word"`
 	IsBot      bool   `db:"is_bot"`
-	DmId       string `db:"dm_id"`
 }
 
 type Send struct {
@@ -86,8 +92,6 @@ type Send struct {
 	MessageId string
 	// BOTかどうか
 	IsBot bool
-	// 送信先のDMのID
-	DmId string
 }
 
 type SendList []*Send
