@@ -49,7 +49,7 @@ func initUsersTable() error {
 
 	userList := UserList{}
 	for _, user := range result {
-		userList = append(userList, User{traq_uuid: user.Id, trap_id: user.Name, is_bot: user.Bot})
+		userList = append(userList, User{Traq_uuid: user.Id, Trap_id: user.Name, Is_bot: user.Bot})
 	}
 
 	alreadyExistUsersUUIDList := []string{}
@@ -72,9 +72,9 @@ func initUsersTable() error {
 }
 
 type User struct {
-	traq_uuid string `db:"traq_uuid"`
-	trap_id   string `db:"trap_id"`
-	is_bot    bool   `db:"is_bot"`
+	Traq_uuid string `db:"traq_uuid"`
+	Trap_id   string `db:"trap_id"`
+	Is_bot    bool   `db:"is_bot"`
 }
 
 type UserList []User
@@ -89,11 +89,11 @@ func min(a, b int) int {
 func removeAlreadyExistUsers(allUsers UserList, alreadyUsersUUID []string) UserList {
 	newUserList := make(UserList, 0)
 	for _, all := range allUsers {
-		if !slices.Contains(alreadyUsersUUID, all.traq_uuid) {
+		if !slices.Contains(alreadyUsersUUID, all.Traq_uuid) {
 			newUserList = append(newUserList, User{
-				traq_uuid: all.traq_uuid,
-				trap_id:   all.trap_id,
-				is_bot:    all.is_bot,
+				Traq_uuid: all.Traq_uuid,
+				Trap_id:   all.Trap_id,
+				Is_bot:    all.Is_bot,
 			})
 		}
 	}
