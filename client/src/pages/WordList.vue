@@ -53,7 +53,7 @@ const deleteWord = () => {
     <title-logo />
   </header>
   <div class="expression">
-    <h1>登録単語の閲覧ページ</h1>
+    <h1>登録単語の閲覧</h1>
     <PageLink />
   </div>
   <div class="table">
