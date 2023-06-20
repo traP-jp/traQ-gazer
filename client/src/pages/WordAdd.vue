@@ -80,6 +80,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
         type="text"
         placeholder="登録したい単語をここに入力(50文字以内)"
         class="inputForm"
+        @keypress.enter="registerNewWord"
       />
     </label>
   </div>
@@ -218,14 +219,6 @@ const updateNewSelfNotify = (newValue: boolean) => {
 <style>
 p {
   font-size: 20px;
-}
-.bot {
-  text-align: left;
-  display: flex;
-}
-.myself {
-  text-align: left;
-  display: flex;
 }
 .inputForm {
   font-size: 20px;
