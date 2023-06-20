@@ -1,6 +1,8 @@
 package handler
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+)
 
 // 自分の投稿に対する通知の設定
 // (PUT /words/me/)
