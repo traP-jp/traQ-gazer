@@ -3,30 +3,26 @@ import { ref } from 'vue'
 import apiClient from '../apis'
 import BotNotify from '../components/BotNotify.vue'
 import SelfNotify from '../components/SelfNotify.vue'
-import { WordRequest, WordsList, WordDelete } from '../apis/generated'
+import { WordsList, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
 
 const isEditOpen = ref(false)
 const isDeleteOpen = ref(false)
-const isFailedOpen = ref(false)
 const isClearedOpen = ref(false)
 
 const words = ref<WordsList>([])
-const newWord = ref('')
-const delWord = ref('')
-
-const newBotNotify = ref(true)
-const newSelfNotify = ref(false)
+const edittingWord = ref('')
+const edittingIncludeBot = ref(true)
+const edittingIncludeMe = ref(false)
 
 apiClient.list.getListUserMe().then((res) => (words.value = res))
 
 const changeContents = (word: string, bot: boolean, self: boolean) => {
-  delWord.value = word
-  newWord.value = word
-  newBotNotify.value = bot
-  newSelfNotify.value = self
+  edittingWord.value = word
+  edittingIncludeBot.value = bot
+  edittingIncludeMe.value = self
 }
 
 const openEditDialog = () => {
@@ -41,23 +37,17 @@ const openDeleteDialog = () => {
 const closeDeleteDialog = () => {
   isDeleteOpen.value = false
 }
-const openFailedDialog = () => {
-  isFailedOpen.value = true
-}
 const openClearedDialog = () => {
   isClearedOpen.value = true
-}
-const closeFailedDialog = () => {
-  isFailedOpen.value = false
 }
 const closeClearedDialog = () => {
   isClearedOpen.value = false
 }
 
 const deleteWord = () => {
-  if (delWord.value.length > 0) {
+  if (edittingWord.value !== '') {
     const delBody: WordDelete = {
-      word: delWord.value
+      word: edittingWord.value
     }
 
     apiClient.words
@@ -71,43 +61,29 @@ const deleteWord = () => {
   closeDeleteDialog()
 }
 
-const registerNewWord = () => {
-  if (newWord.value.length === 0) {
-    return
-  } else if (newWord.value.length > 50) {
-    openFailedDialog()
-    return
+const editWord = () => {
+  if (edittingWord.value !== '') {
+    const editBotBody: WordBotSetting = {
+      word: edittingWord.value,
+      includeBot: edittingIncludeBot.value
+    }
+    const editMeBody: WordMeSetting = {
+      word: edittingWord.value,
+      includeMe: edittingIncludeMe.value
+    }
+
+    apiClient.bot.putWords(editBotBody).catch((v) => console.log(v))
+    apiClient.me.putWordsMe(editMeBody).catch((v) => console.log(v))
+    apiClient.list.getListUserMe().then((res) => (words.value = res))
   }
-
-  const reqBody: WordRequest = {
-    word: newWord.value,
-    includeBot: newBotNotify.value,
-    includeMe: newSelfNotify.value
-  }
-
-  // wordの登録リクエスト
-  apiClient.words
-    .postWords(reqBody)
-    .catch((v) => console.log(v))
-    .then(() => {
-      //登録後のリストで更新
-      apiClient.list.getListUserMe().then((res) => (words.value = res))
-    })
-
-  newWord.value = ''
   openClearedDialog()
 }
 
-const editWord = () => {
-  deleteWord()
-  registerNewWord()
-}
-
 const updateNewBotNotify = (newValue: boolean) => {
-  newBotNotify.value = newValue
+  edittingIncludeBot.value = newValue
 }
 const updateNewSelfNotify = (newValue: boolean) => {
-  newSelfNotify.value = newValue
+  edittingIncludeMe.value = newValue
 }
 </script>
 
@@ -155,7 +131,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
                         class="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
                         @click="openEditDialog"
                       >
-                        編集
+                        通知設定の変更
                       </button>
                       <button
                         class="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
@@ -261,20 +237,8 @@ const updateNewSelfNotify = (newValue: boolean) => {
                 class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
               >
                 <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">
-                  単語の編集
+                  単語の通知設定の変更
                 </DialogTitle>
-
-                <div class="mb-4">
-                  <label>
-                    <input
-                      v-model="newWord"
-                      type="text"
-                      placeholder="登録したい単語をここに入力(50文字以内)"
-                      class="inputForm"
-                      @keypress.enter="editWord"
-                    />
-                  </label>
-                </div>
 
                 <div class="flex justify-around my-4">
                   <BotNotify @updete-bot-notify="(newValue) => updateNewBotNotify(newValue)" />
@@ -307,58 +271,6 @@ const updateNewSelfNotify = (newValue: boolean) => {
   </div>
 
   <div>
-    <TransitionRoot appear :show="isFailedOpen" as="template">
-      <Dialog as="div" @close="closeFailedDialog" class="relative z-10">
-        <TransitionChild
-          as="template"
-          enter="duration-300 ease-out"
-          enter-from="opacity-0"
-          enter-to="opacity-100"
-          leave="duration-200 ease-in"
-          leave-from="opacity-100"
-          leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-black bg-opacity-25" />
-        </TransitionChild>
-
-        <div class="fixed inset-0 overflow-y-auto">
-          <div class="flex min-h-full items-center justify-center p-4 text-center">
-            <TransitionChild
-              as="template"
-              enter="duration-300 ease-out"
-              enter-from="opacity-0 scale-95"
-              enter-to="opacity-100 scale-100"
-              leave="duration-200 ease-in"
-              leave-from="opacity-100 scale-100"
-              leave-to="opacity-0 scale-95"
-            >
-              <DialogPanel
-                class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
-              >
-                <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">
-                  単語の編集に失敗しました
-                </DialogTitle>
-                <div class="mt-2">
-                  <p class="text-sm text-gray-500">編集後の単語は50文字以内に収めてください。</p>
-                </div>
-
-                <div class="mt-4">
-                  <button
-                    type="button"
-                    class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                    @click="closeFailedDialog"
-                  >
-                    閉じる
-                  </button>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </div>
-      </Dialog>
-    </TransitionRoot>
-  </div>
-  <div>
     <TransitionRoot appear :show="isClearedOpen" as="template">
       <Dialog as="div" @close="closeClearedDialog" class="relative z-10">
         <TransitionChild
@@ -388,10 +300,10 @@ const updateNewSelfNotify = (newValue: boolean) => {
                 class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
               >
                 <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">
-                  単語の編集に成功しました
+                  通知設定の変更ができました
                 </DialogTitle>
                 <div class="mt-2">
-                  <p class="text-sm text-gray-500">引き続き編集後の単語の通知が届きます</p>
+                  <p class="text-sm text-gray-500">引き続き単語の通知が設定に合わせて届きます</p>
                 </div>
 
                 <div class="mt-4">
