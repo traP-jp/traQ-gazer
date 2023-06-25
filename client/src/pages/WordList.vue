@@ -1,37 +1,53 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import apiClient from '../apis'
-import { WordsList } from '../apis/generated'
+import BotNotify from '../components/BotNotify.vue'
+import SelfNotify from '../components/SelfNotify.vue'
+import { WordsList, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
-import { WordDelete } from '../apis/generated'
+
+const isEditOpen = ref(false)
+const isDeleteOpen = ref(false)
+const isClearedOpen = ref(false)
 
 const words = ref<WordsList>([])
-
-const isDeleteOpen = ref(false)
-
-const delWord = ref('')
+const edittingWord = ref('')
+const edittingIncludeBot = ref(true)
+const edittingIncludeMe = ref(false)
 
 apiClient.list.getListUserMe().then((res) => (words.value = res))
 
-const changeDel = (word: string) => {
-  delWord.value = word
+const changeContents = (word: string, bot: boolean, self: boolean) => {
+  edittingWord.value = word
+  edittingIncludeBot.value = bot
+  edittingIncludeMe.value = self
 }
 
-const openEditDialog = () => {}
-
+const openEditDialog = () => {
+  isEditOpen.value = true
+}
+const closeEditDialog = () => {
+  isEditOpen.value = false
+}
 const openDeleteDialog = () => {
   isDeleteOpen.value = true
 }
 const closeDeleteDialog = () => {
   isDeleteOpen.value = false
 }
+const openClearedDialog = () => {
+  isClearedOpen.value = true
+}
+const closeClearedDialog = () => {
+  isClearedOpen.value = false
+}
 
 const deleteWord = () => {
-  if (delWord.value.length > 0) {
+  if (edittingWord.value !== '') {
     const delBody: WordDelete = {
-      word: delWord.value
+      word: edittingWord.value
     }
 
     apiClient.words
@@ -43,6 +59,31 @@ const deleteWord = () => {
       })
   }
   closeDeleteDialog()
+}
+
+const editWord = () => {
+  if (edittingWord.value !== '') {
+    const editBotBody: WordBotSetting = {
+      word: edittingWord.value,
+      includeBot: edittingIncludeBot.value
+    }
+    const editMeBody: WordMeSetting = {
+      word: edittingWord.value,
+      includeMe: edittingIncludeMe.value
+    }
+
+    apiClient.bot.putWords(editBotBody).catch((v) => console.log(v))
+    apiClient.me.putWordsMe(editMeBody).catch((v) => console.log(v))
+    apiClient.list.getListUserMe().then((res) => (words.value = res))
+  }
+  openClearedDialog()
+}
+
+const updateNewBotNotify = (newValue: boolean) => {
+  edittingIncludeBot.value = newValue
+}
+const updateNewSelfNotify = (newValue: boolean) => {
+  edittingIncludeMe.value = newValue
 }
 </script>
 
@@ -69,7 +110,7 @@ const deleteWord = () => {
               <PopoverButton
                 :class="open ? '' : 'text-opacity-90'"
                 class="group inline-flex items-center rounded-md bg-gray-300 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                @click="changeDel(item.word)"
+                @click="changeContents(item.word, item.includeBot, item.includeMe)"
               >
                 <span>︙</span>
                 <ChevronDownIcon
@@ -87,11 +128,10 @@ const deleteWord = () => {
                   >
                     <div class="relative grid gap-8 bg-white p-7 lg:grid-cols-2">
                       <button
-                        disabled
                         class="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
                         @click="openEditDialog"
                       >
-                        編集
+                        通知設定の変更
                       </button>
                       <button
                         class="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
@@ -166,6 +206,122 @@ const deleteWord = () => {
       </Dialog>
     </TransitionRoot>
   </div>
+
+  <div>
+    <TransitionRoot appear :show="isEditOpen" as="template">
+      <Dialog as="div" @close="closeEditDialog" class="relative z-10">
+        <TransitionChild
+          as="template"
+          enter="duration-300 ease-out"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="duration-200 ease-in"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-black bg-opacity-25" />
+        </TransitionChild>
+
+        <div class="fixed inset-0 overflow-y-auto">
+          <div class="flex min-h-full items-center justify-center p-4 text-center">
+            <TransitionChild
+              as="template"
+              enter="duration-300 ease-out"
+              enter-from="opacity-0 scale-95"
+              enter-to="opacity-100 scale-100"
+              leave="duration-200 ease-in"
+              leave-from="opacity-100 scale-100"
+              leave-to="opacity-0 scale-95"
+            >
+              <DialogPanel
+                class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+              >
+                <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">
+                  単語の通知設定の変更
+                </DialogTitle>
+
+                <div class="flex justify-around my-4">
+                  <BotNotify @updete-bot-notify="(newValue) => updateNewBotNotify(newValue)" />
+                  <SelfNotify
+                    @updete-bot-notify="(newValue :boolean) => updateNewSelfNotify(newValue)"
+                  />
+                </div>
+                <div class="mt-4">
+                  <button
+                    type="button"
+                    class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    @click="editWord"
+                  >
+                    更新する
+                  </button>
+                  <button
+                    type="button"
+                    class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    @click="closeEditDialog"
+                  >
+                    キャンセル
+                  </button>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
+  </div>
+
+  <div>
+    <TransitionRoot appear :show="isClearedOpen" as="template">
+      <Dialog as="div" @close="closeClearedDialog" class="relative z-10">
+        <TransitionChild
+          as="template"
+          enter="duration-300 ease-out"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="duration-200 ease-in"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-black bg-opacity-25" />
+        </TransitionChild>
+
+        <div class="fixed inset-0 overflow-y-auto">
+          <div class="flex min-h-full items-center justify-center p-4 text-center">
+            <TransitionChild
+              as="template"
+              enter="duration-300 ease-out"
+              enter-from="opacity-0 scale-95"
+              enter-to="opacity-100 scale-100"
+              leave="duration-200 ease-in"
+              leave-from="opacity-100 scale-100"
+              leave-to="opacity-0 scale-95"
+            >
+              <DialogPanel
+                class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+              >
+                <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">
+                  通知設定の変更ができました
+                </DialogTitle>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500">引き続き単語の通知が設定に合わせて届きます</p>
+                </div>
+
+                <div class="mt-4">
+                  <button
+                    type="button"
+                    class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    @click="closeClearedDialog"
+                  >
+                    閉じる
+                  </button>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
+  </div>
 </template>
 
 <style>
@@ -183,5 +339,12 @@ th {
 }
 p {
   font-size: 20px;
+}
+.inputForm {
+  font-size: 20px;
+  width: 60%;
+  min-width: 10em;
+  max-width: 100%;
+  padding: 1.2em;
 }
 </style>
