@@ -62,7 +62,7 @@ v-btn {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: auto;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -85,7 +85,7 @@ v-btn:focus-visible {
   text-align: center;
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
     color: #213547;
     background-color: #ffffff;

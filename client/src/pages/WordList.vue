@@ -115,7 +115,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
                 <span>︙</span>
                 <ChevronDownIcon
                   :class="open ? '' : 'text-opacity-70'"
-                  class="ml-2 h-5 w-5 text-orange-300 transition duration-150 ease-in-out group-hover:text-opacity-80"
+                  class="ml-2 h-5 w-5 text-base transition duration-150 ease-in-out group-hover:text-opacity-80"
                   aria-hidden="true"
                 />
               </PopoverButton>
