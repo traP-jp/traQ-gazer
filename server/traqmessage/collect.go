@@ -40,16 +40,16 @@ func messageProcessor(messages []traq.Message) {
 		slog.Error(fmt.Sprintf("Failled to convert messages: %v", err))
 		return
 	}
-	sendList, err := model.TraqMessageProcessor(messageList)
+	notifyInfoList, err := model.FindMatchingWords(messageList)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failled to process messages: %v", err))
 		return
 	}
 
-	slog.Info(fmt.Sprintf("Sending %d DMs...", len(sendList)))
+	slog.Info(fmt.Sprintf("Sending %d DMs...", len(notifyInfoList)))
 
-	for _, message := range sendList {
-		err := sendMessage(message.NotifyTargetTraqUuid, genNotifyMessageContent(message.MessageId, message.Word))
+	for _, notifyInfo := range notifyInfoList {
+		err := sendMessage(notifyInfo.NotifyTargetTraqUuid, genNotifyMessageContent(notifyInfo.MessageId, notifyInfo.Words...))
 		if err != nil {
 			slog.Error(fmt.Sprintf("Failled to send message: %v", err))
 			continue
