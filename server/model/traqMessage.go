@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strings"
 
 	"golang.org/x/exp/slog"
@@ -80,6 +81,47 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 	return sendList, nil
 }
 
+func FindMatchingWords(messageList MessageList) ([]*NotifyInfo, error) {
+	notifyInfoList := make([]*NotifyInfo, 0)
+
+	// メッセージごとに通知対象を検索する
+	for _, messageItem := range messageList {
+		// メッセージに含まれている登録単語で、通知条件が合致するものを登録者別にまとめる
+		matchedWordsList := make([]*MatchedWords, 0)
+		err := db.Select(&matchedWordsList, `
+			SELECT
+				group_concat(words.word SEPARATOR ':::') AS contacted_words,
+				words.trap_id AS trap_id,
+				users.traq_uuid AS traq_uuid
+			FROM words
+			JOIN users ON words.trap_id = users.trap_id
+				WHERE ? LIKE concat('%', word, '%')
+				AND (me_notification OR
+					 users.traq_uuid != ?)
+				AND (bot_notification OR
+					 (SELECT is_bot FROM users WHERE traq_uuid = ? LIMIT 1) = FALSE)
+			GROUP BY words.trap_id`,
+			messageItem.Content, messageItem.TraqUuid, messageItem.TraqUuid)
+		if err != nil {
+			slog.Error(fmt.Sprintf("failed to search words with message: `%s`", messageItem.Id))
+			return nil, err
+		}
+
+		for _, matchedWords := range matchedWordsList {
+			notifyInfo := &NotifyInfo{
+				Words:                strings.Split(matchedWords.ContactedWords, ":::"),
+				NotifyTargetTrapId:   matchedWords.TrapID,
+				NotifyTargetTraqUuid: matchedWords.TraqUUID,
+				MessageId:            messageItem.Id,
+			}
+
+			notifyInfoList = append(notifyInfoList, notifyInfo)
+		}
+	}
+
+	return notifyInfoList, nil
+}
+
 type MessageItem struct {
 	// メッセージUUID
 	Id string `json:"id"`
@@ -118,3 +160,19 @@ type Send struct {
 }
 
 type SendList []*Send
+
+type NotifyInfo struct {
+	Words []string
+	// 送信先のuser
+	NotifyTargetTrapId string
+	// 送信先のuserUUID
+	NotifyTargetTraqUuid string
+	// 送信するメッセージのID
+	MessageId string
+}
+
+type MatchedWords struct {
+	ContactedWords string `db:"contacted_words"`
+	TrapID         string `db:"trap_id"`
+	TraqUUID       string `db:"traq_uuid"`
+}

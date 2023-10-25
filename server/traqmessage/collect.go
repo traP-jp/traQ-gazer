@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"h23s_15/model"
+	"strings"
 	"time"
 
 	"github.com/traPtitech/go-traq"
@@ -39,16 +40,16 @@ func messageProcessor(messages []traq.Message) {
 		slog.Error(fmt.Sprintf("Failled to convert messages: %v", err))
 		return
 	}
-	sendList, err := model.TraqMessageProcessor(messageList)
+	notifyInfoList, err := model.FindMatchingWords(messageList)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failled to process messages: %v", err))
 		return
 	}
 
-	slog.Info(fmt.Sprintf("Sending %d DMs...", len(sendList)))
+	slog.Info(fmt.Sprintf("Sending %d DMs...", len(notifyInfoList)))
 
-	for _, message := range sendList {
-		err := sendMessage(*message)
+	for _, notifyInfo := range notifyInfoList {
+		err := sendMessage(notifyInfo.NotifyTargetTraqUuid, genNotifyMessageContent(notifyInfo.MessageId, notifyInfo.Words...))
 		if err != nil {
 			slog.Error(fmt.Sprintf("Failled to send message: %v", err))
 			continue
@@ -58,10 +59,17 @@ func messageProcessor(messages []traq.Message) {
 	slog.Info("End of send DMs")
 }
 
-func sendMessage(message model.Send) error {
-	// TODO: 送信処理
-	// 送信先User: message.UserUUID
-	// 送信内容: "ワード:"+message.Word+"\n https://q.trap.jp/messages/"+message.MessageId
+func genNotifyMessageContent(citeMessageId string, words ...string) string {
+	list := make([]string, 0)
+	for _, word := range words {
+		item := fmt.Sprintf("「%s」", word)
+		list = append(list, item)
+	}
+
+	return fmt.Sprintf("%s\n https://q.trap.jp/messages/%s", strings.Join(list, ""), citeMessageId)
+}
+
+func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 	if model.ACCESS_TOKEN == "" {
 		slog.Info("Skip sendMessage")
 		return nil
@@ -69,8 +77,8 @@ func sendMessage(message model.Send) error {
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
-	_, _, err := client.UserApi.PostDirectMessage(auth, message.NotifyTargetTraqUuid).PostMessageRequest(traq.PostMessageRequest{
-		Content: "「 " + message.Word + " 」\n https://q.trap.jp/messages/" + message.MessageId,
+	_, _, err := client.UserApi.PostDirectMessage(auth, notifyTargetTraqUUID).PostMessageRequest(traq.PostMessageRequest{
+		Content: messageContent,
 	}).Execute()
 	if err != nil {
 		slog.Info("Error sending message: %v", err)
