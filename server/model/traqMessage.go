@@ -95,8 +95,12 @@ func FindMatchingWords(messageList MessageList) ([]*NotifyInfo, error) {
 				users.traq_uuid AS traq_uuid
 			FROM words
 			JOIN users ON words.trap_id = users.trap_id
-				WHERE ((word NOT LIKE '/%/') AND (? LIKE concat('%', word, '%')))
-            		OR ((word LIKE '/%/') AND (BINARY ? REGEXP trim(BOTH '/' FROM word)))
+				WHERE (
+				    	((word NOT LIKE '/%/') 
+				    		AND (? LIKE concat('%', word, '%')))
+            			OR ((word LIKE '/%/') 
+            				AND (BINARY ? REGEXP trim(BOTH '/' FROM word)))
+				    )
 				AND (me_notification OR
 					 users.traq_uuid != ?)
 				AND (bot_notification OR
