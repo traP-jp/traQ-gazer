@@ -95,13 +95,14 @@ func FindMatchingWords(messageList MessageList) ([]*NotifyInfo, error) {
 				users.traq_uuid AS traq_uuid
 			FROM words
 			JOIN users ON words.trap_id = users.trap_id
-				WHERE ? LIKE concat('%', word, '%')
+				WHERE ((word NOT LIKE '/%/') AND (? LIKE concat('%', word, '%')))
+            		OR ((word LIKE '/%/') AND (? REGEXP trim(BOTH '/' FROM word)))
 				AND (me_notification OR
 					 users.traq_uuid != ?)
 				AND (bot_notification OR
 					 (SELECT is_bot FROM users WHERE traq_uuid = ? LIMIT 1) = FALSE)
 			GROUP BY words.trap_id`,
-			messageItem.Content, messageItem.TraqUuid, messageItem.TraqUuid)
+			messageItem.Content, messageItem.Content, messageItem.TraqUuid, messageItem.TraqUuid)
 		if err != nil {
 			slog.Error(fmt.Sprintf("failed to search words with message: `%s`", messageItem.Id))
 			return nil, err
