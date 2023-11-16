@@ -90,7 +90,7 @@ func FindMatchingWords(messageList MessageList) ([]*NotifyInfo, error) {
 		matchedWordsList := make([]*MatchedWords, 0)
 		err := db.Select(&matchedWordsList, `
 			SELECT
-				group_concat(words.word SEPARATOR ':::') AS contacted_words,
+				group_concat(words.word SEPARATOR '\n') AS contacted_words,
 				words.trap_id AS trap_id,
 				users.traq_uuid AS traq_uuid
 			FROM words
@@ -114,7 +114,7 @@ func FindMatchingWords(messageList MessageList) ([]*NotifyInfo, error) {
 
 		for _, matchedWords := range matchedWordsList {
 			notifyInfo := &NotifyInfo{
-				Words:                strings.Split(matchedWords.ContactedWords, ":::"),
+				Words:                strings.Split(matchedWords.ContactedWords, "\n"),
 				NotifyTargetTrapId:   matchedWords.TrapID,
 				NotifyTargetTraqUuid: matchedWords.TraqUUID,
 				MessageId:            messageItem.Id,
