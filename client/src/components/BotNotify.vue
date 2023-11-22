@@ -3,13 +3,13 @@ import { ref, watch } from 'vue'
 import { Switch } from '@headlessui/vue'
 
 const emit = defineEmits<{
-  (e: 'updeteBotNotify', value: boolean): boolean
+  (e: 'updateBotNotify', value: boolean): boolean
 }>()
 
 const newBotNotify = ref(true)
 
 watch(newBotNotify, () => {
-  emit('updeteBotNotify', newBotNotify.value)
+  emit('updateBotNotify', newBotNotify.value)
 })
 </script>
 
