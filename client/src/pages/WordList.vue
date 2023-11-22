@@ -242,10 +242,10 @@ const updateNewSelfNotify = (newValue: boolean) => {
 
                 <div class="flex justify-around my-4">
                   <BotNotify
-                    @updateBotNotify="(newValue: boolean) => updateNewBotNotify(newValue)"
+                    @update-bot-notify="(newValue: boolean) => updateNewBotNotify(newValue)"
                   />
                   <SelfNotify
-                    @updateSelfNotify="(newValue :boolean) => updateNewSelfNotify(newValue)"
+                    @update-self-notify="(newValue :boolean) => updateNewSelfNotify(newValue)"
                   />
                 </div>
                 <div class="mt-4">
