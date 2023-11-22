@@ -241,7 +241,9 @@ const updateNewSelfNotify = (newValue: boolean) => {
                 </DialogTitle>
 
                 <div class="flex justify-around my-4">
-                  <BotNotify @updateBotNotify="(newValue: boolean) => updateNewBotNotify(newValue)" />
+                  <BotNotify
+                    @updateBotNotify="(newValue: boolean) => updateNewBotNotify(newValue)"
+                  />
                   <SelfNotify
                     @updateSelfNotify="(newValue :boolean) => updateNewSelfNotify(newValue)"
                   />
