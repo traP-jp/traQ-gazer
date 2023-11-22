@@ -8,6 +8,14 @@ const emit = defineEmits<{
 
 const newSelfNotify = ref(false)
 
+const props = defineProps<{
+  selfNotify: boolean
+}>()
+
+watch(props, () => {
+  newSelfNotify.value = props.selfNotify
+})
+
 watch(newSelfNotify, () => {
   emit('updateSelfNotify', newSelfNotify.value)
 })

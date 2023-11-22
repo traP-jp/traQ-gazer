@@ -85,8 +85,14 @@ const updateNewSelfNotify = (newValue: boolean) => {
     </label>
   </div>
   <div class="flex justify-around my-4">
-    <BotNotify @update-bot-notify="(newValue: boolean) => updateNewBotNotify(newValue)" />
-    <SelfNotify @update-self-notify="(newValue: boolean) => updateNewSelfNotify(newValue)" />
+    <BotNotify
+      @update-bot-notify="(newValue: boolean) => updateNewBotNotify(newValue)"
+      :bot-notify="newBotNotify"
+    />
+    <SelfNotify
+      @update-self-notify="(newValue: boolean) => updateNewSelfNotify(newValue)"
+      :self-notify="newSelfNotify"
+    />
   </div>
   <div class="registerButton mb-16 mt-4">
     <v-btn :disabled="newWord === ''" @click="registerNewWord">登録</v-btn>
