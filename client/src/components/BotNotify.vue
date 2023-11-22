@@ -6,7 +6,15 @@ const emit = defineEmits<{
   (e: 'updateBotNotify', value: boolean): boolean
 }>()
 
-const newBotNotify = ref(true)
+const newBotNotify = ref<boolean>(true)
+
+const props = defineProps<{
+  botNotify: boolean
+}>()
+
+watch(props, () => {
+  newBotNotify.value = props.botNotify
+})
 
 watch(newBotNotify, () => {
   emit('updateBotNotify', newBotNotify.value)
