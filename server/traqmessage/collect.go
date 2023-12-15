@@ -35,6 +35,7 @@ func (m *MessagePoller) Run() {
 
 	ticker := time.Tick(pollingInterval)
 	for range ticker {
+		slog.Info("Start polling")
 		checkpointMutex.Lock()
 
 		now := time.Now()
@@ -46,6 +47,7 @@ func (m *MessagePoller) Run() {
 				continue
 			}
 
+			slog.Info(fmt.Sprintf("Collect %d messages", messages.TotalHits))
 			collectedMessageCount += messages.TotalHits
 
 			// 取得したメッセージを使っての処理の呼び出し
@@ -56,7 +58,7 @@ func (m *MessagePoller) Run() {
 			}
 		}
 
-		slog.Info(fmt.Sprintf("Collect %d messages", collectedMessageCount))
+		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
 
 		lastCheckpoint = now
 		checkpointMutex.Unlock()
