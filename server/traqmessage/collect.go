@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"h23s_15/model"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/traPtitech/go-traq"
@@ -30,9 +31,12 @@ func (m *MessagePoller) Run() {
 	pollingInterval := time.Minute * 3
 
 	lastCheckpoint := time.Now()
-	ticker := time.Tick(pollingInterval)
+	var checkpointMutex sync.Mutex
 
+	ticker := time.Tick(pollingInterval)
 	for range ticker {
+		checkpointMutex.Lock()
+
 		now := time.Now()
 		var collectedMessageCount int64
 		for i := 0; ; i++ {
@@ -55,6 +59,7 @@ func (m *MessagePoller) Run() {
 		slog.Info(fmt.Sprintf("Collect %d messages", collectedMessageCount))
 
 		lastCheckpoint = now
+		checkpointMutex.Unlock()
 	}
 }
 
