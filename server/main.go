@@ -30,9 +30,8 @@ func main() {
 		slog.Info("Error setting up: %v", err)
 	}
 
-	go func() {
-		traqmessage.PollingMessages()
-	}()
+	messagePoller := traqmessage.NewMessagePoller()
+	go messagePoller.Run()
 
 	instance.Logger.Fatal(instance.Start(":8080"))
 }

@@ -11,8 +11,22 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+type MessagePoller struct {
+	processer *messageProcesser
+}
+
+func NewMessagePoller() *MessagePoller {
+	return &MessagePoller{
+		processer: &messageProcesser{
+			queue: make(chan *[]traq.Message),
+		},
+	}
+}
+
 // go routineの中で呼ぶこと
-func PollingMessages() {
+func (m *MessagePoller) Run() {
+	go m.processer.run()
+
 	pollingInterval := time.Minute * 3
 
 	lastCheckpoint := time.Now()
@@ -20,21 +34,48 @@ func PollingMessages() {
 
 	for range ticker {
 		now := time.Now()
-		messages, err := collectMessages(lastCheckpoint, now)
-		if err != nil {
-			slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
-			continue
+		var collectedMessageCount int64
+		for i := 0; ; i++ {
+			messages, err := collectMessages(lastCheckpoint, now, i)
+			if err != nil {
+				slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
+				continue
+			}
+
+			collectedMessageCount += messages.TotalHits
+
+			// 取得したメッセージを使っての処理の呼び出し
+			m.processer.enqueue(&messages.Hits)
+
+			if messages.TotalHits < 100 {
+				break
+			}
 		}
 
-		lastCheckpoint = now
+		slog.Info(fmt.Sprintf("Collect %d messages", collectedMessageCount))
 
-		slog.Info(fmt.Sprintf("Collect %d messages", len(messages.Hits)))
-		// TODO: 取得したメッセージを使っての処理の呼び出し
-		messageProcessor(messages.Hits)
+		lastCheckpoint = now
 	}
 }
 
-func messageProcessor(messages []traq.Message) {
+// 通知メッセージの検索と通知処理のjobを処理する
+type messageProcesser struct {
+	queue chan *[]traq.Message
+}
+
+// go routineの中で呼ぶ
+func (m *messageProcesser) run() {
+	select {
+	case messages := <-m.queue:
+		m.process(*messages)
+	}
+}
+
+func (m *messageProcesser) enqueue(messages *[]traq.Message) {
+	m.queue <- messages
+}
+
+func (m *messageProcesser) process(messages []traq.Message) {
 	messageList, err := ConvertMessageHits(messages)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failled to convert messages: %v", err))
@@ -87,7 +128,7 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 	return nil
 }
 
-func collectMessages(from time.Time, to time.Time) (*traq.MessageSearchResult, error) {
+func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSearchResult, error) {
 	if model.ACCESS_TOKEN == "" {
 		slog.Info("Skip collectMessage")
 		return &traq.MessageSearchResult{}, nil
@@ -98,7 +139,7 @@ func collectMessages(from time.Time, to time.Time) (*traq.MessageSearchResult, e
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
-	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(100).Execute()
+	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(100).Offset(int32(offset)).Execute()
 	if err != nil {
 		return nil, err
 	}
