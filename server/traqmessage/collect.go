@@ -72,9 +72,11 @@ type messageProcesser struct {
 
 // go routineの中で呼ぶ
 func (m *messageProcesser) run() {
-	select {
-	case messages := <-m.queue:
-		m.process(*messages)
+	for {
+		select {
+		case messages := <-m.queue:
+			m.process(*messages)
+		}
 	}
 }
 
