@@ -44,7 +44,7 @@ func (m *MessagePoller) Run() {
 			messages, err := collectMessages(lastCheckpoint, now, i)
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
-				continue
+				break
 			}
 
 			slog.Info(fmt.Sprintf("Collect %d messages", messages.TotalHits))
