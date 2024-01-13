@@ -13,12 +13,12 @@ import (
 )
 
 type MessagePoller struct {
-	processer *messageProcesser
+	processor *messageProcessor
 }
 
 func NewMessagePoller() *MessagePoller {
 	return &MessagePoller{
-		processer: &messageProcesser{
+		processor: &messageProcessor{
 			queue: make(chan *[]traq.Message),
 		},
 	}
@@ -26,7 +26,7 @@ func NewMessagePoller() *MessagePoller {
 
 // go routineの中で呼ぶこと
 func (m *MessagePoller) Run() {
-	go m.processer.run()
+	go m.processor.run()
 
 	pollingInterval := time.Minute * 3
 
@@ -40,7 +40,7 @@ func (m *MessagePoller) Run() {
 
 		now := time.Now()
 		var collectedMessageCount int64
-		for i := 0; ; i++ {
+		for i := 0; ; i += 100 {
 			messages, err := collectMessages(lastCheckpoint, now, i)
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
@@ -51,7 +51,7 @@ func (m *MessagePoller) Run() {
 			collectedMessageCount += messages.TotalHits
 
 			// 取得したメッセージを使っての処理の呼び出し
-			m.processer.enqueue(&messages.Hits)
+			m.processor.enqueue(&messages.Hits)
 
 			if messages.TotalHits < 100 {
 				break
@@ -66,12 +66,12 @@ func (m *MessagePoller) Run() {
 }
 
 // 通知メッセージの検索と通知処理のjobを処理する
-type messageProcesser struct {
+type messageProcessor struct {
 	queue chan *[]traq.Message
 }
 
 // go routineの中で呼ぶ
-func (m *messageProcesser) run() {
+func (m *messageProcessor) run() {
 	for {
 		select {
 		case messages := <-m.queue:
@@ -80,11 +80,11 @@ func (m *messageProcesser) run() {
 	}
 }
 
-func (m *messageProcesser) enqueue(messages *[]traq.Message) {
+func (m *messageProcessor) enqueue(messages *[]traq.Message) {
 	m.queue <- messages
 }
 
-func (m *messageProcesser) process(messages []traq.Message) {
+func (m *messageProcessor) process(messages []traq.Message) {
 	messageList, err := ConvertMessageHits(messages)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failled to convert messages: %v", err))
