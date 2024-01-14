@@ -142,7 +142,7 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, bool, error) {
 	if model.ACCESS_TOKEN == "" {
 		slog.Info("Skip collectMessage")
-		return &traq.MessageSearchResult{}, false, nil
+		return &make([]traq.Message,0), false, nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
