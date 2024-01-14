@@ -40,22 +40,22 @@ func (m *MessagePoller) Run() {
 
 		now := time.Now()
 		var collectedMessageCount int
-		for {
-			messages, err := collectMessages(lastCheckpoint, now, collectedMessageCount)
+		for page := 0; ; page += 1 {
+			messages, more, err := collectMessages(lastCheckpoint, now, page)
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
 				break
 			}
 
-			tmpMessageCount := len(messages.Hits)
+			tmpMessageCount := len(*messages)
 
 			slog.Info(fmt.Sprintf("Collect %d messages", tmpMessageCount))
 			collectedMessageCount += tmpMessageCount
 
 			// 取得したメッセージを使っての処理の呼び出し
-			m.processor.enqueue(&messages.Hits)
+			m.processor.enqueue(messages)
 
-			if tmpMessageCount < 100 {
+			if !more {
 				break
 			}
 		}
@@ -139,10 +139,10 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 	return nil
 }
 
-func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSearchResult, error) {
+func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, bool, error) {
 	if model.ACCESS_TOKEN == "" {
 		slog.Info("Skip collectMessage")
-		return &traq.MessageSearchResult{}, nil
+		return &traq.MessageSearchResult{}, false, nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
@@ -150,12 +150,18 @@ func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSea
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
-	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(100).Offset(int32(offset)).Execute()
+	const limit = 99
+	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(limit+1).Offset(int32(limit * page)).Execute()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	return result, nil
+	messages := result.Hits
+	more := limit < len(messages)
+	if more {
+		messages = messages[:limit]
+	}
+	return &messages, more, nil
 }
 
 func ConvertMessageHits(messages []traq.Message) (model.MessageList, error) {
