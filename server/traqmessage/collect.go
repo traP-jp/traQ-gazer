@@ -39,7 +39,7 @@ func (m *MessagePoller) Run() {
 		checkpointMutex.Lock()
 
 		now := time.Now()
-		var collectedMessageCount int64
+		var collectedMessageCount int
 		for i := 0; ; i += 100 {
 			messages, err := collectMessages(lastCheckpoint, now, i)
 			if err != nil {
@@ -47,13 +47,15 @@ func (m *MessagePoller) Run() {
 				break
 			}
 
-			slog.Info(fmt.Sprintf("Collect %d messages", messages.TotalHits))
-			collectedMessageCount += messages.TotalHits
+			tmpMessageCount := len(messages.Hits)
+
+			slog.Info(fmt.Sprintf("Collect %d messages", tmpMessageCount))
+			collectedMessageCount += tmpMessageCount
 
 			// 取得したメッセージを使っての処理の呼び出し
 			m.processor.enqueue(&messages.Hits)
 
-			if messages.TotalHits < 100 {
+			if tmpMessageCount < 100 {
 				break
 			}
 		}
