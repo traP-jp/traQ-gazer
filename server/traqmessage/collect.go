@@ -40,8 +40,8 @@ func (m *MessagePoller) Run() {
 
 		now := time.Now()
 		var collectedMessageCount int
-		for i := 0; ; i += 100 {
-			messages, err := collectMessages(lastCheckpoint, now, i)
+		for {
+			messages, err := collectMessages(lastCheckpoint, now, collectedMessageCount)
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
 				break
