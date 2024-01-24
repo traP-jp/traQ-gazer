@@ -19,8 +19,9 @@ type MessagePoller struct {
 func NewMessagePoller() *MessagePoller {
 	return &MessagePoller{
 		processor: &messageProcessor{
-			queue:            make(chan *[]traq.Message),
-			lastCheckMessage: "",
+			queue:               make(chan *[]traq.Message),
+			lastCheckMessage:    "",
+			tmplastCheckMessage: "",
 		},
 	}
 }
@@ -50,7 +51,7 @@ func (m *MessagePoller) Run() {
 
 			// オフセット0の時なら検索対象最新メッセージが真に最新メッセージ
 			if collectedMessageCount == 0 {
-				m.processor.lastCheckMessage = tmplastmessage
+				m.processor.tmplastCheckMessage = tmplastmessage
 			}
 
 			tmpMessageCount := len(messages.Hits)
@@ -75,8 +76,9 @@ func (m *MessagePoller) Run() {
 
 // 通知メッセージの検索と通知処理のjobを処理する
 type messageProcessor struct {
-	queue            chan *[]traq.Message
-	lastCheckMessage string //前回ポーリング時の最新メッセージUUID
+	queue               chan *[]traq.Message
+	lastCheckMessage    string //真に前回ポーリング時の最新メッセージUUID
+	tmplastCheckMessage string //goルーチンが呼ばれた時と同じタイミング行っているメッセージ取得での最新メッセージ
 }
 
 // go routineの中で呼ぶ
@@ -116,6 +118,7 @@ func (m *messageProcessor) process(messages []traq.Message) {
 	}
 
 	slog.Info("End of send DMs")
+	m.lastCheckMessage = m.tmplastCheckMessage
 }
 
 func genNotifyMessageContent(citeMessageId string, words ...string) string {
