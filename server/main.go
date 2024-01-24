@@ -1,10 +1,10 @@
 package main
 
 import (
-	"h23s_15/api"
-	"h23s_15/handler"
-	"h23s_15/model"
-	"h23s_15/traqmessage"
+	"traQ-gazer/api"
+	"traQ-gazer/handler"
+	"traQ-gazer/model"
+	"traQ-gazer/traqmessage"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
