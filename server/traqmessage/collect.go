@@ -19,7 +19,8 @@ type MessagePoller struct {
 func NewMessagePoller() *MessagePoller {
 	return &MessagePoller{
 		processor: &messageProcessor{
-			queue: make(chan *[]traq.Message),
+			queue:            make(chan *[]traq.Message),
+			lastCheckMessage: "",
 		},
 	}
 }
@@ -39,12 +40,17 @@ func (m *MessagePoller) Run() {
 		checkpointMutex.Lock()
 
 		now := time.Now()
-		var collectedMessageCount int
+		collectedMessageCount := 0
 		for {
-			messages, err := collectMessages(lastCheckpoint, now, collectedMessageCount)
+			messages, tmplastmessage, err := collectMessages(lastCheckpoint, now, collectedMessageCount)
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
 				break
+			}
+
+			// オフセット0の時なら検索対象最新メッセージが真に最新メッセージ
+			if collectedMessageCount == 0 {
+				m.processor.lastCheckMessage = tmplastmessage
 			}
 
 			tmpMessageCount := len(messages.Hits)
@@ -69,7 +75,8 @@ func (m *MessagePoller) Run() {
 
 // 通知メッセージの検索と通知処理のjobを処理する
 type messageProcessor struct {
-	queue chan *[]traq.Message
+	queue            chan *[]traq.Message
+	lastCheckMessage string //前回ポーリング時の最新メッセージUUID
 }
 
 // go routineの中で呼ぶ
@@ -87,7 +94,7 @@ func (m *messageProcessor) enqueue(messages *[]traq.Message) {
 }
 
 func (m *messageProcessor) process(messages []traq.Message) {
-	messageList, err := ConvertMessageHits(messages)
+	messageList, err := ConvertMessageHits(messages, m.lastCheckMessage)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failled to convert messages: %v", err))
 		return
@@ -139,28 +146,37 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 	return nil
 }
 
-func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSearchResult, error) {
+func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSearchResult, string, error) {
 	if model.ACCESS_TOKEN == "" {
 		slog.Info("Skip collectMessage")
-		return &traq.MessageSearchResult{}, nil
+		return &traq.MessageSearchResult{}, "", nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
+	// ポーリング漏れ防止のために1分余分にメッセージを取得
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
-	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(100).Offset(int32(offset)).Execute()
+	result, _, err := client.MessageApi.SearchMessages(auth).After(from.Add(-time.Minute)).Before(to).Limit(100).Offset(int32(offset)).Sort(`createdAt`).Execute()
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return result, nil
+	lastCheckMessage := ""
+	if offset == 0 {
+		lastCheckMessage = result.Hits[0].Id
+	}
+
+	return result, lastCheckMessage, nil
 }
 
-func ConvertMessageHits(messages []traq.Message) (model.MessageList, error) {
+func ConvertMessageHits(messages []traq.Message, lastcheckmessage string) (model.MessageList, error) {
 	messageList := model.MessageList{}
 	for _, message := range messages {
+		if message.Id == lastcheckmessage {
+			break
+		}
 		messageList = append(messageList, model.MessageItem{
 			Id:       message.Id,
 			TraqUuid: message.UserId,
