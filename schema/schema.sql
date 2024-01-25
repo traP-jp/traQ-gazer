@@ -13,3 +13,8 @@ CREATE TABLE `users` (
     `traq_uuid` VARCHAR(36) NOT NULL,
     `is_bot` BOOLEAN
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS `pollinginfo` (
+  `key` int NOT NULL,
+  `lastpollingtime` datetime NOT NULL,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

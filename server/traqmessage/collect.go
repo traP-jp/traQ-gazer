@@ -13,8 +13,7 @@ import (
 )
 
 type MessagePoller struct {
-	processor        *messageProcessor
-
+	processor *messageProcessor
 }
 
 func NewMessagePoller() *MessagePoller {
@@ -50,7 +49,6 @@ func (m *MessagePoller) Run() {
 			}
 
 			tmpMessageCount := len(messages.Hits)
-			
 
 			// オフセット0の時なら検索対象最新メッセージが真に最新メッセージ
 			if collectedMessageCount == 0 && tmpMessageCount != 0 {
@@ -73,6 +71,11 @@ func (m *MessagePoller) Run() {
 		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
 
 		lastCheckpoint = tmplastCheckpoint
+		err := model.RecordPollingTime(lastCheckpoint)
+		if err != nil {
+			slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
+			break
+		}
 		checkpointMutex.Unlock()
 	}
 }
