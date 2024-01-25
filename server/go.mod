@@ -1,4 +1,4 @@
-module h23s_15
+module traQ-gazer
 
 go 1.20
 

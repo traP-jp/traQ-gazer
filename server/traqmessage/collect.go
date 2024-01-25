@@ -3,7 +3,7 @@ package traqmessage
 import (
 	"context"
 	"fmt"
-	"h23s_15/model"
+	"traQ-gazer/model"
 	"strings"
 	"sync"
 	"time"
@@ -41,31 +41,28 @@ func (m *MessagePoller) Run() {
 		now := time.Now()
 		var collectedMessageCount int
 		var tmplastCheckpoint time.Time
-		for {
-			messages, err := collectMessages(lastCheckpoint, now, collectedMessageCount)
+    
+		for page := 0; ; page++ {
+			messages, err := collectMessages(lastCheckpoint, now, page)
+
 			if err != nil {
-				slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
+				slog.Error(fmt.Sprintf("Failed to polling messages: %v", err))
 				break
 			}
 
-			tmpMessageCount := len(messages.Hits)
+			tmpMessageCount := len(*messages)
 
-			// オフセット0の時なら検索対象最新メッセージが真に最新メッセージ
-			if collectedMessageCount == 0 && tmpMessageCount != 0 {
+			// ページ0の時なら検索対象最新メッセージが真に最新メッセージ
+			if page == 0 {
 				tmplastCheckpoint = messages.Hits[0].GetCreatedAt()
-			} else if tmpMessageCount == 0 {
-				tmplastCheckpoint = now
-			}
+			} 
+      
+			slog.Info(fmt.Sprintf("Collected %d messages", tmpMessageCount))
 
-			slog.Info(fmt.Sprintf("Collect %d messages", tmpMessageCount))
 			collectedMessageCount += tmpMessageCount
 
 			// 取得したメッセージを使っての処理の呼び出し
-			m.processor.enqueue(&messages.Hits)
-
-			if tmpMessageCount < 100 {
-				break
-			}
+			m.processor.enqueue(messages)
 		}
 
 		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
@@ -102,12 +99,12 @@ func (m *messageProcessor) enqueue(messages *[]traq.Message) {
 func (m *messageProcessor) process(messages []traq.Message) {
 	messageList, err := ConvertMessageHits(messages)
 	if err != nil {
-		slog.Error(fmt.Sprintf("Failled to convert messages: %v", err))
+		slog.Error(fmt.Sprintf("Failed to convert messages: %v", err))
 		return
 	}
 	notifyInfoList, err := model.FindMatchingWords(messageList)
 	if err != nil {
-		slog.Error(fmt.Sprintf("Failled to process messages: %v", err))
+		slog.Error(fmt.Sprintf("Failed to process messages: %v", err))
 		return
 	}
 
@@ -116,7 +113,7 @@ func (m *messageProcessor) process(messages []traq.Message) {
 	for _, notifyInfo := range notifyInfoList {
 		err := sendMessage(notifyInfo.NotifyTargetTraqUuid, genNotifyMessageContent(notifyInfo.MessageId, notifyInfo.Words...))
 		if err != nil {
-			slog.Error(fmt.Sprintf("Failled to send message: %v", err))
+			slog.Error(fmt.Sprintf("Failed to send message: %v", err))
 			continue
 		}
 	}
@@ -152,10 +149,10 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 	return nil
 }
 
-func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSearchResult, error) {
+func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, bool, error) {
 	if model.ACCESS_TOKEN == "" {
 		slog.Info("Skip collectMessage")
-		return &traq.MessageSearchResult{}, nil
+		return &[]traq.Message{}, false, nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
@@ -163,12 +160,15 @@ func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSea
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
-	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(100).Offset(int32(offset)).Sort(`createdAt`).Execute()
+	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(limit).Offset(int32(limit * page)).Sort(`createdAt`).Execute()
+
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	return result, nil
+	messages := result.Hits
+	more := limit * (page + 1) < int(result.TotalHits)
+	return &messages, more, nil
 }
 
 func ConvertMessageHits(messages []traq.Message) (model.MessageList, error) {
