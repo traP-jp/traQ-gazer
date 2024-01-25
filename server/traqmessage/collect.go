@@ -40,7 +40,7 @@ func (m *MessagePoller) Run() {
 		checkpointMutex.Lock()
 
 		now := time.Now()
-		collectedMessageCount := 0
+		var collectedMessageCount int
 		var tmplastCheckpoint time.Time
 		for {
 			messages, err := collectMessages(lastCheckpoint, now, collectedMessageCount)
@@ -161,7 +161,7 @@ func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSea
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// ポーリング漏れ防止のために1分余分にメッセージを取得
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
-	result, _, err := client.MessageApi.SearchMessages(auth).After(from.Add(-time.Minute)).Before(to).Limit(100).Offset(int32(offset)).Sort(`createdAt`).Execute()
+	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(100).Offset(int32(offset)).Sort(`createdAt`).Execute()
 	if err != nil {
 		return nil, err
 	}
