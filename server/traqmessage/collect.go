@@ -33,8 +33,9 @@ func (m *MessagePoller) Run() {
 	lastCheckpoint, err := model.GetPollingFrom()
 	if err != nil {
 		slog.Info("Error getting polling from")
+		lastCheckpoint = time.Now()
 	}
-	
+
 	var checkpointMutex sync.Mutex
 
 	ticker := time.Tick(pollingInterval)
@@ -84,7 +85,7 @@ func (m *MessagePoller) Run() {
 		lastCheckpoint = tmplastCheckpoint
 		err := model.RecordPollingTime(lastCheckpoint)
 		if err != nil {
-			slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
+			slog.Error(fmt.Sprintf("Failed to polling messages: %v", err))
 			break
 		}
 		checkpointMutex.Unlock()
@@ -171,10 +172,10 @@ func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, b
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
-	const limit = 100
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
+	const limit = 100
 	result, _, err := client.MessageApi.SearchMessages(auth).After(from).Before(to).Limit(limit).Offset(int32(limit * page)).Sort(`createdAt`).Execute()
 
 	if err != nil {
