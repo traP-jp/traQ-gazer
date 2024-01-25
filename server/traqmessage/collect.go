@@ -3,10 +3,10 @@ package traqmessage
 import (
 	"context"
 	"fmt"
-	"traQ-gazer/model"
 	"strings"
 	"sync"
 	"time"
+	"traQ-gazer/model"
 
 	"github.com/traPtitech/go-traq"
 	"golang.org/x/exp/slog"
@@ -41,12 +41,18 @@ func (m *MessagePoller) Run() {
 		now := time.Now()
 		var collectedMessageCount int
 		var tmplastCheckpoint time.Time
-    
+
 		for page := 0; ; page++ {
-			messages, err := collectMessages(lastCheckpoint, now, page)
+			messages, more, err := collectMessages(lastCheckpoint, now, page)
 
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failed to polling messages: %v", err))
+				lastCheckpoint = now
+				err := model.RecordPollingTime(lastCheckpoint)
+				if err != nil {
+					slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
+					break
+				}
 				break
 			}
 
@@ -54,15 +60,19 @@ func (m *MessagePoller) Run() {
 
 			// ページ0の時なら検索対象最新メッセージが真に最新メッセージ
 			if page == 0 {
-				tmplastCheckpoint = messages.Hits[0].GetCreatedAt()
-			} 
-      
+				tmpmessages := *messages
+				tmplastCheckpoint = tmpmessages[0].CreatedAt
+			}
+
 			slog.Info(fmt.Sprintf("Collected %d messages", tmpMessageCount))
 
 			collectedMessageCount += tmpMessageCount
 
 			// 取得したメッセージを使っての処理の呼び出し
 			m.processor.enqueue(messages)
+			if !more {
+				break
+			}
 		}
 
 		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
@@ -157,6 +167,7 @@ func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, b
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
 	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
+	const limit = 100
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
@@ -167,7 +178,8 @@ func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, b
 	}
 
 	messages := result.Hits
-	more := limit * (page + 1) < int(result.TotalHits)
+
+	more := limit*(page+1) < int(result.TotalHits)
 	return &messages, more, nil
 }
 
