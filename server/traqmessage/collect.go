@@ -3,7 +3,7 @@ package traqmessage
 import (
 	"context"
 	"fmt"
-	"h23s_15/model"
+	"traQ-gazer/model"
 	"strings"
 	"sync"
 	"time"

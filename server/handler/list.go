@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"h23s_15/api"
-	"h23s_15/model"
+	"traQ-gazer/api"
+	"traQ-gazer/model"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
