@@ -110,3 +110,14 @@ func RecordPollingTime(lastCheckPoint time.Time) error {
 
 	return nil
 }
+
+func GetPollingFrom() (time.Time, error) {
+	var from time.Time
+	err := db.Get(&from, "SELECT `lastpollingtime` FROM `pollinginfo` WHERE `key`=1")
+	if err != nil {
+		slog.Info("Error recording pollinginfo: %v", err)
+		return from, err
+	}
+
+	return from, nil
+}

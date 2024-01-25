@@ -30,7 +30,11 @@ func (m *MessagePoller) Run() {
 
 	pollingInterval := time.Minute * 3
 
-	lastCheckpoint := time.Now()
+	lastCheckpoint, err := model.GetPollingFrom()
+	if err != nil {
+		slog.Info("Error getting polling from")
+	}
+	
 	var checkpointMutex sync.Mutex
 
 	ticker := time.Tick(pollingInterval)
