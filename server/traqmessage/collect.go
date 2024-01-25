@@ -49,7 +49,7 @@ func (m *MessagePoller) Run() {
 
 			tmpMessageCount := len(*messages)
 
-			slog.Info(fmt.Sprintf("Collect %d messages", tmpMessageCount))
+			slog.Info(fmt.Sprintf("Collected %d messages", tmpMessageCount))
 			collectedMessageCount += tmpMessageCount
 
 			// 取得したメッセージを使っての処理の呼び出し
