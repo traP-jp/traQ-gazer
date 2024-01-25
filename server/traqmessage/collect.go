@@ -13,15 +13,14 @@ import (
 )
 
 type MessagePoller struct {
-	processor *messageProcessor
+	processor        *messageProcessor
+
 }
 
 func NewMessagePoller() *MessagePoller {
 	return &MessagePoller{
 		processor: &messageProcessor{
-			queue:               make(chan *[]traq.Message),
-			lastCheckMessage:    "",
-			tmplastCheckMessage: "",
+			queue: make(chan *[]traq.Message),
 		},
 	}
 }
@@ -42,19 +41,23 @@ func (m *MessagePoller) Run() {
 
 		now := time.Now()
 		collectedMessageCount := 0
+		var tmplastCheckpoint time.Time
 		for {
-			messages, tmplastmessage, err := collectMessages(lastCheckpoint, now, collectedMessageCount)
+			messages, err := collectMessages(lastCheckpoint, now, collectedMessageCount)
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failled to polling messages: %v", err))
 				break
 			}
 
-			// オフセット0の時なら検索対象最新メッセージが真に最新メッセージ
-			if collectedMessageCount == 0 {
-				m.processor.tmplastCheckMessage = tmplastmessage
-			}
-
 			tmpMessageCount := len(messages.Hits)
+			
+
+			// オフセット0の時なら検索対象最新メッセージが真に最新メッセージ
+			if collectedMessageCount == 0 && tmpMessageCount != 0 {
+				tmplastCheckpoint = messages.Hits[0].GetCreatedAt()
+			} else if tmpMessageCount == 0 {
+				tmplastCheckpoint = now
+			}
 
 			slog.Info(fmt.Sprintf("Collect %d messages", tmpMessageCount))
 			collectedMessageCount += tmpMessageCount
@@ -69,16 +72,14 @@ func (m *MessagePoller) Run() {
 
 		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
 
-		lastCheckpoint = now
+		lastCheckpoint = tmplastCheckpoint
 		checkpointMutex.Unlock()
 	}
 }
 
 // 通知メッセージの検索と通知処理のjobを処理する
 type messageProcessor struct {
-	queue               chan *[]traq.Message
-	lastCheckMessage    string //真に前回ポーリング時の最新メッセージUUID
-	tmplastCheckMessage string //goルーチンが呼ばれた時と同じタイミング行っているメッセージ取得での最新メッセージ
+	queue chan *[]traq.Message
 }
 
 // go routineの中で呼ぶ
@@ -96,7 +97,7 @@ func (m *messageProcessor) enqueue(messages *[]traq.Message) {
 }
 
 func (m *messageProcessor) process(messages []traq.Message) {
-	messageList, err := ConvertMessageHits(messages, m.lastCheckMessage)
+	messageList, err := ConvertMessageHits(messages)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failled to convert messages: %v", err))
 		return
@@ -118,7 +119,6 @@ func (m *messageProcessor) process(messages []traq.Message) {
 	}
 
 	slog.Info("End of send DMs")
-	m.lastCheckMessage = m.tmplastCheckMessage
 }
 
 func genNotifyMessageContent(citeMessageId string, words ...string) string {
@@ -149,10 +149,10 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 	return nil
 }
 
-func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSearchResult, string, error) {
+func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSearchResult, error) {
 	if model.ACCESS_TOKEN == "" {
 		slog.Info("Skip collectMessage")
-		return &traq.MessageSearchResult{}, "", nil
+		return &traq.MessageSearchResult{}, nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
@@ -163,23 +163,15 @@ func collectMessages(from time.Time, to time.Time, offset int) (*traq.MessageSea
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
 	result, _, err := client.MessageApi.SearchMessages(auth).After(from.Add(-time.Minute)).Before(to).Limit(100).Offset(int32(offset)).Sort(`createdAt`).Execute()
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	lastCheckMessage := ""
-	if offset == 0 {
-		lastCheckMessage = result.Hits[0].Id
-	}
-
-	return result, lastCheckMessage, nil
+	return result, nil
 }
 
-func ConvertMessageHits(messages []traq.Message, lastcheckmessage string) (model.MessageList, error) {
+func ConvertMessageHits(messages []traq.Message) (model.MessageList, error) {
 	messageList := model.MessageList{}
 	for _, message := range messages {
-		if message.Id == lastcheckmessage {
-			break
-		}
 		messageList = append(messageList, model.MessageItem{
 			Id:       message.Id,
 			TraqUuid: message.UserId,
