@@ -84,7 +84,6 @@ func (m *MessagePoller) Run() {
 		err := model.RecordPollingTime(lastCheckpoint)
 		if err != nil {
 			slog.Error(fmt.Sprintf("Failed to polling messages: %v", err))
-			break
 		}
 		checkpointMutex.Unlock()
 	}
