@@ -20,7 +20,7 @@ var (
 func SetUp() error {
 	_db, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOSTNAME"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE")))
 	if err != nil {
-		slog.Info("Cannot Connect to Database: %s", err)
+		slog.Error(fmt.Sprintf("Cannot Connect to Database: %s", err))
 	}
 	db = _db
 	slog.Info("Connected to Database")
@@ -44,7 +44,7 @@ func initUsersTable() error {
 
 	result, _, err := client.UserApi.GetUsers(auth).Execute()
 	if err != nil {
-		slog.Info("Error getting users: %v", err)
+		slog.Error("Error getting users: %v", err)
 		return err
 	}
 
@@ -56,7 +56,7 @@ func initUsersTable() error {
 	alreadyExistUsersUUIDList := []string{}
 	err = db.Select(&alreadyExistUsersUUIDList, "SELECT traq_uuid FROM users")
 	if err != nil {
-		slog.Info("Error Select alreadyExistUsersUUIDList: %v", err)
+		slog.Error("Error Select alreadyExistUsersUUIDList: %v", err)
 		return err
 	}
 
@@ -104,7 +104,7 @@ func removeAlreadyExistUsers(allUsers UserList, alreadyUsersUUID []string) UserL
 func RecordPollingTime(lastCheckPoint time.Time) error {
 	_, err := db.Exec("INSERT INTO `pollinginfo`(`key`,`lastpollingtime`) VALUES(1,?) ON DUPLICATE KEY UPDATE `lastpollingtime`=VALUES(lastpollingtime)", lastCheckPoint)
 	if err != nil {
-		slog.Info("Error recording pollinginfo: %v", err)
+		slog.Error("Error recording pollinginfo: %v", err)
 		return err
 	}
 
@@ -115,7 +115,7 @@ func GetPollingFrom() (time.Time, error) {
 	var from time.Time
 	err := db.Get(&from, "SELECT `lastpollingtime` FROM `pollinginfo` WHERE `key`=1")
 	if err != nil {
-		slog.Info("Error recording pollinginfo: %v", err)
+		slog.Error("Error recording pollinginfo: %v", err)
 		return from, err
 	}
 
