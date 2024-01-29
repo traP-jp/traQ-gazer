@@ -65,7 +65,7 @@ func initUsersTable() error {
 	for i := 0; i < len(newUserList); i += 50 {
 		_, err := db.NamedExec("INSERT INTO users (traq_uuid, trap_id, is_bot) VALUES (:traq_uuid, :trap_id, :is_bot)", newUserList[i:min(i+50, len(newUserList))])
 		if err != nil {
-			slog.Info("Error Insert: %v", err)
+			slog.Error("Error Insert: %v", err)
 			return err
 		}
 	}
@@ -104,7 +104,6 @@ func removeAlreadyExistUsers(allUsers UserList, alreadyUsersUUID []string) UserL
 func RecordPollingTime(lastCheckPoint time.Time) error {
 	_, err := db.Exec("INSERT INTO `pollinginfo`(`key`,`lastpollingtime`) VALUES(1,?) ON DUPLICATE KEY UPDATE `lastpollingtime`=VALUES(lastpollingtime)", lastCheckPoint)
 	if err != nil {
-		slog.Error("Error recording pollinginfo: %v", err)
 		return err
 	}
 
@@ -115,7 +114,6 @@ func GetPollingFrom() (time.Time, error) {
 	var from time.Time
 	err := db.Get(&from, "SELECT `lastpollingtime` FROM `pollinginfo` WHERE `key`=1")
 	if err != nil {
-		slog.Error("Error recording pollinginfo: %v", err)
 		return from, err
 	}
 
