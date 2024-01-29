@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"traQ-gazer/api"
 	"traQ-gazer/handler"
 	"traQ-gazer/model"
@@ -27,7 +28,7 @@ func main() {
 
 	err := model.SetUp()
 	if err != nil {
-		slog.Info("Error setting up: %v", err)
+		slog.Error(fmt.Sprintf("Failed to set up: %v", err))
 	}
 
 	messagePoller := traqmessage.NewMessagePoller()
