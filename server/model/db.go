@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -98,4 +99,25 @@ func removeAlreadyExistUsers(allUsers UserList, alreadyUsersUUID []string) UserL
 		}
 	}
 	return newUserList
+}
+
+func RecordPollingTime(lastCheckPoint time.Time) error {
+	_, err := db.Exec("INSERT INTO `pollinginfo`(`key`,`lastpollingtime`) VALUES(1,?) ON DUPLICATE KEY UPDATE `lastpollingtime`=VALUES(lastpollingtime)", lastCheckPoint)
+	if err != nil {
+		slog.Info("Error recording pollinginfo: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func GetPollingFrom() (time.Time, error) {
+	var from time.Time
+	err := db.Get(&from, "SELECT `lastpollingtime` FROM `pollinginfo` WHERE `key`=1")
+	if err != nil {
+		slog.Info("Error recording pollinginfo: %v", err)
+		return from, err
+	}
+
+	return from, nil
 }
