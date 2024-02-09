@@ -47,12 +47,13 @@ func TraqMessageProcessor(messageList MessageList) (SendList, error) {
 			messageOwnerTrapId = messageOwner.TrapID
 		}
 
+		lowerContent := strings.ToLower(message.Content)
 		for _, wordsItem := range wordsList {
 			notifyTarget, ok := trapIdToTraqUuid[wordsItem.TrapId]
 			if !ok {
 				continue
 			}
-			if strings.Contains(message.Content, wordsItem.Word) {
+			if strings.Contains(lowerContent, strings.ToLower(wordsItem.Word)) {
 				if !wordsItem.IncludeMe {
 					if messageOwnerTrapId == notifyTarget.TrapID {
 						continue
