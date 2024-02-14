@@ -130,7 +130,7 @@ func (m *messageProcessor) process(messages []traq.Message) {
 func genNotifyMessageContent(citeMessageId string, words ...string) string {
 	list := make([]string, 0)
 	for _, word := range words {
-		item := fmt.Sprintf("「%s」", word)
+		item := fmt.Sprintf("「`%s`」", word)
 		list = append(list, item)
 	}
 
