@@ -52,6 +52,7 @@ func (m *MessagePoller) Run() {
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failed to polling messages: %v", err))
 				lastCheckpoint = onPollingTime
+				slog.Info(fmt.Sprintf("Now the lastCheckpoint: %v", lastCheckpoint))
 				break
 			}
 
@@ -60,6 +61,7 @@ func (m *MessagePoller) Run() {
 			// ページ0の時なら検索対象最新メッセージが真に最新メッセージ
 			if page == 0 {
 				lastCheckpoint = (*messages)[0].CreatedAt
+				slog.Info(fmt.Sprintf("Now the lastCheckpoint: %v", lastCheckpoint))
 			}
 
 			slog.Info(fmt.Sprintf("Collected %d messages", tmpMessageCount))
