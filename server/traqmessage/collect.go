@@ -28,7 +28,7 @@ func NewMessagePoller() *MessagePoller {
 func (m *MessagePoller) Run() {
 	go m.processor.run()
 
-	pollingInterval := time.Minute * 3
+	const pollingInterval = time.Minute * 3
 
 	lastCheckpoint, err := model.GetPollingFrom()
 	if err != nil {
@@ -52,16 +52,14 @@ func (m *MessagePoller) Run() {
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failed to polling messages: %v", err))
 				lastCheckpoint = onPollingTime
-				slog.Info(fmt.Sprintf("Now the lastCheckpoint: %v", lastCheckpoint))
 				break
 			}
 
 			tmpMessageCount := len(*messages)
 
-			// ページ0の時なら検索対象最新メッセージが真に最新メッセージ
+			// ページ0の初めのメッセージが最新のもの
 			if page == 0 {
 				lastCheckpoint = (*messages)[0].CreatedAt
-				slog.Info(fmt.Sprintf("Now the lastCheckpoint: %v", lastCheckpoint))
 			}
 
 			slog.Info(fmt.Sprintf("Collected %d messages", tmpMessageCount))
@@ -81,7 +79,7 @@ func (m *MessagePoller) Run() {
 		if err != nil {
 			slog.Error(fmt.Sprintf("Failed to recording lastCheckpoint: %v", err))
 		}
-		slog.Info(fmt.Sprintf("Now the lastCheckpoint: %v", lastCheckpoint))
+		slog.Info(fmt.Sprintf("Now, lastCheckpoint = %v", lastCheckpoint))
 		checkpointMutex.Unlock()
 	}
 }
