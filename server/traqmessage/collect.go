@@ -69,6 +69,7 @@ func (m *MessagePoller) Run() {
 			// 取得したメッセージを使っての処理の呼び出し
 			m.processor.enqueue(messages)
 			if !more {
+				slog.Info(fmt.Sprintf("The first one is created at %v.", (*messages)[tmpMessageCount-1].CreatedAt))
 				break
 			}
 		}
