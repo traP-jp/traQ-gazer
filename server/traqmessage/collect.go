@@ -55,11 +55,6 @@ func (m *MessagePoller) Run() {
 				break
 			}
 
-			// 一番古い配列だけは取り除く
-			if !more {
-				*messages = (*messages)[:len(*messages)-1]
-			}
-
 			tmpMessageCount := len(*messages)
 
 			// ページ0の初めのメッセージが最新のもの
