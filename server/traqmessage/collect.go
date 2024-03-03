@@ -58,7 +58,7 @@ func (m *MessagePoller) Run() {
 			tmpMessageCount := len(*messages)
 
 			// ページ0の初めのメッセージが最新のもの
-			if page == 0 {
+			if page == 0 && tmpMessageCount != 0 {
 				lastCheckpoint = (*messages)[0].CreatedAt
 			}
 
