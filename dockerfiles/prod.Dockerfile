@@ -1,5 +1,5 @@
 # クライアントサイドのビルド
-FROM node:21.7-alpine3.18 as client-build
+FROM node:22.0-alpine3.18 as client-build
 
 WORKDIR /app
 
