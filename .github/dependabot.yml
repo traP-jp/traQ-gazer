@@ -6,13 +6,23 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: '/client'
+    directory: "/client"
     schedule:
       interval: monthly
     reviewers:
       - "Pugma"
     open-pull-requests-limit: 10
-  
+    groups:
+      types:
+        patterns:
+          - "@types/*"
+      eslint:
+        patterns:
+          - "eslint*"
+      patches:
+        update-types:
+          - "patch"
+
   - package-ecosystem: "gomod"
     directory: "/server"
     schedule:
@@ -29,9 +39,9 @@ updates:
         update-types:
           - "minor"
           - "patch"
-  
+
   - package-ecosystem: docker
-    directory: '/dockerfiles'
+    directory: "/dockerfiles"
     schedule:
       interval: "monthly"
     reviewers:
@@ -39,11 +49,17 @@ updates:
     open-pull-requests-limit: 10
     commit-message:
       prefix: ":arrow_up: "
-  
+
   - package-ecosystem: github-actions
-    directory: '/'
+    directory: "/.github"
     schedule:
       interval: monthly
     reviewers:
       - "Pugma"
     open-pull-requests-limit: 10
+    commit-message:
+      prefix: ":arrow_up: "
+    groups:
+      actions-deps:
+        patterns:
+          - "*"
