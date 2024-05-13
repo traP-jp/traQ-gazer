@@ -12,13 +12,16 @@ updates:
     reviewers:
       - "Pugma"
     open-pull-requests-limit: 10
+    commit-message:
+      prefix: ":arrow_up: "
     groups:
       types:
         patterns:
           - "@types/*"
-      eslint:
+      formatter:
         patterns:
-          - "eslint*"
+          - "*eslint*"
+          - "*prettier*"
       patches:
         update-types:
           - "patch"
