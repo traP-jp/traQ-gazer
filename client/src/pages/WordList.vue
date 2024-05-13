@@ -246,7 +246,7 @@ const updateNewSelfNotify = (newValue: boolean) => {
                     :bot-notify="edittingIncludeBot"
                   />
                   <SelfNotify
-                    @update-self-notify="(newValue :boolean) => updateNewSelfNotify(newValue)"
+                    @update-self-notify="(newValue: boolean) => updateNewSelfNotify(newValue)"
                     :self-notify="edittingIncludeMe"
                   />
                 </div>
