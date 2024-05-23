@@ -1,12 +1,12 @@
-package model
+package db
 
 import (
 	"context"
-	"fmt"
+	"net"
 	"os"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/traPtitech/go-traq"
 	"golang.org/x/exp/slices"
@@ -14,15 +14,35 @@ import (
 )
 
 var (
-	db *sqlx.DB
+	db           *sqlx.DB
+	ACCESS_TOKEN = os.Getenv("BOT_ACCESS_TOKEN")
+	db_username  = os.Getenv("DB_USERNAME")
+	db_port      = os.Getenv("DB_PORT")
+	db_hostname  = os.Getenv("DB_HOSTNAME")
+	db_password  = os.Getenv("DB_PASSWORD")
+	db_database  = os.Getenv("DB_DATABASE")
 )
 
 func SetUp() error {
-	_db, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOSTNAME"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE")))
+	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
-		slog.Error(fmt.Sprintf("Cannot Connect to Database: %s", err))
+		return err
 	}
-	db = _db
+	conf := mysql.Config{
+		User:                 db_username,
+		Passwd:               db_password,
+		Net:                  "tcp",
+		Addr:                 net.JoinHostPort(db_hostname, db_port),
+		DBName:               db_database,
+		Loc:                  jst,
+		AllowNativePasswords: true,
+		ParseTime:            true,
+	}
+	db, err = sqlx.Connect("mysql", conf.FormatDSN())
+	if err != nil {
+		return err
+	}
+
 	slog.Info("Connected to Database")
 	err = initUsersTable()
 	if err != nil {
@@ -31,8 +51,7 @@ func SetUp() error {
 	return nil
 }
 
-var ACCESS_TOKEN = os.Getenv("BOT_ACCESS_TOKEN")
-
+// ユーザーとそのuuidの対照表を作る
 func initUsersTable() error {
 	if ACCESS_TOKEN == "" {
 		slog.Info("Skip initUsersTable")

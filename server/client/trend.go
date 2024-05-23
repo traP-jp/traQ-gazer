@@ -1,9 +1,10 @@
-package handler
+package client
 
 import (
-	"traQ-gazer/api"
-	"traQ-gazer/model"
 	"net/http"
+	"traQ-gazer/api"
+	"traQ-gazer/db"
+	"traQ-gazer/model"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,7 +25,7 @@ func (s Server) GetTodayTrendingWords(ctx echo.Context, params api.GetTodayTrend
 		limit = *params.Limit
 	}
 
-	trends, err := model.GetTrendToday(limit)
+	trends, err := db.GetTrendToday(limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -45,7 +46,7 @@ func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params api.
 	if params.Limit != nil {
 		limit = *params.Limit
 	}
-	trends, err := model.GetTrendOneday(day, limit)
+	trends, err := db.GetTrendOneday(day, limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -67,7 +68,7 @@ func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params 
 		limit = *params.Limit
 	}
 
-	trends, err := model.GetTrendOneMonth(month, limit)
+	trends, err := db.GetTrendOneMonth(month, limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -89,7 +90,7 @@ func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params ap
 		limit = *params.Limit
 	}
 
-	trends, err := model.GetTrendOneYear(year, limit)
+	trends, err := db.GetTrendOneYear(year, limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
