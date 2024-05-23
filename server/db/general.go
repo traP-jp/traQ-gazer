@@ -24,24 +24,26 @@ var (
 )
 
 func SetUp() error {
-	jst, err := time.LoadLocation("Asia/Tokyo")
-	if err != nil {
-		return err
-	}
+	// jst, err := time.LoadLocation("Asia/Tokyo")
+	// if err != nil {
+	// 	return err
+	// }
 	conf := mysql.Config{
 		User:                 db_username,
 		Passwd:               db_password,
 		Net:                  "tcp",
 		Addr:                 net.JoinHostPort(db_hostname, db_port),
 		DBName:               db_database,
-		Loc:                  jst,
+		Loc:                  time.Local,
 		AllowNativePasswords: true,
 		ParseTime:            true,
+		Collation:            "utf8mb4",
 	}
-	db, err = sqlx.Connect("mysql", conf.FormatDSN())
+	_db, err := sqlx.Connect("mysql", conf.FormatDSN())
 	if err != nil {
 		return err
 	}
+	db = _db
 
 	slog.Info("Connected to Database")
 	err = initUsersTable()
