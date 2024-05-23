@@ -1,9 +1,9 @@
-package handler
+package client
 
 import (
-	"traQ-gazer/api"
-	"traQ-gazer/model"
 	"net/http"
+	"traQ-gazer/api"
+	"traQ-gazer/db"
 
 	"github.com/labstack/echo/v4"
 )
@@ -13,7 +13,7 @@ import (
 func (s Server) PutWordsMe(ctx echo.Context) error {
 	data := &api.WordMeSetting{}
 	err := ctx.Bind(data)
-	
+
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
 		return echo.NewHTTPError(http.StatusBadRequest, err)
@@ -26,7 +26,7 @@ func (s Server) PutWordsMe(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	exist, err := model.ExistWord(data.Word, userId)
+	exist, err := db.ExistWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -35,11 +35,11 @@ func (s Server) PutWordsMe(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
 	}
 
-	err = model.ChengeMeNotification(data.Word, data.IncludeMe, userId)
+	err = db.ChengeMeNotification(data.Word, data.IncludeMe, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	
+
 	return ctx.JSON(http.StatusOK, "Successful Change")
 }
 

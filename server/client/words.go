@@ -1,9 +1,10 @@
-package handler
+package client
 
 import (
-	"traQ-gazer/api"
-	"traQ-gazer/model"
 	"net/http"
+	"traQ-gazer/api"
+	"traQ-gazer/db"
+	"traQ-gazer/model"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,7 +28,7 @@ func (s Server) PostWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	exist, err := model.ExistWord(data.Word, userId)
+	exist, err := db.ExistWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -37,7 +38,7 @@ func (s Server) PostWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Already Resistered")
 	}
 
-	err = model.ResisterWord(data.Word, data.IncludeBot, data.IncludeMe, userId)
+	err = db.ResisterWord(data.Word, data.IncludeBot, data.IncludeMe, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -64,7 +65,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	exist, err := model.ExistWord(data.Word, userId)
+	exist, err := db.ExistWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -73,7 +74,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
 	}
 
-	err = model.DeleteWord(data.Word, userId)
+	err = db.DeleteWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -84,7 +85,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 // 全データの取得
 // (GET /words)
 func (s Server) GetWords(ctx echo.Context) error {
-	wordlist, err := model.GetWords()
+	wordlist, err := db.GetWords()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

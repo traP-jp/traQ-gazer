@@ -1,3 +1,3 @@
-package handler
+package client
 
 type Server struct{}

@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"traQ-gazer/api"
-	"traQ-gazer/handler"
-	"traQ-gazer/model"
+	"traQ-gazer/client"
+	"traQ-gazer/db"
 	"traQ-gazer/traqmessage"
 
 	"github.com/labstack/echo/v4"
@@ -16,7 +16,7 @@ func main() {
 	instance := echo.New()
 	instance.Use(middleware.Logger())
 
-	server := handler.Server{}
+	server := client.Server{}
 
 	apiInstance := instance.Group("/api")
 	api.RegisterHandlers(apiInstance, server)
@@ -26,7 +26,7 @@ func main() {
 	instance.File("/words", "dist/index.html")
 	instance.File("/words/add", "dist/index.html")
 
-	err := model.SetUp()
+	err := db.SetUp()
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to set up: %v", err))
 	}

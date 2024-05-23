@@ -1,12 +1,13 @@
-package model
+package db
 
 import (
 	"context"
-	"fmt"
+	"net"
 	"os"
 	"time"
+	"traQ-gazer/model"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/traPtitech/go-traq"
 	"golang.org/x/exp/slices"
@@ -14,15 +15,33 @@ import (
 )
 
 var (
-	db *sqlx.DB
+	db           *sqlx.DB
+	ACCESS_TOKEN = os.Getenv("BOT_ACCESS_TOKEN")
+	db_username  = os.Getenv("DB_USERNAME")
+	db_port      = os.Getenv("DB_PORT")
+	db_hostname  = os.Getenv("DB_HOSTNAME")
+	db_password  = os.Getenv("DB_PASSWORD")
+	db_database  = os.Getenv("DB_DATABASE")
 )
 
 func SetUp() error {
-	_db, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOSTNAME"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE")))
+	conf := mysql.Config{
+		User:                 db_username,
+		Passwd:               db_password,
+		Net:                  "tcp",
+		Addr:                 net.JoinHostPort(db_hostname, db_port),
+		DBName:               db_database,
+		Loc:                  time.Local,
+		AllowNativePasswords: true,
+		ParseTime:            true,
+		Collation:            "utf8mb4_general_ci",
+	}
+	_db, err := sqlx.Connect("mysql", conf.FormatDSN())
 	if err != nil {
-		slog.Error(fmt.Sprintf("Cannot Connect to Database: %s", err))
+		return err
 	}
 	db = _db
+
 	slog.Info("Connected to Database")
 	err = initUsersTable()
 	if err != nil {
@@ -31,8 +50,7 @@ func SetUp() error {
 	return nil
 }
 
-var ACCESS_TOKEN = os.Getenv("BOT_ACCESS_TOKEN")
-
+// ユーザーとそのuuidの対照表を作る
 func initUsersTable() error {
 	if ACCESS_TOKEN == "" {
 		slog.Info("Skip initUsersTable")
@@ -48,9 +66,9 @@ func initUsersTable() error {
 		return err
 	}
 
-	userList := UserList{}
+	userList := model.UserList{}
 	for _, user := range result {
-		userList = append(userList, User{Traq_uuid: user.Id, Trap_id: user.Name, Is_bot: user.Bot})
+		userList = append(userList, model.User{Traq_uuid: user.Id, Trap_id: user.Name, Is_bot: user.Bot})
 	}
 
 	alreadyExistUsersUUIDList := []string{}
@@ -72,14 +90,6 @@ func initUsersTable() error {
 	return nil
 }
 
-type User struct {
-	Traq_uuid string `db:"traq_uuid"`
-	Trap_id   string `db:"trap_id"`
-	Is_bot    bool   `db:"is_bot"`
-}
-
-type UserList []User
-
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -87,11 +97,11 @@ func min(a, b int) int {
 	return b
 }
 
-func removeAlreadyExistUsers(allUsers UserList, alreadyUsersUUID []string) UserList {
-	newUserList := make(UserList, 0)
+func removeAlreadyExistUsers(allUsers model.UserList, alreadyUsersUUID []string) model.UserList {
+	newUserList := make(model.UserList, 0)
 	for _, all := range allUsers {
 		if !slices.Contains(alreadyUsersUUID, all.Traq_uuid) {
-			newUserList = append(newUserList, User{
+			newUserList = append(newUserList, model.User{
 				Traq_uuid: all.Traq_uuid,
 				Trap_id:   all.Trap_id,
 				Is_bot:    all.Is_bot,
