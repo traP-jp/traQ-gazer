@@ -2,6 +2,14 @@ package model
 
 import "time"
 
+type User struct {
+	Traq_uuid string `db:"traq_uuid"`
+	Trap_id   string `db:"trap_id"`
+	Is_bot    bool   `db:"is_bot"`
+}
+
+type UserList []User
+
 type UserListItem struct {
 	IncludeBot bool      `db:"bot_notification"`
 	IncludeMe  bool      `db:"me_notification"`
