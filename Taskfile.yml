@@ -10,4 +10,4 @@ tasks:
   install-server-openapi-codegen:
     cmd: go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
   server-openapi-codegen:
-    cmd: oapi-codegen -package api docs/openapi.yaml > server/api/server.gen.go
+    cmd: oapi-codegen --config=./server/oapi-config.yaml docs/openapi.yaml
