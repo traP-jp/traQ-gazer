@@ -37,7 +37,7 @@ func SetUp() error {
 		Loc:                  time.Local,
 		AllowNativePasswords: true,
 		ParseTime:            true,
-		Collation:            "utf8mb4",
+		Collation:            "utf8mb4_general_ci",
 	}
 	_db, err := sqlx.Connect("mysql", conf.FormatDSN())
 	if err != nil {
