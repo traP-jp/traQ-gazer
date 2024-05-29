@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
-	"traQ-gazer/api"
-	"traQ-gazer/client"
 	"traQ-gazer/db"
-	"traQ-gazer/traqmessage"
+	"traQ-gazer/message"
+	"traQ-gazer/oapi"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -16,10 +15,10 @@ func main() {
 	instance := echo.New()
 	instance.Use(middleware.Logger())
 
-	server := client.Server{}
+	server := oapi.Server{}
 
 	apiInstance := instance.Group("/api")
-	api.RegisterHandlers(apiInstance, server)
+	oapi.RegisterHandlers(apiInstance, server)
 
 	// まとめて賢くルーティングするのは厳しそうなので
 	instance.Static("/", "dist")
@@ -31,7 +30,7 @@ func main() {
 		slog.Error(fmt.Sprintf("Failed to set up: %v", err))
 	}
 
-	messagePoller := traqmessage.NewMessagePoller()
+	messagePoller := message.NewMessagePoller()
 	go messagePoller.Run()
 
 	instance.Logger.Fatal(instance.Start(":8080"))

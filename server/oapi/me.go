@@ -1,8 +1,7 @@
-package client
+package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/api"
 	"traQ-gazer/db"
 
 	"github.com/labstack/echo/v4"
@@ -11,7 +10,7 @@ import (
 // 自分の投稿に対する通知の設定
 // (PUT /words/me/)
 func (s Server) PutWordsMe(ctx echo.Context) error {
-	data := &api.WordMeSetting{}
+	data := &WordMeSetting{}
 	err := ctx.Bind(data)
 
 	if err != nil {

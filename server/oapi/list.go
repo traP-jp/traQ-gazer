@@ -1,8 +1,7 @@
-package client
+package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/api"
 	"traQ-gazer/db"
 	"traQ-gazer/model"
 
@@ -50,11 +49,11 @@ func (s Server) GetListUserUserIdUsers(ctx echo.Context, userId string) error {
 	return nil
 }
 
-// model.WordsListからapi.WordsListへの型の変換
-func ConvertWordList(models model.WordsList) api.WordsList {
-	WordsListSlice := make(api.WordsList, len(models))
+// model.WordsListからoapi.WordsListへの型の変換
+func ConvertWordList(models model.WordsList) WordsList {
+	WordsListSlice := make(WordsList, len(models))
 	for i, s := range models {
-		WordsListSlice[i] = api.WordListItem{
+		WordsListSlice[i] = WordListItem{
 			IncludeBot: s.IncludeBot,
 			IncludeMe:  s.IncludeMe,
 			Time:       s.Time,
@@ -81,11 +80,11 @@ func (s Server) GetListWordWordWords(ctx echo.Context, word string) error {
 	return nil
 }
 
-// model.UsersListからapi.UsersListへの型の変換
-func ConvertUserList(models model.UsersList) api.UsersList {
-	UsersListSlice := make(api.UsersList, len(models))
+// model.UsersListからoapi.UsersListへの型の変換
+func ConvertUserList(models model.UsersList) UsersList {
+	UsersListSlice := make(UsersList, len(models))
 	for i, s := range models {
-		UsersListSlice[i] = api.UserListItem{
+		UsersListSlice[i] = UserListItem{
 			IncludeBot: s.IncludeBot,
 			IncludeMe:  s.IncludeMe,
 			Time:       s.Time,
@@ -95,11 +94,11 @@ func ConvertUserList(models model.UsersList) api.UsersList {
 	return UsersListSlice
 }
 
-// model.UsersOfWordsListからapi.UsersOfWordsListへの型の変換
-func ConvertUsersOfWordsList(models model.UsersOfWordsList) api.UsersOfWordsList {
-	UsersOfWordsListSlice := make(api.UsersOfWordsList, len(models))
+// model.UsersOfWordsListからoapi.UsersOfWordsListへの型の変換
+func ConvertUsersOfWordsList(models model.UsersOfWordsList) UsersOfWordsList {
+	UsersOfWordsListSlice := make(UsersOfWordsList, len(models))
 	for i, s := range models {
-		UsersOfWordsListSlice[i] = api.UsersOfWordListItem{
+		UsersOfWordsListSlice[i] = UsersOfWordListItem{
 			UserIds: ConvertUserList(s.UserIds),
 			Word:    s.Word,
 		}

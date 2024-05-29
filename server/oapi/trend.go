@@ -1,8 +1,7 @@
-package client
+package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/api"
 	"traQ-gazer/db"
 	"traQ-gazer/model"
 
@@ -13,7 +12,7 @@ const LIMIT_DEFAULT = 10
 
 // 今日のトレンド
 // (GET /trend/day/today)
-func (s Server) GetTodayTrendingWords(ctx echo.Context, params api.GetTodayTrendingWordsParams) error {
+func (s Server) GetTodayTrendingWords(ctx echo.Context, params GetTodayTrendingWordsParams) error {
 	err := ctx.Bind(&params)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
@@ -35,7 +34,7 @@ func (s Server) GetTodayTrendingWords(ctx echo.Context, params api.GetTodayTrend
 
 // ある日のトレンド
 // (GET /trend/day/{day})
-func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params api.GetTrendingWordsForDayParams) error {
+func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params GetTrendingWordsForDayParams) error {
 	err := ctx.Bind(&params)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
@@ -56,7 +55,7 @@ func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params api.
 
 // ある月のトレンド
 // (GET /trend/month/{month})
-func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params api.GetTrendingWordsForMonthParams) error {
+func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params GetTrendingWordsForMonthParams) error {
 	err := ctx.Bind(&params)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
@@ -78,7 +77,7 @@ func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params 
 
 // ある年のトレンド
 // (GET /trend/year/{year})
-func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params api.GetTrendingWordsForYearParams) error {
+func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params GetTrendingWordsForYearParams) error {
 	err := ctx.Bind(&params)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
@@ -98,14 +97,14 @@ func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params ap
 	return ctx.JSON(http.StatusOK, ConvertSliceTrendingWord(trends))
 }
 
-// model.TrendingWordからapi.WordsAllListへの型の変換
-func ConvertSliceTrendingWord(modelList model.TrendingWords) api.TrendingWords {
-	apiList := make([]api.TrendingWord, len(modelList))
+// model.TrendingWordからoapi.WordsAllListへの型の変換
+func ConvertSliceTrendingWord(modelList model.TrendingWords) TrendingWords {
+	oapiList := make([]TrendingWord, len(modelList))
 	for i, WordType := range modelList {
-		apiList[i] = api.TrendingWord{
+		oapiList[i] = TrendingWord{
 			Number: WordType.Number,
 			Word:   WordType.Word,
 		}
 	}
-	return apiList
+	return oapiList
 }

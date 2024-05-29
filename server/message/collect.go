@@ -1,4 +1,4 @@
-package traqmessage
+package message
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"traQ-gazer/bot"
 	"traQ-gazer/db"
 	"traQ-gazer/model"
 
@@ -116,7 +115,7 @@ func (m *messageProcessor) process(messages []traq.Message) {
 		slog.Error(fmt.Sprintf("Failed to convert messages: %v", err))
 		return
 	}
-	notifyInfoList, err := bot.FindMatchingWords(messageList)
+	notifyInfoList, err := FindMatchingWords(messageList)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to process messages: %v", err))
 		return
@@ -146,13 +145,13 @@ func genNotifyMessageContent(citeMessageId string, words ...string) string {
 }
 
 func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
-	if db.ACCESS_TOKEN == "" {
+	if db.AccessToken == "" {
 		slog.Info("Skip sendMessage")
 		return nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
-	auth := context.WithValue(context.Background(), traq.ContextAccessToken, db.ACCESS_TOKEN)
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, db.AccessToken)
 	_, _, err := client.UserApi.PostDirectMessage(auth, notifyTargetTraqUUID).PostMessageRequest(traq.PostMessageRequest{
 		Content: messageContent,
 	}).Execute()
@@ -164,13 +163,13 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 }
 
 func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, bool, error) {
-	if db.ACCESS_TOKEN == "" {
+	if db.AccessToken == "" {
 		slog.Info("Skip collectMessage")
 		return &[]traq.Message{}, false, nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
-	auth := context.WithValue(context.Background(), traq.ContextAccessToken, db.ACCESS_TOKEN)
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, db.AccessToken)
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51

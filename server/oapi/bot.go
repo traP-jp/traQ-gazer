@@ -1,8 +1,7 @@
-package client
+package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/api"
 	"traQ-gazer/db"
 
 	"github.com/labstack/echo/v4"
@@ -11,7 +10,7 @@ import (
 // bot投稿に対する通知の設定
 // (PUT /words)
 func (s Server) PutWords(ctx echo.Context) error {
-	data := &api.WordBotSetting{}
+	data := &WordBotSetting{}
 	err := ctx.Bind(data)
 
 	if err != nil {
@@ -46,7 +45,7 @@ func (s Server) PutWords(ctx echo.Context) error {
 // bot投稿に対する通知の一括設定
 // (POST /words/bot)
 func (s Server) PostWordsBot(ctx echo.Context) error {
-	data := &api.Bot{}
+	data := &Bot{}
 	err := ctx.Bind(data)
 
 	if err != nil {

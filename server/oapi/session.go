@@ -1,4 +1,4 @@
-package client
+package oapi
 
 import (
 	"errors"

@@ -15,22 +15,22 @@ import (
 )
 
 var (
-	db           *sqlx.DB
-	ACCESS_TOKEN = os.Getenv("BOT_ACCESS_TOKEN")
-	db_username  = os.Getenv("DB_USERNAME")
-	db_port      = os.Getenv("DB_PORT")
-	db_hostname  = os.Getenv("DB_HOSTNAME")
-	db_password  = os.Getenv("DB_PASSWORD")
-	db_database  = os.Getenv("DB_DATABASE")
+	db          *sqlx.DB
+	AccessToken = os.Getenv("BOT_ACCESS_TOKEN")
+	dbUsername  = os.Getenv("DB_USERNAME")
+	dbPort      = os.Getenv("DB_PORT")
+	dbHostname  = os.Getenv("DB_HOSTNAME")
+	dbPassword  = os.Getenv("DB_PASSWORD")
+	dbDatabase  = os.Getenv("DB_DATABASE")
 )
 
 func SetUp() error {
 	conf := mysql.Config{
-		User:                 db_username,
-		Passwd:               db_password,
+		User:                 dbUsername,
+		Passwd:               dbPassword,
 		Net:                  "tcp",
-		Addr:                 net.JoinHostPort(db_hostname, db_port),
-		DBName:               db_database,
+		Addr:                 net.JoinHostPort(dbHostname, dbPort),
+		DBName:               dbDatabase,
 		Loc:                  time.Local,
 		AllowNativePasswords: true,
 		ParseTime:            true,
@@ -52,13 +52,13 @@ func SetUp() error {
 
 // ユーザーとそのuuidの対照表を作る
 func initUsersTable() error {
-	if ACCESS_TOKEN == "" {
+	if AccessToken == "" {
 		slog.Info("Skip initUsersTable")
 		return nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
-	auth := context.WithValue(context.Background(), traq.ContextAccessToken, ACCESS_TOKEN)
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, AccessToken)
 
 	result, _, err := client.UserApi.GetUsers(auth).Execute()
 	if err != nil {

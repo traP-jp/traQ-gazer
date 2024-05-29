@@ -1,8 +1,7 @@
-package client
+package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/api"
 	"traQ-gazer/db"
 	"traQ-gazer/model"
 
@@ -14,7 +13,7 @@ import (
 func (s Server) PostWords(ctx echo.Context) error {
 
 	// Wordの取得
-	data := &api.PostWordsJSONRequestBody{}
+	data := &PostWordsJSONRequestBody{}
 	err := ctx.Bind(data)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
@@ -50,7 +49,7 @@ func (s Server) PostWords(ctx echo.Context) error {
 // (DELETE /words)
 func (s Server) DeleteWords(ctx echo.Context) error {
 
-	data := &api.DeleteWordsJSONRequestBody{}
+	data := &DeleteWordsJSONRequestBody{}
 	err := ctx.Bind(data)
 
 	if err != nil {
@@ -93,11 +92,11 @@ func (s Server) GetWords(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, change)
 }
 
-// model.WordsAllListからapi.WordsAllListへの型の変換
-func ConvertSliceToA1(WordsListSlice model.WordsAllList) api.WordsAllList {
-	WordsAllListSlice := make([]api.WordAllListItem, len(WordsListSlice))
+// model.WordsAllListからoapi.WordsAllListへの型の変換
+func ConvertSliceToA1(WordsListSlice model.WordsAllList) WordsAllList {
+	WordsAllListSlice := make([]WordAllListItem, len(WordsListSlice))
 	for i, WordType := range WordsListSlice {
-		WordsAllListSlice[i] = api.WordAllListItem{
+		WordsAllListSlice[i] = WordAllListItem{
 			IncludeBot: WordType.IncludeBot,
 			IncludeMe:  WordType.IncludeMe,
 			Time:       WordType.Time,
