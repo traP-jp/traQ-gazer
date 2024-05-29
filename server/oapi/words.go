@@ -88,12 +88,12 @@ func (s Server) GetWords(ctx echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	change := ConvertSliceToA1(wordlist)
+	change := convertSliceToA1(wordlist)
 	return ctx.JSON(http.StatusOK, change)
 }
 
 // model.WordsAllListからoapi.WordsAllListへの型の変換
-func ConvertSliceToA1(WordsListSlice model.WordsAllList) WordsAllList {
+func convertSliceToA1(WordsListSlice model.WordsAllList) WordsAllList {
 	WordsAllListSlice := make([]WordAllListItem, len(WordsListSlice))
 	for i, WordType := range WordsListSlice {
 		WordsAllListSlice[i] = WordAllListItem{

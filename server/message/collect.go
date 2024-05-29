@@ -110,12 +110,12 @@ func (m *messageProcessor) enqueue(messages *[]traq.Message) {
 }
 
 func (m *messageProcessor) process(messages []traq.Message) {
-	messageList, err := ConvertMessageHits(messages)
+	messageList, err := convertMessageHits(messages)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to convert messages: %v", err))
 		return
 	}
-	notifyInfoList, err := FindMatchingWords(messageList)
+	notifyInfoList, err := findMatchingWords(messageList)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to process messages: %v", err))
 		return
@@ -186,7 +186,7 @@ func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, b
 	return &messages, more, nil
 }
 
-func ConvertMessageHits(messages []traq.Message) (model.MessageList, error) {
+func convertMessageHits(messages []traq.Message) (model.MessageList, error) {
 	messageList := model.MessageList{}
 	for _, message := range messages {
 		messageList = append(messageList, model.MessageItem{

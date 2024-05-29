@@ -9,7 +9,7 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-func TraqMessageProcessor(messageList model.MessageList) (model.SendList, error) {
+func traqMessageProcessor(messageList model.MessageList) (model.SendList, error) {
 	wordsList, err := db.GetWordsWithoutTime()
 	if err != nil {
 		slog.Info("Error selecting words: %v", err)
@@ -72,7 +72,7 @@ func TraqMessageProcessor(messageList model.MessageList) (model.SendList, error)
 	return sendList, nil
 }
 
-func FindMatchingWords(messageList model.MessageList) ([]*model.NotifyInfo, error) {
+func findMatchingWords(messageList model.MessageList) ([]*model.NotifyInfo, error) {
 	notifyInfoList := make([]*model.NotifyInfo, 0)
 
 	// メッセージごとに通知対象を検索する
