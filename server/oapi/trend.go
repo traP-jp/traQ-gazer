@@ -2,8 +2,8 @@ package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/db"
 	"traQ-gazer/model"
+	"traQ-gazer/repo"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,7 +24,7 @@ func (s Server) GetTodayTrendingWords(ctx echo.Context, params GetTodayTrendingW
 		limit = *params.Limit
 	}
 
-	trends, err := db.GetTrendToday(limit)
+	trends, err := repo.GetTrendToday(limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -45,7 +45,7 @@ func (s Server) GetTrendingWordsForDay(ctx echo.Context, day string, params GetT
 	if params.Limit != nil {
 		limit = *params.Limit
 	}
-	trends, err := db.GetTrendOneday(day, limit)
+	trends, err := repo.GetTrendOneday(day, limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -67,7 +67,7 @@ func (s Server) GetTrendingWordsForMonth(ctx echo.Context, month string, params 
 		limit = *params.Limit
 	}
 
-	trends, err := db.GetTrendOneMonth(month, limit)
+	trends, err := repo.GetTrendOneMonth(month, limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -89,7 +89,7 @@ func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params Ge
 		limit = *params.Limit
 	}
 
-	trends, err := db.GetTrendOneYear(year, limit)
+	trends, err := repo.GetTrendOneYear(year, limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

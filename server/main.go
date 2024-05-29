@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"traQ-gazer/db"
 	"traQ-gazer/message"
 	"traQ-gazer/oapi"
+	"traQ-gazer/repo"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -25,7 +25,7 @@ func main() {
 	instance.File("/words", "dist/index.html")
 	instance.File("/words/add", "dist/index.html")
 
-	err := db.SetUp()
+	err := repo.SetUp()
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to set up: %v", err))
 	}

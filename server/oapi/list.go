@@ -2,8 +2,8 @@ package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/db"
 	"traQ-gazer/model"
+	"traQ-gazer/repo"
 
 	"github.com/labstack/echo/v4"
 )
@@ -18,7 +18,7 @@ func (s Server) GetListUserMe(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	wordsListMode, err := db.GetListUserUserId(userId)
+	wordsListMode, err := repo.GetListUserUserId(userId)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func (s Server) GetListUserMe(ctx echo.Context) error {
 // あるuserのwordたち
 // (GET /list/user/{userId})
 func (s Server) GetListUserUserId(ctx echo.Context, userId string) error {
-	wordsListMode, err := db.GetListUserUserId(userId)
+	wordsListMode, err := repo.GetListUserUserId(userId)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func ConvertWordList(models model.WordsList) WordsList {
 // ある単語を見ているuserたち
 // (GET /list/word/{word})
 func (s Server) GetListWordWord(ctx echo.Context, word string) error {
-	usersListMode, err := db.GetListWordWord(word)
+	usersListMode, err := repo.GetListWordWord(word)
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}

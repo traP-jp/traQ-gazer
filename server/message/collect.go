@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"traQ-gazer/db"
 	"traQ-gazer/model"
+	"traQ-gazer/repo"
 
 	"github.com/traPtitech/go-traq"
 	"golang.org/x/exp/slog"
@@ -31,7 +31,7 @@ func (m *MessagePoller) Run() {
 
 	const pollingInterval = time.Minute * 3
 
-	lastCheckpoint, err := db.GetPollingFrom()
+	lastCheckpoint, err := repo.GetPollingFrom()
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to get pollinginfo: %v", err))
 		lastCheckpoint = time.Now()
@@ -81,7 +81,7 @@ func (m *MessagePoller) Run() {
 
 		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
 
-		err := db.RecordPollingTime(lastCheckpoint)
+		err := repo.RecordPollingTime(lastCheckpoint)
 		if err != nil {
 			slog.Error(fmt.Sprintf("Failed to recording lastCheckpoint: %v", err))
 		}
@@ -145,13 +145,13 @@ func genNotifyMessageContent(citeMessageId string, words ...string) string {
 }
 
 func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
-	if db.AccessToken == "" {
+	if repo.AccessToken == "" {
 		slog.Info("Skip sendMessage")
 		return nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
-	auth := context.WithValue(context.Background(), traq.ContextAccessToken, db.AccessToken)
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, repo.AccessToken)
 	_, _, err := client.UserApi.PostDirectMessage(auth, notifyTargetTraqUUID).PostMessageRequest(traq.PostMessageRequest{
 		Content: messageContent,
 	}).Execute()
@@ -163,13 +163,13 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 }
 
 func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, bool, error) {
-	if db.AccessToken == "" {
+	if repo.AccessToken == "" {
 		slog.Info("Skip collectMessage")
 		return &[]traq.Message{}, false, nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
-	auth := context.WithValue(context.Background(), traq.ContextAccessToken, db.AccessToken)
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, repo.AccessToken)
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51

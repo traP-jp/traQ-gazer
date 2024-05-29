@@ -2,7 +2,7 @@ package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/db"
+	"traQ-gazer/repo"
 
 	"github.com/labstack/echo/v4"
 )
@@ -25,7 +25,7 @@ func (s Server) PutWordsMe(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	exist, err := db.ExistWord(data.Word, userId)
+	exist, err := repo.ExistWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -34,7 +34,7 @@ func (s Server) PutWordsMe(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
 	}
 
-	err = db.ChengeMeNotification(data.Word, data.IncludeMe, userId)
+	err = repo.ChengeMeNotification(data.Word, data.IncludeMe, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

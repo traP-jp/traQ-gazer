@@ -3,20 +3,20 @@ package message
 import (
 	"fmt"
 	"strings"
-	"traQ-gazer/db"
+	"traQ-gazer/repo"
 	"traQ-gazer/model"
 
 	"golang.org/x/exp/slog"
 )
 
 func traqMessageProcessor(messageList model.MessageList) (model.SendList, error) {
-	wordsList, err := db.GetWordsWithoutTime()
+	wordsList, err := repo.GetWordsWithoutTime()
 	if err != nil {
 		slog.Info("Error selecting words: %v", err)
 		return nil, err
 	}
 
-	usersItem, err := db.GetUserList()
+	usersItem, err := repo.GetUserList()
 	if err != nil {
 		slog.Info("Error selecting users: %v", err)
 		return nil, err
@@ -78,7 +78,7 @@ func findMatchingWords(messageList model.MessageList) ([]*model.NotifyInfo, erro
 	// メッセージごとに通知対象を検索する
 	for _, messageItem := range messageList {
 		// メッセージに含まれている登録単語で、通知条件が合致するものを登録者別にまとめる
-		matchedWordsList, err := db.GetMatchedWordList(messageItem)
+		matchedWordsList, err := repo.GetMatchedWordList(messageItem)
 		if err != nil {
 			slog.Error(fmt.Sprintf("failed to search words with message: `%s`", messageItem.Id))
 			return nil, err

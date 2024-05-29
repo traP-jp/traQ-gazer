@@ -2,8 +2,8 @@ package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/db"
 	"traQ-gazer/model"
+	"traQ-gazer/repo"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,7 +27,7 @@ func (s Server) PostWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	exist, err := db.ExistWord(data.Word, userId)
+	exist, err := repo.ExistWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -37,7 +37,7 @@ func (s Server) PostWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Already Resistered")
 	}
 
-	err = db.ResisterWord(data.Word, data.IncludeBot, data.IncludeMe, userId)
+	err = repo.ResisterWord(data.Word, data.IncludeBot, data.IncludeMe, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -64,7 +64,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	exist, err := db.ExistWord(data.Word, userId)
+	exist, err := repo.ExistWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -73,7 +73,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
 	}
 
-	err = db.DeleteWord(data.Word, userId)
+	err = repo.DeleteWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -84,7 +84,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 // 全データの取得
 // (GET /words)
 func (s Server) GetWords(ctx echo.Context) error {
-	wordlist, err := db.GetWords()
+	wordlist, err := repo.GetWords()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
