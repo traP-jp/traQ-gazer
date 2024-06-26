@@ -3,14 +3,14 @@ name: Client
 on:
   push:
     branches:
-      - 'main'
+      - "main"
     paths:
       - client/**/*
       - .github/workflows/client.yaml
   pull_request:
-        paths:
-            - client/**/*
-            - .github/workflows/client.yaml
+    paths:
+      - client/**/*
+      - .github/workflows/client.yaml
 
 jobs:
   package:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18.15.0'
+          node-version-file: ./client/.node-version
           cache: npm
           cache-dependency-path: ./client/package-lock.json
       - name: npm ci
@@ -35,12 +35,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18.15.0'
+          node-version-file: ./client/.node-version
           cache: npm
           cache-dependency-path: ./client/package-lock.json
       - name: npm ci
         run: npm ci
-        working-directory: ./client/    
+        working-directory: ./client/
       - name: Run fmt
         run: npm run fmt:check
         working-directory: ./client/
@@ -52,12 +52,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18.15.0'
+          node-version-file: ./client/.node-version
           cache: npm
           cache-dependency-path: ./client/package-lock.json
       - name: npm ci
         run: npm ci
-        working-directory: ./client/    
+        working-directory: ./client/
       - name: Run lint
         run: npm run lint
         working-directory: ./client/
@@ -69,12 +69,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18.15.0'
+          node-version-file: ./client/.node-version
           cache: npm
           cache-dependency-path: ./client/package-lock.json
       - name: npm ci
         run: npm ci
-        working-directory: ./client/    
+        working-directory: ./client/
       - name: Run build
         run: npm run build
         working-directory: ./client/
