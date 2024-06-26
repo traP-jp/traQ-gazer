@@ -99,12 +99,12 @@ func (s Server) GetTrendingWordsForYear(ctx echo.Context, year string, params Ge
 
 // model.TrendingWordからoapi.WordsAllListへの型の変換
 func ConvertSliceTrendingWord(modelList model.TrendingWords) TrendingWords {
-	oapiList := make([]TrendingWord, len(modelList))
+	oapiTrendingWords := make([]TrendingWord, len(modelList))
 	for i, WordType := range modelList {
-		oapiList[i] = TrendingWord{
+		oapiTrendingWords[i] = TrendingWord{
 			Number: WordType.Number,
 			Word:   WordType.Word,
 		}
 	}
-	return oapiList
+	return oapiTrendingWords
 }
