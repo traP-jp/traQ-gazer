@@ -1,9 +1,8 @@
-package client
+package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/api"
-	"traQ-gazer/db"
+	"traQ-gazer/repo"
 
 	"github.com/labstack/echo/v4"
 )
@@ -11,7 +10,7 @@ import (
 // 自分の投稿に対する通知の設定
 // (PUT /words/me/)
 func (s Server) PutWordsMe(ctx echo.Context) error {
-	data := &api.WordMeSetting{}
+	data := &WordMeSetting{}
 	err := ctx.Bind(data)
 
 	if err != nil {
@@ -26,7 +25,7 @@ func (s Server) PutWordsMe(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	exist, err := db.ExistWord(data.Word, userId)
+	exist, err := repo.ExistWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -35,7 +34,7 @@ func (s Server) PutWordsMe(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
 	}
 
-	err = db.ChengeMeNotification(data.Word, data.IncludeMe, userId)
+	err = repo.ChengeMeNotification(data.Word, data.IncludeMe, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

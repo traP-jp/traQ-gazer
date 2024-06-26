@@ -1,9 +1,8 @@
-package client
+package oapi
 
 import (
 	"net/http"
-	"traQ-gazer/api"
-	"traQ-gazer/db"
+	"traQ-gazer/repo"
 
 	"github.com/labstack/echo/v4"
 )
@@ -11,7 +10,7 @@ import (
 // bot投稿に対する通知の設定
 // (PUT /words)
 func (s Server) PutWords(ctx echo.Context) error {
-	data := &api.WordBotSetting{}
+	data := &WordBotSetting{}
 	err := ctx.Bind(data)
 
 	if err != nil {
@@ -26,7 +25,7 @@ func (s Server) PutWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	exist, err := db.ExistWord(data.Word, userId)
+	exist, err := repo.ExistWord(data.Word, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -35,7 +34,7 @@ func (s Server) PutWords(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Not Found")
 	}
 
-	err = db.ChengeBotNotification(data.Word, data.IncludeBot, userId)
+	err = repo.ChengeBotNotification(data.Word, data.IncludeBot, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -46,7 +45,7 @@ func (s Server) PutWords(ctx echo.Context) error {
 // bot投稿に対する通知の一括設定
 // (POST /words/bot)
 func (s Server) PostWordsBot(ctx echo.Context) error {
-	data := &api.Bot{}
+	data := &Bot{}
 	err := ctx.Bind(data)
 
 	if err != nil {
@@ -61,7 +60,7 @@ func (s Server) PostWordsBot(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	err = db.ChangeAllBotNotification(data.IncludeBot, userId)
+	err = repo.ChangeAllBotNotification(data.IncludeBot, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

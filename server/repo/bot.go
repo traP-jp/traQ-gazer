@@ -1,4 +1,4 @@
-package db
+package repo
 
 func ChengeBotNotification(word string, includeBot bool, userId string) error {
 	_, err := db.Exec(

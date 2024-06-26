@@ -1,5 +1,5 @@
-package: api
+package: oapi
 generate:
   echo-server: true
   models: true
-output: server/api/server.gen.go
+output: server/oapi/gen.go

@@ -1,4 +1,4 @@
-package db
+package repo
 
 func ChengeMeNotification(word string, includeMe bool, userId string) error {
 	_, err := db.Exec("UPDATE words SET me_notification = ? WHERE word = ? AND trap_id = ?", includeMe, word, userId)
