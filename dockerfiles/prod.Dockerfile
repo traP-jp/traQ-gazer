@@ -12,7 +12,7 @@ RUN npm run build
 
 
 # サーバーサイドのビルド
-FROM golang:1.22.2-alpine3.18 as server-build
+FROM golang:1.22.3-alpine3.18 as server-build
 
 WORKDIR /github.com/traP-jp/h23s_15
 
