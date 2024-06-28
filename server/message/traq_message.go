@@ -3,74 +3,11 @@ package message
 import (
 	"fmt"
 	"strings"
-	"traQ-gazer/repo"
 	"traQ-gazer/model"
+	"traQ-gazer/repo"
 
 	"golang.org/x/exp/slog"
 )
-
-func traqMessageProcessor(messageList model.MessageList) (model.SendList, error) {
-	wordsList, err := repo.GetWordsWithoutTime()
-	if err != nil {
-		slog.Info("Error selecting words: %v", err)
-		return nil, err
-	}
-
-	usersItem, err := repo.GetUserList()
-	if err != nil {
-		slog.Info("Error selecting users: %v", err)
-		return nil, err
-	}
-
-	traqUuidToTrapId := make(map[string]model.UsersItem)
-	trapIdToTraqUuid := make(map[string]model.UsersItem)
-
-	for _, item := range usersItem {
-		trapIdToTraqUuid[item.TrapID] = item
-		traqUuidToTrapId[item.TraqUUID] = item
-	}
-
-	var sendList model.SendList
-	// TODO: Sotatsu リファクタリングと確認頼んだ！
-	for _, message := range messageList {
-		var messageOwnerTrapId string
-		messageOwner, ok := traqUuidToTrapId[message.TraqUuid]
-		if ok {
-			messageOwnerTrapId = messageOwner.TrapID
-		}
-
-		for _, wordsItem := range wordsList {
-			notifyTarget, ok := trapIdToTraqUuid[wordsItem.TrapId]
-			if !ok {
-				continue
-			}
-			if strings.Contains(message.Content, wordsItem.Word) {
-				if !wordsItem.IncludeMe {
-					if messageOwnerTrapId == notifyTarget.TrapID {
-						continue
-					}
-				}
-
-				if !wordsItem.IncludeBot {
-					if messageOwner.IsBot {
-						continue
-					}
-				}
-				// 通知する内容を追加
-				sendList = append(sendList, &model.Send{
-					// wordがワードを登録しているUserの情報
-					// messageが投稿されたワードの情報
-					Word:                 wordsItem.Word,
-					NotifyTargetTrapId:   notifyTarget.TrapID,
-					NotifyTargetTraqUuid: notifyTarget.TraqUUID,
-					MessageId:            message.Id,
-					IsBot:                messageOwner.IsBot,
-				})
-			}
-		}
-	}
-	return sendList, nil
-}
 
 func findMatchingWords(messageList model.MessageList) ([]*model.NotifyInfo, error) {
 	notifyInfoList := make([]*model.NotifyInfo, 0)
