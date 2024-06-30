@@ -7,9 +7,9 @@ defineProps<{ words: WordsList }>()
 <template>
   <table class="wordList">
     <tr>
-      <th class="">単語</th>
-      <th class="">bot</th>
-      <th class="">自分の発言</th>
+      <th>単語</th>
+      <th>bot</th>
+      <th>自分</th>
       <th></th>
     </tr>
     <tr v-for="item in words" :key="item.word">
