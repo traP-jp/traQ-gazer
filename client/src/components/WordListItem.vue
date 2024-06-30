@@ -2,47 +2,58 @@
 import { ref } from 'vue'
 
 import apiClient from '../apis'
-import {
-  WordsList,
-  WordListItem,
-  WordBotSetting,
-  WordMeSetting,
-  WordDelete
-} from '../apis/generated'
+import { WordListItem, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
 
 import { Icon } from '@iconify/vue'
 
-defineProps<{ item: WordListItem }>()
+const props = defineProps<{ item: WordListItem }>()
+const emit = defineEmits<{
+  update: []
+}>()
 
-const words = ref<WordsList>([])
+const update = () => {
+  emit('update')
+}
 
-const editingWord = ref('')
-const editingIncludeBot = ref(true)
-const editingIncludeMe = ref(false)
+const includeBot = ref(props.item.includeBot)
+const includeMe = ref(props.item.includeMe)
+const isEdit = ref(false)
 
-apiClient.list.getListUserMe().then((res) => (words.value = res))
-
-const editWord = () => {
-  if (editingWord.value !== '') {
-    const editBotBody: WordBotSetting = {
-      word: editingWord.value,
-      includeBot: editingIncludeBot.value
-    }
-    const editMeBody: WordMeSetting = {
-      word: editingWord.value,
-      includeMe: editingIncludeMe.value
-    }
-
-    apiClient.bot.putWords(editBotBody).catch((v) => console.log(v))
-    apiClient.me.putWordsMe(editMeBody).catch((v) => console.log(v))
-    apiClient.list.getListUserMe().then((res) => (words.value = res))
+const editBotNotify = () => {
+  if (isEdit.value) {
+    includeBot.value = !includeBot.value
   }
 }
 
-const deleteWord = (word: string) => {
-  const req: WordDelete = { word: word }
+const editMeNotify = () => {
+  if (isEdit.value) {
+    includeMe.value = !includeMe.value
+  }
+}
 
+const editWord = () => {
+  isEdit.value = !isEdit.value
+  if (!isEdit.value) {
+    const editBotBody: WordBotSetting = {
+      word: props.item.word,
+      includeBot: props.item.includeBot
+    }
+    const editMeBody: WordMeSetting = {
+      word: props.item.word,
+      includeMe: props.item.includeMe
+    }
+
+    apiClient.bot.putWords(editBotBody)
+    apiClient.me.putWordsMe(editMeBody)
+
+    update()
+  }
+}
+
+const deleteWord = () => {
+  const req: WordDelete = { word: props.item.word }
   apiClient.words.deleteWords(req)
+  update()
 }
 </script>
 
@@ -50,27 +61,29 @@ const deleteWord = (word: string) => {
   <td>{{ item.word }}</td>
   <td class="icons">
     <Icon
-      :icon="item.includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      :icon="includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
       width="30"
       height="30"
+      @click="editBotNotify"
     />
   </td>
   <td class="icons">
     <Icon
-      :icon="item.includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      :icon="includeMe ? 'mdi:notifications-active' : 'mdi:notifications-off'"
       width="30"
       height="30"
+      @click="editMeNotify"
     />
   </td>
   <td class="icons">
-    <Icon icon="mdi:file-edit" style="cursor: pointer" width="30" height="30" />
     <Icon
-      icon="mdi:delete"
+      :icon="isEdit ? 'mdi:check-bold' : 'mdi:file-edit'"
       style="cursor: pointer"
       width="30"
       height="30"
-      @click="deleteWord(item.word)"
+      @click="editWord"
     />
+    <Icon icon="mdi:delete" class="pointer" width="30" height="30" @click="deleteWord" />
   </td>
 </template>
 
@@ -81,5 +94,9 @@ template {
 
 .icons {
   text-align: center;
+}
+
+.pointer {
+  cursor: pointer;
 }
 </style>

@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { WordsList } from '../apis/generated'
 import WordListItem from '../components/WordListItem.vue'
+
 defineProps<{ words: WordsList }>()
+const emit = defineEmits<{
+  update: []
+}>()
+
+const update = () => {
+  emit('update')
+}
 </script>
 
 <template>
@@ -13,7 +21,7 @@ defineProps<{ words: WordsList }>()
       <th></th>
     </tr>
     <tr v-for="item in words" :key="item.word">
-      <word-list-item :item="item" />
+      <word-list-item :item="item" @update="update" />
     </tr>
   </table>
 </template>

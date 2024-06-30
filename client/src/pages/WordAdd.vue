@@ -9,21 +9,11 @@ import { WordRequest, WordsList } from '../apis/generated'
 import PageContainer from '../components/PageContainer.vue'
 import PrimaryButton from '../components/PrimaryButton.vue'
 
+const words = ref<WordsList>([])
+
+const newWord = ref('')
 const newBotNotify = ref(true)
 const newSelfNotify = ref(false)
-
-const isFailedOpen = ref(false)
-const isClearedOpen = ref(false)
-
-const openFailedDialog = () => {
-  isFailedOpen.value = true
-}
-const openClearedDialog = () => {
-  isClearedOpen.value = true
-}
-
-const words = ref<WordsList>([])
-const newWord = ref('')
 
 apiClient.list.getListUserMe().then((res) => (words.value = res))
 
@@ -31,7 +21,6 @@ const registerNewWord = () => {
   if (newWord.value.length === 0) {
     return
   } else if (newWord.value.length > 50) {
-    openFailedDialog()
     return
   }
 
@@ -42,19 +31,14 @@ const registerNewWord = () => {
   }
 
   // wordの登録リクエスト
-  apiClient.words
-    .postWords(reqBody)
-    .catch((v) => console.log(v))
-    .then(() => {
-      // 登録後のリストで更新
-      apiClient.list.getListUserMe().then((res) => (words.value = res))
-    })
+  apiClient.words.postWords(reqBody).then(() => update())
 
   newWord.value = ''
-  openClearedDialog()
 }
 
-apiClient.list.getListUserMe().then((res) => (words.value = res))
+const update = () => {
+  apiClient.list.getListUserMe().then((res) => (words.value = res))
+}
 </script>
 
 <template>
@@ -86,7 +70,7 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
     </section-container>
 
     <section-container title="登録単語の閲覧" description="">
-      <word-list :words="words" />
+      <word-list :words="words" @update="update()" />
     </section-container>
   </PageContainer>
 </template>
