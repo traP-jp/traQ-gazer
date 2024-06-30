@@ -1,16 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { Me } from '../models/Me';
 import type { WordMeSetting } from '../models/WordMeSetting';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class MeService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * 自分の投稿に対する通知の設定
      * 各wordに対して自分が投稿したものについても通知するか決める
@@ -31,7 +28,6 @@ export class MeService {
             },
         });
     }
-
     /**
      * 自分の投稿に対する通知の一括設定
      * 自分が投稿したもの全てについて通知するか決める
@@ -52,5 +48,4 @@ export class MeService {
             },
         });
     }
-
 }

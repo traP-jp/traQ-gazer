@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { Switch } from '@headlessui/vue'
+// import { Switch } from '@headlessui/vue'
 
 const emit = defineEmits<{
   (e: 'updateSelfNotify', value: boolean): boolean

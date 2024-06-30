@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import PageLink from './components/PageLink.vue'
-import TitleLogo from './components/TitleLogo.vue'
+import PageHeader from './components/PageHeader.vue'
 </script>
 
 <template>
-  <TitleLogo />
-  <PageLink />
-  <div class="my-4">
-    <RouterView />
-  </div>
+  <PageHeader />
+  <RouterView />
 </template>
 
-<style scoped></style>
+<style scoped lang="scss">
+#overlay {
+}
+</style>

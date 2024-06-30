@@ -1,15 +1,12 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { TrendingWords } from '../models/TrendingWords';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class TrendService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * 今日のトレンド
      * 今日最も追加されたwordの取得
@@ -28,7 +25,6 @@ export class TrendService {
             },
         });
     }
-
     /**
      * ある日のトレンド
      * 特定の日に最も追加されたwordの取得
@@ -52,7 +48,6 @@ export class TrendService {
             },
         });
     }
-
     /**
      * ある月のトレンド
      * 特定の月に最も追加されたwordの取得
@@ -76,7 +71,6 @@ export class TrendService {
             },
         });
     }
-
     /**
      * ある年のトレンド
      * 特定の年に最も追加されたwordの取得
@@ -100,5 +94,4 @@ export class TrendService {
             },
         });
     }
-
 }
