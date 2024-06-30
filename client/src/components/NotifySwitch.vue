@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { Icon } from '@iconify/vue'
 
 const notify = ref<string>('true')
 defineProps<{ title: string }>()
@@ -13,20 +14,23 @@ watch(notify, () => {
 
 <template>
   <div class="switch">
-    {{ title }}
-    <div>
-      <input type="radio" id="true" :value="true" v-model="notify" />
-      <label for="true">オン</label>
-    </div>
-    <div>
-      <input type="radio" id="false" :value="false" v-model="notify" />
-      <label for="false">オフ</label>
-    </div>
+    <div>{{ title }}</div>
+    <Icon
+      :icon="model ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      width="40"
+      height="40"
+      class="notify"
+      @click="model = !model"
+    />
   </div>
 </template>
 
 <style scoped lang="scss">
 .switch {
-  display: flex;
+  display: block;
+  padding: 4px;
+}
+.notify {
+  cursor: pointer;
 }
 </style>
