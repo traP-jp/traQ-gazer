@@ -17,7 +17,7 @@
 <style scoped lang="scss">
 header {
   width: 100%;
-  height: 150px;
+  height: 154px;
   padding: 4px;
   display: flex;
   align-items: center;
@@ -27,6 +27,9 @@ header {
     flex-grow: 2;
     a {
       width: 300px;
+    }
+    img {
+      background-color: #ddd;
     }
   }
 
@@ -42,6 +45,10 @@ header {
   @include sp {
     display: block;
     height: fit-content;
+  }
+
+  @include dark {
+    border-bottom: 0.5px solid white;
   }
 }
 </style>
