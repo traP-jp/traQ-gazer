@@ -11,6 +11,8 @@ import {
   WordDelete
 } from '../apis/generated'
 
+import { Icon } from '@iconify/vue'
+
 defineProps<{ item: WordListItem }>()
 
 // const isFailedOpen = ref(false)
@@ -85,11 +87,23 @@ const editWord = () => {
 </script>
 
 <template>
-  <td class="">{{ item.word }}</td>
-  <td class="">{{ item.includeBot ? 'ON' : 'OFF' }}</td>
-  <td class="">{{ item.includeMe ? 'ON' : 'OFF' }}</td>
-  <td class="">
-    <button>aaa</button>
+  <td>{{ item.word }}</td>
+  <td class="icons">
+    <Icon
+      :icon="item.includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      width="25"
+      height="25"
+    />
+  </td>
+  <td class="icons">
+    <Icon
+      :icon="item.includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      width="25"
+      height="25"
+    />
+  </td>
+  <td class="icons">
+    <Icon icon="mdi:file-edit" style="cursor: pointer" width="25" height="25" />
   </td>
 
   <div>
@@ -267,5 +281,9 @@ const editWord = () => {
 <style scoped lang="scss">
 template {
   margin: 5%;
+}
+
+.icons {
+  text-align: center;
 }
 </style>
