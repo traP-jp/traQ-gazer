@@ -1,4 +1,4 @@
-package traqmessage
+package message
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 	"traQ-gazer/model"
+	"traQ-gazer/repo"
 
 	"github.com/traPtitech/go-traq"
 	"golang.org/x/exp/slog"
@@ -30,7 +31,7 @@ func (m *MessagePoller) Run() {
 
 	const pollingInterval = time.Minute * 3
 
-	lastCheckpoint, err := model.GetPollingFrom()
+	lastCheckpoint, err := repo.GetPollingFrom()
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to get pollinginfo: %v", err))
 		lastCheckpoint = time.Now()
@@ -80,7 +81,7 @@ func (m *MessagePoller) Run() {
 
 		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
 
-		err := model.RecordPollingTime(lastCheckpoint)
+		err := repo.RecordPollingTime(lastCheckpoint)
 		if err != nil {
 			slog.Error(fmt.Sprintf("Failed to recording lastCheckpoint: %v", err))
 		}
@@ -109,12 +110,12 @@ func (m *messageProcessor) enqueue(messages *[]traq.Message) {
 }
 
 func (m *messageProcessor) process(messages []traq.Message) {
-	messageList, err := ConvertMessageHits(messages)
+	messageList, err := convertMessageHits(messages)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to convert messages: %v", err))
 		return
 	}
-	notifyInfoList, err := model.FindMatchingWords(messageList)
+	notifyInfoList, err := findMatchingWords(messageList)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to process messages: %v", err))
 		return
@@ -144,13 +145,13 @@ func genNotifyMessageContent(citeMessageId string, words ...string) string {
 }
 
 func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
-	if model.ACCESS_TOKEN == "" {
+	if repo.AccessToken == "" {
 		slog.Info("Skip sendMessage")
 		return nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
-	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, repo.AccessToken)
 	_, _, err := client.UserApi.PostDirectMessage(auth, notifyTargetTraqUUID).PostMessageRequest(traq.PostMessageRequest{
 		Content: messageContent,
 	}).Execute()
@@ -162,13 +163,13 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 }
 
 func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, bool, error) {
-	if model.ACCESS_TOKEN == "" {
+	if repo.AccessToken == "" {
 		slog.Info("Skip collectMessage")
 		return &[]traq.Message{}, false, nil
 	}
 
 	client := traq.NewAPIClient(traq.NewConfiguration())
-	auth := context.WithValue(context.Background(), traq.ContextAccessToken, model.ACCESS_TOKEN)
+	auth := context.WithValue(context.Background(), traq.ContextAccessToken, repo.AccessToken)
 
 	// 1度での取得上限は100まで　それ以上はoffsetを使うこと
 	// https://github.com/traPtitech/traQ/blob/47ed2cf94b2209c8444533326dee2a588936d5e0/service/search/engine.go#L51
@@ -185,7 +186,7 @@ func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, b
 	return &messages, more, nil
 }
 
-func ConvertMessageHits(messages []traq.Message) (model.MessageList, error) {
+func convertMessageHits(messages []traq.Message) (model.MessageList, error) {
 	messageList := model.MessageList{}
 	for _, message := range messages {
 		messageList = append(messageList, model.MessageItem{

@@ -1,4 +1,4 @@
-package handler
+package oapi
 
 import "github.com/labstack/echo/v4"
 

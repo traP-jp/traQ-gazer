@@ -1,3 +1,3 @@
-package handler
+package oapi
 
 type Server struct{}
