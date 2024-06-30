@@ -15,7 +15,7 @@
   width: 100vw;
   height: 100vh;
 
-  @include dark{
+  @include dark {
     color: $text-color-dark;
     background-color: $background-color-dark;
   }
@@ -26,8 +26,8 @@ a {
   // color: #646cff;
   text-decoration: inherit;
   color: $primary-color;
-  
-  @include dark{
+
+  @include dark {
     color: $primary-color-dark;
   }
 }

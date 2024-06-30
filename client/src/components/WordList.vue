@@ -30,7 +30,7 @@ table {
 }
 th {
   border-bottom: 1px solid black;
-  @include dark{
+  @include dark {
     border-bottom: 1px solid white;
   }
 }
