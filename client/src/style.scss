@@ -66,23 +66,6 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-v-btn {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-v-btn:hover {
-  border-color: #646cff;
-}
-v-btn:focus,
-v-btn:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
 #app {
   width: 100%;
   padding: 0px;

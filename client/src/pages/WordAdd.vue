@@ -7,6 +7,7 @@ import SectionContainer from '../components/SectionContainer.vue'
 import apiClient from '../apis'
 import { WordRequest, WordsList } from '../apis/generated'
 import PageContainer from '../components/PageContainer.vue'
+import PrimaryButton from '../components/PrimaryButton.vue'
 
 const newBotNotify = ref(true)
 const newSelfNotify = ref(false)
@@ -61,21 +62,26 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
     <section-container
       title="新規単語の登録"
       description="以下のフォームで登録した単語がtraQ上に投稿された際、DMに通知を送信します。"
+      class="aaa"
     >
-      <input
-        v-model="newWord"
-        type="text"
-        placeholder="登録したい単語をここに入力(50文字以内)"
-        class="inputForm"
-        @keypress.enter="registerNewWord"
-      />
-      <div class="flex justify-around my-4">
-        <h3>通知設定</h3>
-        <NotifySwitch :model-value="newBotNotify" title="Botの投稿" />
-        <NotifySwitch :model-value="newSelfNotify" title="自分の投稿" />
-      </div>
-      <div class="registerButton mb-16 mt-4">
-        <v-btn :disabled="newWord === ''" @click="registerNewWord">登録</v-btn>
+      <div class="form">
+        <input
+          v-model="newWord"
+          type="text"
+          placeholder="登録したい単語をここに入力(50文字以内)"
+          class="inputForm"
+          @keypress.enter="registerNewWord"
+        />
+        <div>
+          <h3>通知設定</h3>
+          <div class="settings">
+            <NotifySwitch :model-value="newBotNotify" title="Botの投稿" />
+            <NotifySwitch :model-value="newSelfNotify" title="自分の投稿" />
+          </div>
+        </div>
+        <div class="registerButton mb-16 mt-4">
+          <primary-button text="登録" :disabled="newWord === ''" @click="registerNewWord" />
+        </div>
       </div>
     </section-container>
 
@@ -85,12 +91,30 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
   </PageContainer>
 </template>
 
-<style>
+<style scoped lang="scss">
+.aaa {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 .inputForm {
   width: 90vw;
   min-width: 300px;
-  max-width: 700px;
+  max-width: 500px;
   padding: 1rem;
   margin: 8px;
+}
+
+.form {
+  display: flex;
+
+  @include sp {
+    display: block;
+  }
+}
+
+.settings {
+  display: flex;
+  padding: 4px;
 }
 </style>
