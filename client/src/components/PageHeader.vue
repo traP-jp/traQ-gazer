@@ -7,10 +7,10 @@
         <img src="../assets/traQgazer_logo.svg" alt="logo" width="300" height="150" />
       </router-link>
     </div>
-    <div class="links">
+    <!-- <div class="links">
       <router-link to="/">新規単語登録</router-link> /
       <router-link to="/">登録単語の一覧</router-link>
-    </div>
+    </div> -->
   </header>
 </template>
 
@@ -33,14 +33,14 @@ header {
     }
   }
 
-  .links {
-    color: $primary-color;
-    flex-grow: 1;
-    a {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-  }
+  // .links {
+  //   color: $primary-color;
+  //   flex-grow: 1;
+  //   a {
+  //     font-size: 1.5rem;
+  //     font-weight: 700;
+  //   }
+  // }
 
   @include sp {
     display: block;
