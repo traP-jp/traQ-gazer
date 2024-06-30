@@ -1,16 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { Bot } from '../models/Bot';
 import type { WordBotSetting } from '../models/WordBotSetting';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class BotService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * bot投稿に対する通知の設定
      * 各wordに対してbotが投稿したものについても通知するか決める
@@ -31,7 +28,6 @@ export class BotService {
             },
         });
     }
-
     /**
      * bot投稿に対する通知の一括設定
      * botが投稿したもの全てについて通知するか決める
@@ -52,5 +48,4 @@ export class BotService {
             },
         });
     }
-
 }

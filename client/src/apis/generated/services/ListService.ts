@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -5,14 +6,10 @@ import type { UsersList } from '../models/UsersList';
 import type { UsersOfWordsList } from '../models/UsersOfWordsList';
 import type { WordsList } from '../models/WordsList';
 import type { WordsOfUsersList } from '../models/WordsOfUsersList';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ListService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * アクセスしているuserのwordたち
      * アクセスしているuserの登録しているwordの取得
@@ -25,7 +22,6 @@ export class ListService {
             url: '/list/user/me',
         });
     }
-
     /**
      * あるuserのwordたち
      * userの登録しているwordの取得
@@ -47,7 +43,6 @@ export class ListService {
             },
         });
     }
-
     /**
      * ある単語を見ているuserたち
      * ある単語を登録しているuserの取得
@@ -69,7 +64,6 @@ export class ListService {
             },
         });
     }
-
     /**
      * あるuserのwordたちを登録しているuserたち
      * あるuserが登録しているすべてのwordのそれぞれを登録しているusersの取得
@@ -91,7 +85,6 @@ export class ListService {
             },
         });
     }
-
     /**
      * あるwordのuserたちが登録しているwordたち
      * あるwordを登録しているすべてのuserのそれぞれが登録しているwordsの取得
@@ -113,5 +106,4 @@ export class ListService {
             },
         });
     }
-
 }
