@@ -4,8 +4,8 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color: #000;
-  background-color: #fff;
+  color: $text-color;
+  background-color: $background-color;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -14,12 +14,22 @@
   -webkit-text-size-adjust: 100%;
   width: 100vw;
   height: 100vh;
+
+  @include dark{
+    color: $text-color-dark;
+    background-color: $background-color-dark;
+  }
 }
 
 a {
   font-weight: 500;
   // color: #646cff;
   text-decoration: inherit;
+  color: $primary-color;
+  
+  @include dark{
+    color: $primary-color-dark;
+  }
 }
 a:hover {
   // color: #535bf2;
@@ -29,7 +39,7 @@ a:hover {
 }
 
 body {
-  width: 100vw;
+  width: 100%;
   margin: 0;
 }
 
@@ -73,11 +83,13 @@ v-btn:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-.card {
-  padding: 2em;
-}
-
 #app {
   width: 100%;
   padding: 0px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: auto;
 }
