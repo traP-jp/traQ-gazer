@@ -144,10 +144,7 @@ const editWord = () => {
       />
     </div>
     <div class="flex justify-around my-4">
-      <NotifySwitch
-        :model-value="newBotNotify"
-        title="Botの通知を送信する"
-      />
+      <NotifySwitch :model-value="newBotNotify" title="Botの通知を送信する" />
       <SelfNotify
         @update-self-notify="(newValue: boolean) => updateNewSelfNotify(newValue)"
         :self-notify="newSelfNotify"
@@ -310,10 +307,7 @@ const editWord = () => {
                   </DialogTitle>
 
                   <div class="flex justify-around my-4">
-                    <NotifySwitch
-                      :model-value="edittingIncludeBot"
-                      title="botの通知を変更"
-                    />
+                    <NotifySwitch :model-value="edittingIncludeBot" title="botの通知を変更" />
                     <SelfNotify
                       @update-self-notify="(newValue: boolean) => updateNewSelfNotify(newValue)"
                       :self-notify="edittingIncludeMe"

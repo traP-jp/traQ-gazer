@@ -25,7 +25,7 @@ header {
 
   .logo {
     flex-grow: 2;
-    a{
+    a {
       width: 300px;
     }
   }

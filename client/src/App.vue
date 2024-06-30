@@ -8,5 +8,6 @@ import PageHeader from './components/PageHeader.vue'
 </template>
 
 <style scoped lang="scss">
-#overlay{}
+#overlay {
+}
 </style>

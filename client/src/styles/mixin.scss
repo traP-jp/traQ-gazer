@@ -1,13 +1,13 @@
 $sp: 768px;
 
-@mixin sp{
+@mixin sp {
   @media screen and (max-width: $sp) {
-    @content
+    @content;
   }
-};
+}
 
-@mixin dark{
+@mixin dark {
   @media screen and (prefers-color-scheme: light) {
-    @content
+    @content;
   }
-};
+}
