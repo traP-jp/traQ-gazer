@@ -102,7 +102,8 @@ apiClient.list.getListUserMe().then((res) => (words.value = res))
   min-width: 300px;
   max-width: 500px;
   padding: 1rem;
-  margin: 8px;
+  margin: 20px;
+  font-size: 1.25rem;
 }
 
 .form {
