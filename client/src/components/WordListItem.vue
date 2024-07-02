@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-
-import apiClient from '../apis'
-import { WordListItem, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
-
 import { Icon } from '@iconify/vue'
+import apiClient from '../apis'
+import { WordListItem, WordBotSetting, WordMeSetting } from '../apis/generated'
+import DeleteModal from './DeleteModal.vue'
 
 const props = defineProps<{ item: WordListItem }>()
 const emit = defineEmits<{
@@ -15,44 +14,25 @@ const update = () => {
   emit('update')
 }
 
-const includeBot = ref(props.item.includeBot)
-const includeMe = ref(props.item.includeMe)
-const isEdit = ref(false)
+const isDelete = ref(false)
 
 const editBotNotify = () => {
-  if (isEdit.value) {
-    includeBot.value = !includeBot.value
+  const editBotBody: WordBotSetting = {
+    word: props.item.word,
+    includeBot: !props.item.includeBot
   }
+  apiClient.bot.putWords(editBotBody)
+
+  update()
 }
 
 const editMeNotify = () => {
-  if (isEdit.value) {
-    includeMe.value = !includeMe.value
+  const editMeBody: WordMeSetting = {
+    word: props.item.word,
+    includeMe: !props.item.includeMe
   }
-}
+  apiClient.me.putWordsMe(editMeBody)
 
-const editWord = () => {
-  isEdit.value = !isEdit.value
-  if (!isEdit.value) {
-    const editBotBody: WordBotSetting = {
-      word: props.item.word,
-      includeBot: props.item.includeBot
-    }
-    const editMeBody: WordMeSetting = {
-      word: props.item.word,
-      includeMe: props.item.includeMe
-    }
-
-    apiClient.bot.putWords(editBotBody)
-    apiClient.me.putWordsMe(editMeBody)
-
-    update()
-  }
-}
-
-const deleteWord = () => {
-  const req: WordDelete = { word: props.item.word }
-  apiClient.words.deleteWords(req)
   update()
 }
 </script>
@@ -61,30 +41,28 @@ const deleteWord = () => {
   <td>{{ item.word }}</td>
   <td class="icons">
     <Icon
-      :icon="includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      :icon="item.includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
       width="30"
       height="30"
+      class="pointer"
       @click="editBotNotify"
     />
   </td>
   <td class="icons">
     <Icon
-      :icon="includeMe ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      :icon="item.includeMe ? 'mdi:notifications-active' : 'mdi:notifications-off'"
       width="30"
       height="30"
+      class="pointer"
       @click="editMeNotify"
     />
   </td>
   <td class="icons">
-    <Icon
-      :icon="isEdit ? 'mdi:check-bold' : 'mdi:file-edit'"
-      style="cursor: pointer"
-      width="30"
-      height="30"
-      @click="editWord"
-    />
-    <Icon icon="mdi:delete" class="pointer" width="30" height="30" @click="deleteWord" />
+    <Icon icon="mdi:delete" class="pointer" width="30" height="30" @click="isDelete = true" />
+    {{ isDelete }}
   </td>
+
+  <delete-modal :isOpen="isDelete" @updateIsOpen="($event) => (isDelete = $event)" />
 </template>
 
 <style scoped lang="scss">
