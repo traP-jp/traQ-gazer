@@ -36,11 +36,11 @@ const editWord = () => {
   if (!isEdit.value) {
     const editBotBody: WordBotSetting = {
       word: props.item.word,
-      includeBot: props.item.includeBot
+      includeBot: includeBot.value
     }
     const editMeBody: WordMeSetting = {
       word: props.item.word,
-      includeMe: props.item.includeMe
+      includeMe: includeMe.value
     }
 
     apiClient.bot.putWords(editBotBody)
