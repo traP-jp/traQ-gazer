@@ -59,8 +59,8 @@ const update = () => {
         <div>
           <h3>通知設定</h3>
           <div class="settings">
-            <NotifySwitch :model-value="newBotNotify" title="Botの投稿" />
-            <NotifySwitch :model-value="newSelfNotify" title="自分の投稿" />
+            <NotifySwitch v-model:notify="newBotNotify" title="Botの投稿" />
+            <NotifySwitch v-model:notify="newSelfNotify" title="自分の投稿" />
           </div>
         </div>
         <div class="registerButton mb-16 mt-4">
