@@ -3,7 +3,7 @@ import { Icon } from '@iconify/vue'
 
 defineProps<{ title: string }>()
 
-const model = defineModel<boolean>({ required: true })
+const model = defineModel<boolean>('notify', { required: true })
 </script>
 
 <template>
