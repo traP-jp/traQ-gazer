@@ -14,7 +14,7 @@
     "start-mock": "prism mock -p 4010 -d ../docs/openapi.yaml"
   },
   "dependencies": {
-    "vue": "^3.4.31",
+    "vue": "^3.4.38",
     "vue-router": "^4.2.2"
   },
   "devDependencies": {
@@ -26,16 +26,16 @@
     "@vitejs/plugin-vue": "^5.1.2",
     "@vue/eslint-config-prettier": "^7.1.0",
     "@vue/eslint-config-typescript": "^13.0.0",
-    "autoprefixer": "^10.4.19",
+    "autoprefixer": "^10.4.20",
     "concurrently": "^8.2.2",
     "eslint": "^8.42.0",
     "eslint-plugin-vue": "^9.26.0",
     "openapi-typescript-codegen": "^0.29.0",
-    "postcss": "^8.4.38",
+    "postcss": "^8.4.41",
     "prettier": "3.2.5",
-    "sass": "^1.77.6",
-    "typescript": "^5.5.2",
+    "sass": "^1.77.8",
+    "typescript": "^5.5.4",
     "vite": "^5.3.5",
-    "vue-tsc": "^2.0.17"
+    "vue-tsc": "^2.0.29"
   }
 }
