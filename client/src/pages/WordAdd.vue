@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import NotifySwitch from '../components/NotifySwitch.vue'
 import WordList from '../components/WordList.vue'
-import SectionContainer from '../components/SectionContainer.vue'
+import SectionContainer from '../components/ArticleContainer.vue'
 
 import apiClient from '../apis'
 import { WordRequest, WordsList } from '../apis/generated'
@@ -46,9 +46,8 @@ const update = () => {
     <section-container
       title="新規単語の登録"
       description="以下のフォームで登録した単語がtraQ上に投稿された際、DMに通知を送信します。"
-      class="aaa"
     >
-      <div class="form">
+      <section class="form">
         <input
           v-model="newWord"
           type="text"
@@ -56,42 +55,40 @@ const update = () => {
           class="inputForm"
           @keypress.enter="registerNewWord"
         />
-        <div>
+        <section>
           <h3>通知設定</h3>
           <div class="settings">
             <NotifySwitch v-model:notify="newBotNotify" title="Botの投稿" />
             <NotifySwitch v-model:notify="newSelfNotify" title="自分の投稿" />
           </div>
-        </div>
-        <div class="registerButton mb-16 mt-4">
+        </section>
+        <section class="registerButton">
           <primary-button text="登録" :disabled="newWord === ''" @click="registerNewWord" />
-        </div>
-      </div>
+        </section>
+      </section>
     </section-container>
 
-    <section-container title="登録単語の閲覧" description="">
+    <section-container title="登録単語の閲覧">
       <word-list :words="words" @update="update()" />
     </section-container>
   </PageContainer>
 </template>
 
 <style scoped lang="scss">
-.aaa {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
 .inputForm {
   width: 90vw;
   min-width: 300px;
   max-width: 500px;
-  padding: 1rem;
+  padding: 0.5rem;
   margin: 20px;
-  font-size: 1.25rem;
+  font-size: inherit;
 }
 
 .form {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 8px;
 
   @include sp {
     display: block;
