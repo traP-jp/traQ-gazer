@@ -24,7 +24,11 @@ const model = defineModel<boolean>('notify', { required: true })
 <style scoped lang="scss">
 .switch {
   padding: 4px;
-  justify-content: center;
+  align-content: center;
+
+  * {
+    margin: auto;
+  }
 }
 
 .icon {

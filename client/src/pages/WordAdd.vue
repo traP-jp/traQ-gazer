@@ -62,41 +62,50 @@ const update = () => {
             <NotifySwitch v-model:notify="newSelfNotify" title="自分の投稿" />
           </div>
         </section>
-        <section class="registerButton">
+        <div class="registerButton">
           <primary-button text="登録" :disabled="newWord === ''" @click="registerNewWord" />
-        </section>
+        </div>
       </section>
     </section-container>
 
-    <section-container title="登録単語の閲覧">
-      <word-list :words="words" @update="update()" />
+    <section-container title="登録単語の閲覧" class="wordList">
+      <word-list class="wordList" :words="words" @update="update()" />
     </section-container>
   </PageContainer>
 </template>
 
 <style scoped lang="scss">
-.inputForm {
-  width: 90vw;
-  min-width: 300px;
-  max-width: 500px;
-  padding: 0.5rem;
-  margin: 20px;
-  font-size: inherit;
-}
-
 .form {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   padding: 8px;
+  gap: 16px;
 
   @include sp {
     display: block;
   }
 }
 
+.inputForm {
+  width: 90vw;
+  min-width: 300px;
+  max-width: 500px;
+  padding: 1.25rem;
+  border-radius: 8px;
+  margin: 0px 4px;
+  font-size: inherit;
+}
+
 .settings {
   display: flex;
-  padding: 4px;
+  justify-content: space-around;
+  padding: 8px;
+  gap: 8px;
+}
+
+.wordList {
+  margin: auto;
 }
 </style>
