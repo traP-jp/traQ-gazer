@@ -79,7 +79,7 @@ const deleteWord = () => {
 </script>
 
 <template>
-  <td>{{ item.word }} / {{ editDialog?.returnValue }}</td>
+  <td>{{ item.word }}</td>
   <td class="icons">
     <Icon
       :icon="includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
@@ -152,9 +152,8 @@ const deleteWord = () => {
 
 dialog {
   margin: auto;
-  border-width: 0;
-  border-radius: 8px;
-  opacity: 1;
+  border: none;
+  border-radius: 16px;
   background-color: $secondary-background-color;
 
   @include dark {
@@ -168,7 +167,9 @@ dialog {
 }
 
 .dialog {
-  width: 30vw;
+  width: fit-content;
+  min-width: 350px;
+  max-width: 90vw;
   padding: 24px;
 }
 
