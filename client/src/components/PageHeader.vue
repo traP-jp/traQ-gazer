@@ -17,13 +17,14 @@
 <style scoped lang="scss">
 header {
   width: 100%;
-  height: 154px;
-  padding: 4px;
+  height: 150px;
+  padding: 0px 4px;
   display: flex;
   align-items: center;
   border-bottom: 0.5px solid black;
 
   .logo {
+    height: 100%;
     flex-grow: 2;
     a {
       width: 300px;
