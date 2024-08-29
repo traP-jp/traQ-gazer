@@ -79,7 +79,7 @@ const deleteWord = () => {
 </script>
 
 <template>
-  <td>{{ item.word }} / {{ editDialog?.returnValue }}</td>
+  <td>{{ item.word }}</td>
   <td class="icons">
     <Icon
       :icon="includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
