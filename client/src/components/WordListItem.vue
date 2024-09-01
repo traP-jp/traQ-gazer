@@ -98,6 +98,7 @@ const deleteWord = () => {
         <NotifySwitch v-model:notify="includeMe" title="自分の投稿" />
       </div>
       <div :class="$style.downerButton">
+        <button @click="editDialog?.close()">閉じる</button>
         <form method="dialog">
           <SecondaryButton text="変更する" @click="sendSetting" />
         </form>
@@ -108,10 +109,10 @@ const deleteWord = () => {
   <dialog :id="$style.deleteDialog" @click.self="deleteDialog?.close()">
     <section :class="$style.dialog">
       <h2>単語の削除</h2>
-
       <div :class="$style.downerButton">
+        <button @click="deleteDialog?.close()">閉じる</button>
         <form method="dialog">
-          <SecondaryButton text="削除する" @click="deleteWord" />
+          <secondary-button text="削除する" @click="deleteWord" />
         </form>
       </div>
     </section>
@@ -162,5 +163,6 @@ const deleteWord = () => {
   display: flex;
   justify-content: end;
   margin: 8px;
+  gap: 8px;
 }
 </style>
