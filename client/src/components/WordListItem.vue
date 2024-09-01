@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
-import NotifySwitch from '../components/NotifySwitch.vue'
-
+import { onMounted, ref, useCssModule, watch } from 'vue'
 import apiClient from '../apis'
-import { WordListItem, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
-
+import type { WordListItem, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
 import { Icon } from '@iconify/vue'
+import NotifySwitch from './NotifySwitch.vue'
 import SecondaryButton from './SecondaryButton.vue'
 
 const props = defineProps<{ item: WordListItem }>()
@@ -20,36 +18,29 @@ const update = () => {
 const includeBot = ref(props.item.includeBot)
 const includeMe = ref(props.item.includeMe)
 const isEdit = ref(false)
-const editDialogNumber = Math.random().toString()
-const deleteDialogNumber = Math.random().toString()
 const editDialog = ref<HTMLDialogElement>()
 const deleteDialog = ref<HTMLDialogElement>()
+const $style = useCssModule()
 
 onMounted(() => {
-  editDialog.value = document.getElementById(editDialogNumber) as HTMLDialogElement
-  deleteDialog.value = document.getElementById(deleteDialogNumber) as HTMLDialogElement
+  editDialog.value = document.getElementById($style.editDialog) as HTMLDialogElement
+  deleteDialog.value = document.getElementById($style.deleteDialog) as HTMLDialogElement
 })
 
 watch([includeBot, includeMe], () => {
   isEdit.value = true
 })
 
-const editBotNotify = () => {
-  if (isEdit.value) {
-    includeBot.value = !includeBot.value
-  }
-}
-
-const editMeNotify = () => {
-  if (isEdit.value) {
-    includeMe.value = !includeMe.value
-  }
-}
-
-const editWord = () => {
+const openEdit = () => {
   if (editDialog.value) {
     isEdit.value = false
     editDialog.value.showModal()
+  }
+}
+
+const openDelete = () => {
+  if (deleteDialog.value) {
+    deleteDialog.value.showModal()
   }
 }
 
@@ -80,47 +71,33 @@ const deleteWord = () => {
 
 <template>
   <td>{{ item.word }}</td>
-  <td class="icons">
+  <td :class="$style.icons">
     <Icon
       :icon="includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
       width="30"
       height="30"
-      @click="editBotNotify"
     />
   </td>
-  <td class="icons">
+  <td :class="$style.icons">
     <Icon
       :icon="includeMe ? 'mdi:notifications-active' : 'mdi:notifications-off'"
       width="30"
       height="30"
-      @click="editMeNotify"
     />
   </td>
-  <td class="icons">
-    <Icon
-      :icon="'mdi:file-edit'"
-      style="cursor: pointer"
-      width="30"
-      height="30"
-      @click="editWord"
-    />
-    <Icon
-      icon="mdi:delete"
-      class="pointer"
-      width="30"
-      height="30"
-      @click="deleteDialog?.showModal()"
-    />
+  <td :class="$style.icons">
+    <Icon :class="$style.pointer" icon="mdi:file-edit" width="30" height="30" @click="openEdit" />
+    <Icon :class="$style.pointer" icon="mdi:delete" width="30" height="30" @click="openDelete" />
   </td>
 
-  <dialog :id="editDialogNumber" @click.self="editDialog?.close()">
-    <section class="dialog">
+  <dialog :id="$style.editDialog" @click.self="editDialog?.close()">
+    <section :class="$style.dialog">
       <h2>通知設定</h2>
-      <div class="settings">
+      <div :class="$style.settings">
         <NotifySwitch v-model:notify="includeBot" title="Botの投稿" />
         <NotifySwitch v-model:notify="includeMe" title="自分の投稿" />
       </div>
-      <div class="downerButton">
+      <div :class="$style.downerButton">
         <form method="dialog">
           <SecondaryButton text="変更する" @click="sendSetting" />
         </form>
@@ -128,11 +105,11 @@ const deleteWord = () => {
     </section>
   </dialog>
 
-  <dialog :id="deleteDialogNumber" @click.self="deleteDialog?.close()">
-    <section class="dialog">
+  <dialog :id="$style.deleteDialog" @click.self="deleteDialog?.close()">
+    <section :class="$style.dialog">
       <h2>単語の削除</h2>
 
-      <div class="downerButton">
+      <div :class="$style.downerButton">
         <form method="dialog">
           <SecondaryButton text="削除する" @click="deleteWord" />
         </form>
@@ -141,8 +118,9 @@ const deleteWord = () => {
   </dialog>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" module>
 .icons {
+  width: 0px;
   text-align: center;
 }
 
@@ -150,7 +128,8 @@ const deleteWord = () => {
   cursor: pointer;
 }
 
-dialog {
+#editDialog,
+#deleteDialog {
   margin: auto;
   border: none;
   border-radius: 16px;
@@ -175,8 +154,8 @@ dialog {
 
 .settings {
   display: flex;
-  justify-content: space-around;
-  margin: 8px;
+  justify-content: center;
+  margin: 16px;
 }
 
 .downerButton {

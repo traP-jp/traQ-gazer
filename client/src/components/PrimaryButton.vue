@@ -3,10 +3,10 @@ defineProps<{ text: string }>()
 </script>
 
 <template>
-  <button class="primary">{{ text }}</button>
+  <button :class="$style.primary">{{ text }}</button>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" module>
 .primary {
   color: $text-color-dark;
   background-color: $primary-color;
