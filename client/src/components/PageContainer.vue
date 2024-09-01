@@ -4,10 +4,10 @@
   </main>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" module>
 main {
   width: 100vw;
   height: calc(100vh - 5rem);
-  padding: 4px;
+  padding: 8px;
 }
 </style>

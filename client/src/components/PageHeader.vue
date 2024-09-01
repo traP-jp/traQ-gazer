@@ -2,19 +2,19 @@
 
 <template>
   <header>
-    <div class="logo">
-      <router-link to="/" class="logo">
+    <div :class="$style.logo">
+      <router-link to="/" :class="$style.logo">
         <img src="../assets/traQgazer_logo.svg" alt="logo" width="300" height="150" />
       </router-link>
     </div>
-    <!-- <div class="links">
+    <!-- <div :class="$style.links">
       <router-link to="/">新規単語登録</router-link> /
       <router-link to="/">登録単語の一覧</router-link>
     </div> -->
   </header>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" module>
 header {
   width: 100%;
   height: 150px;

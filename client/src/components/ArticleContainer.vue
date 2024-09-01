@@ -3,8 +3,8 @@ defineProps<{ title: string; description?: string }>()
 </script>
 
 <template>
-  <article>
-    <div class="heading">
+  <article :class="$style.article">
+    <div :class="$style.heading">
       <h1>{{ title }}</h1>
       <span v-if="description">{{ description }}</span>
     </div>
@@ -12,7 +12,11 @@ defineProps<{ title: string; description?: string }>()
   </article>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" module>
+.article {
+  margin: 8px;
+}
+
 .heading {
   display: flex;
   margin: 8px;
