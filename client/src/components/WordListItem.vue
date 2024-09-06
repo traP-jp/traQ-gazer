@@ -18,13 +18,16 @@ const update = () => {
 const includeBot = ref(props.item.includeBot)
 const includeMe = ref(props.item.includeMe)
 const isEdit = ref(false)
+
 const editDialog = ref<HTMLDialogElement>()
 const deleteDialog = ref<HTMLDialogElement>()
-const $style = useCssModule()
+
+const editDialogNum = Math.random().toString()
+const deleteDialogNum = Math.random().toString()
 
 onMounted(() => {
-  editDialog.value = document.getElementById($style.editDialog) as HTMLDialogElement
-  deleteDialog.value = document.getElementById($style.deleteDialog) as HTMLDialogElement
+  editDialog.value = document.getElementById(editDialogNum) as HTMLDialogElement
+  deleteDialog.value = document.getElementById(deleteDialogNum) as HTMLDialogElement
 })
 
 watch([includeBot, includeMe], () => {
@@ -90,8 +93,8 @@ const deleteWord = () => {
     <Icon :class="$style.pointer" icon="mdi:delete" width="30" height="30" @click="openDelete" />
   </td>
 
-  <dialog :id="$style.editDialog" @click.self="editDialog?.close()">
-    <section :class="$style.dialog">
+  <dialog :class="$style.dialog" :id="editDialogNum" @click.self="editDialog?.close()">
+    <section :class="$style.dialogContent">
       <h2>通知設定</h2>
       <div :class="$style.settings">
         <NotifySwitch v-model:notify="includeBot" title="Botの投稿" />
@@ -106,8 +109,8 @@ const deleteWord = () => {
     </section>
   </dialog>
 
-  <dialog :id="$style.deleteDialog" @click.self="deleteDialog?.close()">
-    <section :class="$style.dialog">
+  <dialog :class="$style.dialog" :id="deleteDialogNum" @click.self="deleteDialog?.close()">
+    <section :class="$style.dialogContent">
       <h2>単語の削除</h2>
       <div :class="$style.downerButton">
         <button @click="deleteDialog?.close()">閉じる</button>
@@ -129,8 +132,7 @@ const deleteWord = () => {
   cursor: pointer;
 }
 
-#editDialog,
-#deleteDialog {
+.dialog {
   margin: auto;
   border: none;
   border-radius: 16px;
@@ -146,7 +148,7 @@ const deleteWord = () => {
   }
 }
 
-.dialog {
+.dialogContent {
   width: fit-content;
   min-width: 350px;
   max-width: 90vw;
