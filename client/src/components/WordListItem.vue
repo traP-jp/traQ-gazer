@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, useCssModule, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import apiClient from '../apis'
 import type { WordListItem, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
 import { Icon } from '@iconify/vue'
