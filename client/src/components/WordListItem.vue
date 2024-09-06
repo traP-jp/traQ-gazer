@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import apiClient from '../apis'
 import type { WordListItem, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
 import { Icon } from '@iconify/vue'
@@ -30,10 +30,6 @@ onMounted(() => {
   deleteDialog.value = document.getElementById(deleteDialogNum) as HTMLDialogElement
 })
 
-watch([includeBot, includeMe], () => {
-  isEdit.value = true
-})
-
 const openEdit = () => {
   if (editDialog.value) {
     isEdit.value = false
@@ -48,21 +44,23 @@ const openDelete = () => {
 }
 
 const sendSetting = () => {
-  if (isEdit.value) {
+  if (includeBot.value !== props.item.includeBot) {
     const editBotBody: WordBotSetting = {
       word: props.item.word,
       includeBot: includeBot.value
     }
+    apiClient.bot.putWords(editBotBody)
+    isEdit.value = true
+  }
+  if (includeMe.value !== props.item.includeMe) {
     const editMeBody: WordMeSetting = {
       word: props.item.word,
       includeMe: includeMe.value
     }
-
-    apiClient.bot.putWords(editBotBody)
     apiClient.me.putWordsMe(editMeBody)
-
-    update()
+    isEdit.value = true
   }
+  if (isEdit.value) update()
 }
 
 const deleteWord = () => {
@@ -76,14 +74,14 @@ const deleteWord = () => {
   <td>{{ item.word }}</td>
   <td :class="$style.icons">
     <Icon
-      :icon="includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      :icon="item.includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
       width="30"
       height="30"
     />
   </td>
   <td :class="$style.icons">
     <Icon
-      :icon="includeMe ? 'mdi:notifications-active' : 'mdi:notifications-off'"
+      :icon="item.includeMe ? 'mdi:notifications-active' : 'mdi:notifications-off'"
       width="30"
       height="30"
     />
