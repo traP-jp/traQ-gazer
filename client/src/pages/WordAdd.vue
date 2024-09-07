@@ -73,7 +73,7 @@ const update = () => {
             </div>
           </section>
           <div :class="$style.registerButton">
-            <primary-button text="登録" :disabled="newWord" @click="registerNewWord" />
+            <primary-button text="登録" :disabled="newWord === ''" @click="registerNewWord" />
           </div>
         </section>
       </section>
