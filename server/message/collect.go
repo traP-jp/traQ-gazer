@@ -48,6 +48,8 @@ func (m *MessagePoller) Run() {
 		onPollingTime := time.Now()
 		var collectedMessageCount int
 
+		var allMessages []traq.Message
+
 		for page := 0; ; page++ {
 			messages, more, err := collectMessages(lastCheckpoint, onPollingTime, page)
 
@@ -68,8 +70,8 @@ func (m *MessagePoller) Run() {
 
 			collectedMessageCount += tmpMessageCount
 
-			// 取得したメッセージを使っての処理の呼び出し
-			m.processor.enqueue(messages)
+			// 取得したメッセージをallMessagesに追加
+			allMessages = append(allMessages, *messages...)
 			if !more {
 				if tmpMessageCount <= 0 {
 					slog.Info("Message count is 0. Skip logging created at information")
@@ -79,6 +81,9 @@ func (m *MessagePoller) Run() {
 				break
 			}
 		}
+
+		// 通知処理にメッセージを渡す
+		m.processor.enqueue(&allMessages)
 
 		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
 
