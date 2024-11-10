@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -122,6 +123,11 @@ func (m *messageProcessor) process(messages []traq.Message) {
 	}
 
 	slog.Info(fmt.Sprintf("Sending %d DMs...", len(notifyInfoList)))
+
+	// 元投稿の時系列に沿ってDMを送るためにnotifyInfoListをIdでソート
+	sort.Slice(notifyInfoList, func(i, j int) bool {
+		return notifyInfoList[i].MessageId < notifyInfoList[j].MessageId
+	})
 
 	for _, notifyInfo := range notifyInfoList {
 		err := sendMessage(notifyInfo.NotifyTargetTraqUuid, genNotifyMessageContent(notifyInfo.MessageId, notifyInfo.Words...))
