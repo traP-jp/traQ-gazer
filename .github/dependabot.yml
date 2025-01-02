@@ -9,8 +9,6 @@ updates:
     directory: "/client"
     schedule:
       interval: monthly
-    reviewers:
-      - "Pugma"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ":arrow_up: "
@@ -30,8 +28,6 @@ updates:
     directory: "/server"
     schedule:
       interval: monthly
-    reviewers:
-      - "Pugma"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ":arrow_up: "
@@ -47,8 +43,6 @@ updates:
     directory: "/dockerfiles"
     schedule:
       interval: "monthly"
-    reviewers:
-      - "Pugma"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ":arrow_up: "
@@ -57,8 +51,6 @@ updates:
     directory: "/.github"
     schedule:
       interval: monthly
-    reviewers:
-      - "Pugma"
     open-pull-requests-limit: 10
     commit-message:
       prefix: ":arrow_up: "
