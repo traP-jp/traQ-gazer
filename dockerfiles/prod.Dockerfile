@@ -26,7 +26,7 @@ RUN go build -o app .
 
 
 # 最終的な配信用
-FROM alpine:3.20.3
+FROM alpine:3.21.0
 
 WORKDIR /
 
