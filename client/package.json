@@ -34,7 +34,7 @@
     "postcss": "^8.4.49",
     "prettier": "3.2.5",
     "sass": "^1.83.0",
-    "typescript": "^5.5.2",
+    "typescript": "^5.7.2",
     "vite": "^6.0.6",
     "vue-tsc": "^2.2.0"
   }
