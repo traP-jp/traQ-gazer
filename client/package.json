@@ -33,7 +33,7 @@
     "openapi-typescript-codegen": "^0.29.0",
     "postcss": "^8.5.3",
     "prettier": "3.2.5",
-    "sass": "^1.85.1",
+    "sass": "^1.86.1",
     "typescript": "^5.8.2",
     "vite": "^6.2.4",
     "vue-tsc": "^2.2.8"
