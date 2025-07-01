@@ -14,7 +14,7 @@
     "start-mock": "prism mock -p 4010 -d ../docs/openapi.yaml"
   },
   "dependencies": {
-    "vue": "^3.5.16",
+    "vue": "^3.5.17",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
