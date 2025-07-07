@@ -37,6 +37,9 @@ const update = () => {
   border-collapse: collapse;
   border-spacing: 8px;
 }
+tbody > tr:nth-child(2n){
+  background: $secondary-background-color-dark;
+}
 th {
   padding: 0px 8px;
   border-bottom: 1px solid $text-color;
