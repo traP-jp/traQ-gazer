@@ -38,7 +38,10 @@ const update = () => {
   border-spacing: 8px;
 }
 tbody > tr:nth-child(2n) {
-  background: $secondary-background-color-dark;
+  background: $secondary-background-color;
+  @include dark {
+    background: $secondary-background-color-dark;
+  }
 }
 th {
   padding: 0px 8px;
