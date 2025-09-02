@@ -1,4 +1,4 @@
-FROM swaggerapi/swagger-ui:v5.27.1
+FROM swaggerapi/swagger-ui:v5.28.0
 
 COPY docs/openapi.yaml /docs/openapi.yaml
 
