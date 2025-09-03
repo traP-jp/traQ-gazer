@@ -84,12 +84,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 // 全データの取得
 // (GET /words)
 func (s Server) GetWords(ctx echo.Context) error {
-	wordlist, err := repo.GetWords()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	change := convertSliceToA1(wordlist)
-	return ctx.JSON(http.StatusOK, change)
+	return ctx.JSON(http.StatusNotFound, echo.NotFoundHandler)
 }
 
 // model.WordsAllListからoapi.WordsAllListへの型の変換

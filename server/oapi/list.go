@@ -29,12 +29,7 @@ func (s Server) GetListUserMe(ctx echo.Context) error {
 // あるuserのwordたち
 // (GET /list/user/{userId})
 func (s Server) GetListUserUserId(ctx echo.Context, userId string) error {
-	wordsListMode, err := repo.GetListUserUserId(userId)
-	if err != nil {
-		return err
-	}
-	wordsListApi := ConvertWordList(wordsListMode)
-	return ctx.JSON(200, wordsListApi)
+	return ctx.JSON(http.StatusNotFound, echo.NotFoundHandler)
 }
 
 // あるuserのwordたちを登録しているuserたち
@@ -66,12 +61,7 @@ func ConvertWordList(models model.WordsList) WordsList {
 // ある単語を見ているuserたち
 // (GET /list/word/{word})
 func (s Server) GetListWordWord(ctx echo.Context, word string) error {
-	usersListMode, err := repo.GetListWordWord(word)
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-	usersListApi := ConvertUserList(usersListMode)
-	return ctx.JSON(200, usersListApi)
+	return ctx.JSON(http.StatusNotFound, echo.NotFoundHandler)
 }
 
 // あるwordのuserたちが登録しているwordたち
