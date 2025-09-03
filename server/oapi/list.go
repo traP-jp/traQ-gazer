@@ -29,7 +29,7 @@ func (s Server) GetListUserMe(ctx echo.Context) error {
 // あるuserのwordたち
 // (GET /list/user/{userId})
 func (s Server) GetListUserUserId(ctx echo.Context, userId string) error {
-	return ctx.JSON(http.StatusNotFound, echo.NotFoundHandler)
+	return ctx.NoContent(http.StatusNotFound)
 }
 
 // あるuserのwordたちを登録しているuserたち
@@ -61,7 +61,7 @@ func ConvertWordList(models model.WordsList) WordsList {
 // ある単語を見ているuserたち
 // (GET /list/word/{word})
 func (s Server) GetListWordWord(ctx echo.Context, word string) error {
-	return ctx.JSON(http.StatusNotFound, echo.NotFoundHandler)
+	return ctx.NoContent(http.StatusNotFound)
 }
 
 // あるwordのuserたちが登録しているwordたち
