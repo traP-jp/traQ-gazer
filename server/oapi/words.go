@@ -84,7 +84,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 // 全データの取得
 // (GET /words)
 func (s Server) GetWords(ctx echo.Context) error {
-	return ctx.NoContent(http.StatusNotFound)
+	return echo.NewHTTPError(http.StatusGone, "this endpoint is not available")
 }
 
 // model.WordsAllListからoapi.WordsAllListへの型の変換
