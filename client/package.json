@@ -21,7 +21,7 @@
     "@iconify/vue": "^5.0.0",
     "@rushstack/eslint-patch": "^1.3.2",
     "@stoplight/prism-cli": "^5.14.2",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/eslint-config-prettier": "^7.1.0",
