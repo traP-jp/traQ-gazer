@@ -55,7 +55,6 @@ func (m *MessagePoller) Run() {
 
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failed to polling messages: %v", err))
-				lastCheckpoint = onPollingTime
 				break
 			}
 
