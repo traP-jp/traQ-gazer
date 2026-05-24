@@ -48,7 +48,7 @@ updates:
       prefix: ":arrow_up: "
 
   - package-ecosystem: github-actions
-    directory: "/.github"
+    directory: "/"
     schedule:
       interval: monthly
     open-pull-requests-limit: 10
