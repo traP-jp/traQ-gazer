@@ -1,0 +1,30 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - ".dockerignore"
+      - ".github/workflows/docker.yaml"
+      - "Dockerfile"
+      - "compose.yml"
+  pull_request:
+    paths:
+      - ".dockerignore"
+      - ".github/workflows/docker.yaml"
+      - "Dockerfile"
+      - "compose.yml"
+
+jobs:
+  build:
+    name: Check Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Check compose config
+        run: docker compose config
+      - name: Check compose docs profile config
+        run: docker compose --profile docs config
+      - name: Build app image
+        run: docker build --target app .
