@@ -54,7 +54,19 @@ updates:
           - "patch"
 
   - package-ecosystem: docker
-    directory: "/dockerfiles"
+    directories:
+      - "/dockerfiles"
+      - "/dockerfiles/dev"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: ":arrow_up: "
+
+  - package-ecosystem: docker-compose
+    directories:
+      - "/dockerfiles"
+      - "/dockerfiles/dev"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
