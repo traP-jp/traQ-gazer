@@ -12,7 +12,7 @@ RUN pnpm run build
 
 
 # Server build
-FROM golang:1.25.0-alpine@sha256:f18a072054848d87a8077455f0ac8a25886f2397f88bfdd222d6fafbb5bba440 AS server-build
+FROM golang:1.26.4-alpine@sha256:3ad57304ad93bbec8548a0437ad9e06a455660655d9af011d58b993f6f615648 AS server-build
 
 WORKDIR /github.com/traP-jp/h23s_15
 
