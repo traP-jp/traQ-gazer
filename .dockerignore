@@ -1,0 +1,9 @@
+.git
+.gitignore
+.DS_Store
+
+client/node_modules
+client/dist
+
+server/tmp
+server/build-errors.log

@@ -2,10 +2,12 @@ version: '3'
 
 tasks:
   server-dev:
-    cmd: docker compose -f dockerfiles/dev/compose.yml up --build
+    cmd: docker compose up --build --watch app
     ignore_error: true
   server-dev-down:
-    cmd: docker compose -f dockerfiles/dev/compose.yml down
+    cmd: docker compose down
+  openapi-ui:
+    cmd: docker compose --profile docs up openapi-ui
 
   install-server-openapi-codegen:
     cmd: go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0

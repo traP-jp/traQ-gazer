@@ -1,0 +1,57 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    ports:
+      - "8080:8080"
+    develop:
+      watch:
+        - action: rebuild
+          path: ./server
+          ignore:
+            - tmp/
+            - build-errors.log
+        - action: rebuild
+          path: ./client
+          ignore:
+            - node_modules/
+            - dist/
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      DB_HOSTNAME: mariadb
+      DB_PORT: 3306
+      DB_DATABASE: main
+
+  mariadb:
+    image: mariadb:10.7.3@sha256:07e06f2e7ae9dfc63707a83130a62e00167c827f08fcac7a9aa33f4b6dc34e0e
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: main
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./schema/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD
+      interval: 1s
+      timeout: 10s
+      retries: 60
+
+  openapi-ui:
+    image: swaggerapi/swagger-ui:v5.32.8@sha256:1ece6f19ca5709fb5fbab9bf43adee2916144fb21e82b7bafba568124e8c8930
+    profiles:
+      - docs
+    ports:
+      - "8100:8080"
+    environment:
+      SWAGGER_JSON: /docs/openapi.yaml
+    volumes:
+      - ./docs/openapi.yaml:/docs/openapi.yaml:ro
