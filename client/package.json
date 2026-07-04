@@ -30,7 +30,7 @@
     "concurrently": "^10.0.3",
     "eslint": "^8.42.0",
     "eslint-plugin-vue": "^9.26.0",
-    "openapi-typescript-codegen": "^0.30.0",
+    "openapi-typescript-codegen": "^0.31.0",
     "postcss": "^8.5.16",
     "prettier": "3.9.4",
     "sass": "^1.91.0",
