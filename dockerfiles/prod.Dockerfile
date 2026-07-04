@@ -3,12 +3,13 @@ FROM node:22.2-alpine3.18 as client-build
 
 WORKDIR /app
 
-COPY client/package*.json .
-RUN npm ci
+COPY client/package.json client/pnpm-lock.yaml client/pnpm-workspace.yaml ./
+RUN corepack enable \
+    && pnpm install --frozen-lockfile
 
 COPY client/ .
 
-RUN npm run build
+RUN pnpm run build
 
 
 # サーバーサイドのビルド
