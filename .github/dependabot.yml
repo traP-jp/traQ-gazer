@@ -9,6 +9,8 @@ updates:
     directory: "/client"
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 10
     commit-message:
       prefix: ":arrow_up: "
@@ -16,11 +18,23 @@ updates:
       types:
         patterns:
           - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
       formatter:
         patterns:
           - "*eslint*"
           - "*prettier*"
+        exclude-patterns:
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
       patches:
+        exclude-patterns:
+          - "@types/*"
+          - "*eslint*"
+          - "*prettier*"
         update-types:
           - "patch"
 
