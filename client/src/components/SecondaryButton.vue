@@ -6,14 +6,9 @@ defineProps<{ text: string }>()
   <button :class="$style.secondary">{{ text }}</button>
 </template>
 
-<style lang="scss" module>
+<style module>
 .secondary {
-  color: $text-color-dark;
-  background-color: $secondary-color;
-
-  @include dark {
-    color: $text-color;
-    background-color: $secondary-color-dark;
-  }
+  color: var(--button-text-color);
+  background-color: var(--secondary-color);
 }
 </style>

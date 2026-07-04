@@ -91,7 +91,7 @@ const update = () => {
   </PageContainer>
 </template>
 
-<style lang="scss" module>
+<style module>
 .form {
   display: flex;
   flex-wrap: wrap;

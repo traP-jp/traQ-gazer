@@ -21,12 +21,12 @@ const model = defineModel<boolean>('notify', { required: true })
   </div>
 </template>
 
-<style lang="scss" module>
+<style module>
 .switch {
   padding: 4px;
   align-content: center;
 
-  * {
+  & * {
     margin: auto;
   }
 }

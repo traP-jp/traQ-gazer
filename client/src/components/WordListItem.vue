@@ -120,7 +120,7 @@ const deleteWord = () => {
   </dialog>
 </template>
 
-<style lang="scss" module>
+<style module>
 .icons {
   width: 0px;
   text-align: center;
@@ -134,15 +134,11 @@ const deleteWord = () => {
   margin: auto;
   border: none;
   border-radius: 16px;
-  background-color: $secondary-background-color;
-
-  @include dark {
-    color: $text-color-dark;
-    background-color: $secondary-background-color-dark;
-  }
+  color: var(--text-color);
+  background-color: var(--secondary-background-color);
 
   &::backdrop {
-    background-color: rgba($color: #000, $alpha: 0.4);
+    background-color: rgb(0 0 0 / 40%);
   }
 }
 

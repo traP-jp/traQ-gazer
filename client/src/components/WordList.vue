@@ -30,7 +30,7 @@ const update = () => {
   </table>
 </template>
 
-<style lang="scss" module>
+<style module>
 .wordList {
   width: 80%;
   white-space: nowrap;
@@ -38,16 +38,10 @@ const update = () => {
   border-spacing: 8px;
 }
 tbody > tr:nth-child(2n) {
-  background: $secondary-background-color;
-  @include dark {
-    background: $secondary-background-color-dark;
-  }
+  background: var(--secondary-background-color);
 }
 th {
   padding: 0px 8px;
-  border-bottom: 1px solid $text-color;
-  @include dark {
-    border-bottom: 1px solid $text-color-dark;
-  }
+  border-bottom: 1px solid var(--text-color);
 }
 </style>

@@ -1,11 +1,19 @@
 :root {
+  --primary-color: #a400ab;
+  --secondary-color: #6751d5;
+  --background-color: white;
+  --secondary-background-color: #ddd;
+  --text-color: black;
+  --button-text-color: white;
+  --border-color: black;
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-size: 18px;
   line-height: 1.5;
   font-weight: 400;
 
-  color: $text-color;
-  background-color: $background-color;
+  color: var(--text-color);
+  background-color: var(--background-color);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -14,28 +22,28 @@
   -webkit-text-size-adjust: 100%;
   width: 100vw;
   height: 100vh;
+}
 
-  @include dark {
-    color: $text-color-dark;
-    background-color: $background-color-dark;
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #f5befb;
+    --secondary-color: #a0a0ff;
+    --background-color: #111;
+    --secondary-background-color: #222;
+    --text-color: white;
+    --button-text-color: black;
+    --border-color: white;
   }
 }
 
 a {
   font-weight: 500;
-  // color: #646cff;
   text-decoration: inherit;
-  color: $primary-color;
-
-  @include dark {
-    color: $primary-color-dark;
-  }
+  color: var(--primary-color);
 }
-a:hover {
-  // color: #535bf2;
-  :not(img) {
-    border-bottom: solid 1px;
-  }
+
+a:hover :not(img) {
+  border-bottom: solid 1px;
 }
 
 body {
@@ -49,10 +57,8 @@ h1 {
 }
 
 h2 {
-  font: {
-    size: 1.5rem;
-    weight: 700;
-  }
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 button {
@@ -65,9 +71,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;

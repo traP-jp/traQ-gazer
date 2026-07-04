@@ -6,8 +6,3 @@ import PageHeader from './components/PageHeader.vue'
   <PageHeader />
   <RouterView />
 </template>
-
-<style lang="scss" module>
-#overlay {
-}
-</style>

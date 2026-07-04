@@ -12,7 +12,7 @@ defineProps<{ title: string; description?: string }>()
   </article>
 </template>
 
-<style lang="scss" module>
+<style module>
 .article {
   margin: 8px;
 }
@@ -22,14 +22,15 @@ defineProps<{ title: string; description?: string }>()
   margin: 8px;
   align-items: center;
 
-  h1 {
+  & h1 {
     flex-shrink: 0;
   }
 
-  * {
+  & * {
     margin: 8px 16px;
   }
-  @include sp {
+
+  @media screen and (max-width: 768px) {
     display: block;
   }
 }
