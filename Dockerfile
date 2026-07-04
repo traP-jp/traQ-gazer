@@ -4,7 +4,8 @@ FROM node:26.4.0-alpine@sha256:725aeba2364a9b16beae49e180d83bd597dbd0b15c47f1f28
 WORKDIR /app
 
 COPY client/package.json client/pnpm-lock.yaml client/pnpm-workspace.yaml ./
-RUN corepack enable \
+RUN npm install -g corepack@0.35.0 \
+    && corepack enable \
     && pnpm install --frozen-lockfile
 
 COPY client/ .
