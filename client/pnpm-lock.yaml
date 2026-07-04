@@ -52,8 +52,8 @@ importers:
         specifier: ^9.26.0
         version: 9.33.0(eslint@8.57.1)
       openapi-typescript-codegen:
-        specifier: ^0.30.0
-        version: 0.30.0(@types/json-schema@7.0.15)
+        specifier: ^0.31.0
+        version: 0.31.0(@types/json-schema@7.0.15)
       postcss:
         specifier: ^8.5.16
         version: 8.5.16
@@ -1379,8 +1379,8 @@ packages:
   fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
 
-  fs-extra@11.3.5:
-    resolution: {integrity: sha512-eKpRKAovdpZtR1WopLHxlBWvAgPny3c4gX1G5Jhwmmw4XJj0ifSD5qB5TOo8hmA0wlRKDAOAhEE1yVPgs6Fgcg==}
+  fs-extra@11.3.6:
+    resolution: {integrity: sha512-w8ZNZr2mKIc7qeNaQ9AVPT1+iFaI+Avd4xudVOvdDJ8VytREi1Ft5Ih7hd9jjehod8vAM5GMsfQ/TpPf4EyoEA==}
     engines: {node: '>=14.14'}
 
   fs.realpath@1.0.0:
@@ -1548,6 +1548,10 @@ packages:
 
   js-yaml@4.1.1:
     resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
+    hasBin: true
+
+  js-yaml@4.3.0:
+    resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
     hasBin: true
 
   jsep@1.4.0:
@@ -1770,8 +1774,8 @@ packages:
   ono@4.0.11:
     resolution: {integrity: sha512-jQ31cORBFE6td25deYeD80wxKBMj+zBmHTrVxnc6CKhx8gho6ipmWM5zj/oeoqioZ99yqBls9Z/9Nss7J26G2g==}
 
-  openapi-typescript-codegen@0.30.0:
-    resolution: {integrity: sha512-NO24vrOYEEREkuEwtLemXiV0/3wUj1HvS+0UuAinVNWKJOyNlXTj5hehdW9Dyob4u5YGrRG9dc9TBZW7/UszGw==}
+  openapi-typescript-codegen@0.31.0:
+    resolution: {integrity: sha512-ph3njJ7veDXy6QKLKHqNiyIqWMMu+rcdtU87XuwBo+QfBOpE1PvqzIWY3KMZBnLaoACxhtrEPf5re7Y/Ty9Bnw==}
     hasBin: true
 
   openapi3-ts@2.0.2:
@@ -2423,7 +2427,7 @@ snapshots:
   '@apidevtools/json-schema-ref-parser@14.2.1(@types/json-schema@7.0.15)':
     dependencies:
       '@types/json-schema': 7.0.15
-      js-yaml: 4.1.1
+      js-yaml: 4.3.0
 
   '@babel/generator@8.0.0':
     dependencies:
@@ -3773,7 +3777,7 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
-  fs-extra@11.3.5:
+  fs-extra@11.3.6:
     dependencies:
       graceful-fs: 4.2.11
       jsonfile: 6.2.1
@@ -3944,6 +3948,10 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
+  js-yaml@4.3.0:
+    dependencies:
+      argparse: 2.0.1
+
   jsep@1.4.0: {}
 
   jsesc@3.1.0: {}
@@ -4096,7 +4104,7 @@ snapshots:
 
   mkdirp@0.5.6:
     dependencies:
-      minimist: 1.2.6
+      minimist: 1.2.8
 
   mlly@1.8.2:
     dependencies:
@@ -4142,12 +4150,12 @@ snapshots:
     dependencies:
       format-util: 1.0.5
 
-  openapi-typescript-codegen@0.30.0(@types/json-schema@7.0.15):
+  openapi-typescript-codegen@0.31.0(@types/json-schema@7.0.15):
     dependencies:
       '@apidevtools/json-schema-ref-parser': 14.2.1(@types/json-schema@7.0.15)
       camelcase: 6.3.0
       commander: 14.0.3
-      fs-extra: 11.3.5
+      fs-extra: 11.3.6
       handlebars: 4.7.9
     transitivePeerDependencies:
       - '@types/json-schema'
