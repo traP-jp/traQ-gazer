@@ -27,7 +27,7 @@
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^13.0.0",
     "autoprefixer": "^10.5.2",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "eslint": "^8.42.0",
     "eslint-plugin-vue": "^9.26.0",
     "openapi-typescript-codegen": "^0.30.0",
