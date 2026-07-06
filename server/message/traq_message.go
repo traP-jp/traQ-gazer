@@ -16,9 +16,9 @@ type closeableMessageWordMatcher interface {
 	close() error
 }
 
-type notificationWordMatcherLoaderFunc func() (messageWordMatcher, error)
+type wordMatcherLoaderFunc func() (messageWordMatcher, error)
 
-func findMatchingWords(messageList model.MessageList, loadMatcher notificationWordMatcherLoaderFunc) ([]*model.NotifyInfo, error) {
+func findMatchingWords(messageList model.MessageList, loadMatcher wordMatcherLoaderFunc) ([]*model.NotifyInfo, error) {
 	if len(messageList) == 0 {
 		return nil, nil
 	}
@@ -31,7 +31,7 @@ func findMatchingWords(messageList model.MessageList, loadMatcher notificationWo
 	if closeableMatcher, ok := matcher.(closeableMessageWordMatcher); ok {
 		defer func() {
 			if err := closeableMatcher.close(); err != nil {
-				slog.Error(fmt.Sprintf("failed to close notification word matcher: %v", err))
+				slog.Error(fmt.Sprintf("failed to close word matcher: %v", err))
 			}
 		}()
 	}
@@ -56,7 +56,7 @@ func findMatchingWords(messageList model.MessageList, loadMatcher notificationWo
 	return notifyInfoList, nil
 }
 
-func loadNotificationWordMatcher() (messageWordMatcher, error) {
+func loadWordMatcher() (messageWordMatcher, error) {
 	words, err := repo.GetWordsWithoutTime()
 	if err != nil {
 		return nil, fmt.Errorf("fetch words for matching: %w", err)
@@ -67,9 +67,9 @@ func loadNotificationWordMatcher() (messageWordMatcher, error) {
 		return nil, fmt.Errorf("fetch users for matching: %w", err)
 	}
 
-	matcher, err := newNotificationWordMatcher(words, users)
+	matcher, err := newWordMatcher(words, users)
 	if err != nil {
-		return nil, fmt.Errorf("build notification word matcher: %w", err)
+		return nil, fmt.Errorf("build word matcher: %w", err)
 	}
 	return matcher, nil
 }

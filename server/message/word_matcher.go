@@ -9,10 +9,10 @@ import (
 	"traQ-gazer/wordpattern"
 )
 
-// notificationWordMatcher applies registered words to messages and notification settings.
-type notificationWordMatcher struct {
+// wordMatcher applies registered words to messages and notification settings.
+type wordMatcher struct {
 	senderIsBotByTraqUUID map[string]bool
-	targets               []notificationWordTarget
+	targets               []wordMatchTarget
 }
 
 type registeredWord interface {
@@ -35,7 +35,7 @@ type messageSender struct {
 	isBot    bool
 }
 
-type notificationWordTarget struct {
+type wordMatchTarget struct {
 	includeBot bool
 	includeMe  bool
 	trapID     string
@@ -53,7 +53,7 @@ type regexRegisteredWord struct {
 	regex    *wordpattern.RegexWord
 }
 
-func newNotificationWordMatcher(words []model.WordsItem, users []model.UsersItem) (*notificationWordMatcher, error) {
+func newWordMatcher(words []model.WordsItem, users []model.UsersItem) (*wordMatcher, error) {
 	usersByTrapID := make(map[string]model.UsersItem, len(users))
 	senderIsBotByTraqUUID := make(map[string]bool, len(users))
 	for _, user := range users {
@@ -61,14 +61,14 @@ func newNotificationWordMatcher(words []model.WordsItem, users []model.UsersItem
 		senderIsBotByTraqUUID[user.TraqUUID] = user.IsBot
 	}
 
-	targets := make([]notificationWordTarget, 0, len(words))
+	targets := make([]wordMatchTarget, 0, len(words))
 	for _, word := range words {
 		user, exists := usersByTrapID[word.TrapId]
 		if !exists {
 			continue
 		}
 
-		target, err := newNotificationWordTarget(word, user)
+		target, err := newWordMatchTarget(word, user)
 		if err != nil {
 			slog.Warn("skip invalid registered regex word")
 			continue
@@ -76,19 +76,19 @@ func newNotificationWordMatcher(words []model.WordsItem, users []model.UsersItem
 		targets = append(targets, target)
 	}
 
-	return &notificationWordMatcher{
+	return &wordMatcher{
 		senderIsBotByTraqUUID: senderIsBotByTraqUUID,
 		targets:               targets,
 	}, nil
 }
 
-func newNotificationWordTarget(word model.WordsItem, user model.UsersItem) (notificationWordTarget, error) {
+func newWordMatchTarget(word model.WordsItem, user model.UsersItem) (wordMatchTarget, error) {
 	matchedWord, err := newRegisteredWord(word.Word)
 	if err != nil {
-		return notificationWordTarget{}, err
+		return wordMatchTarget{}, err
 	}
 
-	target := notificationWordTarget{
+	target := wordMatchTarget{
 		includeBot: word.IncludeBot,
 		includeMe:  word.IncludeMe,
 		trapID:     word.TrapId,
@@ -113,7 +113,7 @@ func newRegisteredWord(wordText string) (registeredWord, error) {
 	}, nil
 }
 
-func (m *notificationWordMatcher) close() error {
+func (m *wordMatcher) close() error {
 	var errs []error
 	for _, target := range m.targets {
 		if err := target.close(); err != nil {
@@ -123,7 +123,7 @@ func (m *notificationWordMatcher) close() error {
 	return errors.Join(errs...)
 }
 
-func (m *notificationWordMatcher) matchMessage(messageItem model.MessageItem) []model.MatchedWords {
+func (m *wordMatcher) matchMessage(messageItem model.MessageItem) []model.MatchedWords {
 	content := newMessageContent(messageItem.Content)
 	sender := m.messageSender(messageItem.TraqUuid)
 	matchedTargets := targetsMatchingContent(m.targets, content)
@@ -138,7 +138,7 @@ func newMessageContent(raw string) messageContent {
 	}
 }
 
-func (m *notificationWordMatcher) messageSender(traqUUID string) messageSender {
+func (m *wordMatcher) messageSender(traqUUID string) messageSender {
 	isBot, exists := m.senderIsBotByTraqUUID[traqUUID]
 	return messageSender{
 		traqUUID: traqUUID,
@@ -147,8 +147,8 @@ func (m *notificationWordMatcher) messageSender(traqUUID string) messageSender {
 	}
 }
 
-func targetsMatchingContent(targets []notificationWordTarget, content messageContent) []notificationWordTarget {
-	matchedTargets := make([]notificationWordTarget, 0, len(targets))
+func targetsMatchingContent(targets []wordMatchTarget, content messageContent) []wordMatchTarget {
+	matchedTargets := make([]wordMatchTarget, 0, len(targets))
 	for _, target := range targets {
 		if target.matchesContent(content) {
 			matchedTargets = append(matchedTargets, target)
@@ -157,8 +157,8 @@ func targetsMatchingContent(targets []notificationWordTarget, content messageCon
 	return matchedTargets
 }
 
-func targetsAllowedForSender(targets []notificationWordTarget, sender messageSender) []notificationWordTarget {
-	allowedTargets := make([]notificationWordTarget, 0, len(targets))
+func targetsAllowedForSender(targets []wordMatchTarget, sender messageSender) []wordMatchTarget {
+	allowedTargets := make([]wordMatchTarget, 0, len(targets))
 	for _, target := range targets {
 		if target.allowsSender(sender) {
 			allowedTargets = append(allowedTargets, target)
@@ -167,7 +167,7 @@ func targetsAllowedForSender(targets []notificationWordTarget, sender messageSen
 	return allowedTargets
 }
 
-func matchedWordsFromTargets(targets []notificationWordTarget) []model.MatchedWords {
+func matchedWordsFromTargets(targets []wordMatchTarget) []model.MatchedWords {
 	wordsByTrapID := map[string][]string{}
 	targetsByTrapID := map[string]model.MatchedWords{}
 	trapIDOrder := []string{}
@@ -192,29 +192,29 @@ func matchedWordsFromTargets(targets []notificationWordTarget) []model.MatchedWo
 	return matchedWordsList
 }
 
-func (t notificationWordTarget) close() error {
+func (t wordMatchTarget) close() error {
 	if closeableWord, ok := t.word.(closeableRegisteredWord); ok {
 		return closeableWord.close()
 	}
 	return nil
 }
 
-func (t notificationWordTarget) matchesContent(content messageContent) bool {
+func (t wordMatchTarget) matchesContent(content messageContent) bool {
 	if t.word == nil {
 		return false
 	}
 	return t.word.matches(content)
 }
 
-func (t notificationWordTarget) allowsSender(sender messageSender) bool {
+func (t wordMatchTarget) allowsSender(sender messageSender) bool {
 	return t.allowsSelfNotification(sender) && t.allowsBotNotification(sender)
 }
 
-func (t notificationWordTarget) allowsSelfNotification(sender messageSender) bool {
+func (t wordMatchTarget) allowsSelfNotification(sender messageSender) bool {
 	return t.includeMe || t.traqUUID != sender.traqUUID
 }
 
-func (t notificationWordTarget) allowsBotNotification(sender messageSender) bool {
+func (t wordMatchTarget) allowsBotNotification(sender messageSender) bool {
 	if t.includeBot {
 		return true
 	}

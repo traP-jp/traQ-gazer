@@ -21,8 +21,8 @@ type MessagePoller struct {
 func NewMessagePoller() *MessagePoller {
 	return &MessagePoller{
 		processor: &messageProcessor{
-			queue:                       make(chan *[]traq.Message),
-			loadNotificationWordMatcher: loadNotificationWordMatcher,
+			queue:           make(chan *[]traq.Message),
+			loadWordMatcher: loadWordMatcher,
 		},
 	}
 }
@@ -98,8 +98,8 @@ func (m *MessagePoller) Run() {
 
 // 通知メッセージの検索と通知処理のjobを処理する
 type messageProcessor struct {
-	queue                       chan *[]traq.Message
-	loadNotificationWordMatcher notificationWordMatcherLoaderFunc
+	queue           chan *[]traq.Message
+	loadWordMatcher wordMatcherLoaderFunc
 }
 
 // go routineの中で呼ぶ
@@ -122,7 +122,7 @@ func (m *messageProcessor) process(messages []traq.Message) {
 		slog.Error("failed to convert messages", "err", err)
 		return
 	}
-	notifyInfoList, err := findMatchingWords(messageList, m.notificationWordMatcherLoader())
+	notifyInfoList, err := findMatchingWords(messageList, m.wordMatcherLoader())
 	if err != nil {
 		slog.Error("failed to process messages", "err", err)
 		return
@@ -146,11 +146,11 @@ func (m *messageProcessor) process(messages []traq.Message) {
 	slog.Info("finished sending direct messages")
 }
 
-func (m *messageProcessor) notificationWordMatcherLoader() notificationWordMatcherLoaderFunc {
-	if m.loadNotificationWordMatcher != nil {
-		return m.loadNotificationWordMatcher
+func (m *messageProcessor) wordMatcherLoader() wordMatcherLoaderFunc {
+	if m.loadWordMatcher != nil {
+		return m.loadWordMatcher
 	}
-	return loadNotificationWordMatcher
+	return loadWordMatcher
 }
 
 func genNotifyMessageContent(citeMessageId string, words ...string) string {

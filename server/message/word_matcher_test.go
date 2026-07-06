@@ -16,7 +16,7 @@ func TestFindMatchingWords(t *testing.T) {
 		t.Parallel()
 
 		got, err := findMatchingWords(model.MessageList{}, func() (messageWordMatcher, error) {
-			t.Fatal("notification word matcher loader should not be called for empty messages")
+			t.Fatal("word matcher loader should not be called for empty messages")
 			return nil, nil
 		})
 		if err != nil {
@@ -99,10 +99,10 @@ func TestFindMatchingWords(t *testing.T) {
 	})
 }
 
-func TestNotificationWordMatcher_MatchMessage(t *testing.T) {
+func TestWordMatcher_MatchMessage(t *testing.T) {
 	t.Parallel()
 
-	matcher, err := newNotificationWordMatcher(
+	matcher, err := newWordMatcher(
 		[]model.WordsItem{
 			{Word: "hello", TrapId: "target-a", IncludeBot: false, IncludeMe: true},
 			{Word: "self", TrapId: "sender", IncludeBot: true, IncludeMe: false},
@@ -115,11 +115,11 @@ func TestNotificationWordMatcher_MatchMessage(t *testing.T) {
 		},
 	)
 	if err != nil {
-		t.Fatalf("newNotificationWordMatcher returned error: %v", err)
+		t.Fatalf("newWordMatcher returned error: %v", err)
 	}
 	t.Cleanup(func() {
 		if err := matcher.close(); err != nil {
-			t.Errorf("notificationWordMatcher.close returned error: %v", err)
+			t.Errorf("wordMatcher.close returned error: %v", err)
 		}
 	})
 
@@ -166,9 +166,9 @@ func TestTargetsMatchingContent(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				registeredTargets := make([]notificationWordTarget, 0, len(tt.registeredWords))
+				registeredTargets := make([]wordMatchTarget, 0, len(tt.registeredWords))
 				for _, word := range tt.registeredWords {
-					registeredTargets = append(registeredTargets, notificationWordTarget{
+					registeredTargets = append(registeredTargets, wordMatchTarget{
 						word: plainRegisteredWord{original: word, normalized: word},
 					})
 				}
@@ -190,7 +190,7 @@ func TestTargetsMatchingContent(t *testing.T) {
 		t.Parallel()
 
 		gotTargets := targetsMatchingContent(
-			[]notificationWordTarget{
+			[]wordMatchTarget{
 				{word: plainRegisteredWord{original: "first", normalized: "first"}},
 				{word: plainRegisteredWord{original: "second", normalized: "second"}},
 				{word: plainRegisteredWord{original: "third", normalized: "third"}},
@@ -241,7 +241,7 @@ func TestTargetsAllowedForSender(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				notifyTarget := notificationWordTarget{
+				notifyTarget := wordMatchTarget{
 					includeMe:  tt.includeMe,
 					includeBot: true,
 					trapID:     "target",
@@ -250,7 +250,7 @@ func TestTargetsAllowedForSender(t *testing.T) {
 				}
 
 				gotTargets := targetsAllowedForSender(
-					[]notificationWordTarget{notifyTarget},
+					[]wordMatchTarget{notifyTarget},
 					messageSender{traqUUID: tt.senderTraqUUID, isKnown: true},
 				)
 				gotAllowed := len(gotTargets) == 1
@@ -295,7 +295,7 @@ func TestTargetsAllowedForSender(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				notifyTarget := notificationWordTarget{
+				notifyTarget := wordMatchTarget{
 					includeMe:  true,
 					includeBot: tt.includeBot,
 					trapID:     "target",
@@ -303,7 +303,7 @@ func TestTargetsAllowedForSender(t *testing.T) {
 					word:       plainRegisteredWord{original: "keyword", normalized: "keyword"},
 				}
 
-				gotTargets := targetsAllowedForSender([]notificationWordTarget{notifyTarget}, tt.sender)
+				gotTargets := targetsAllowedForSender([]wordMatchTarget{notifyTarget}, tt.sender)
 				gotAllowed := len(gotTargets) == 1
 				if gotAllowed != tt.wantAllowed {
 					t.Fatalf("target allowed = %v, want %v", gotAllowed, tt.wantAllowed)
@@ -316,7 +316,7 @@ func TestTargetsAllowedForSender(t *testing.T) {
 func TestMatchedWordsFromTargets(t *testing.T) {
 	t.Parallel()
 
-	got := matchedWordsFromTargets([]notificationWordTarget{
+	got := matchedWordsFromTargets([]wordMatchTarget{
 		{
 			trapID:   "target-b",
 			traqUUID: "target-b-uuid",
@@ -351,7 +351,7 @@ func TestMatchedWordsFromTargets(t *testing.T) {
 	}
 }
 
-func TestNewNotificationWordMatcher(t *testing.T) {
+func TestNewWordMatcher(t *testing.T) {
 	t.Parallel()
 
 	t.Run("notification target user lookup", func(t *testing.T) {
@@ -381,13 +381,13 @@ func TestNewNotificationWordMatcher(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				matcher, err := newNotificationWordMatcher(tt.registeredWords, tt.knownUsers)
+				matcher, err := newWordMatcher(tt.registeredWords, tt.knownUsers)
 				if err != nil {
-					t.Fatalf("newNotificationWordMatcher returned error: %v", err)
+					t.Fatalf("newWordMatcher returned error: %v", err)
 				}
 				t.Cleanup(func() {
 					if err := matcher.close(); err != nil {
-						t.Errorf("notificationWordMatcher.close returned error: %v", err)
+						t.Errorf("wordMatcher.close returned error: %v", err)
 					}
 				})
 
@@ -405,7 +405,7 @@ func TestNewNotificationWordMatcher(t *testing.T) {
 	t.Run("invalid registered word handling", func(t *testing.T) {
 		t.Parallel()
 
-		matcher, err := newNotificationWordMatcher(
+		matcher, err := newWordMatcher(
 			[]model.WordsItem{
 				{Word: "/[/", TrapId: "target", IncludeBot: true, IncludeMe: true},
 				{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: true},
@@ -413,11 +413,11 @@ func TestNewNotificationWordMatcher(t *testing.T) {
 			[]model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
 		)
 		if err != nil {
-			t.Fatalf("newNotificationWordMatcher returned error: %v", err)
+			t.Fatalf("newWordMatcher returned error: %v", err)
 		}
 		t.Cleanup(func() {
 			if err := matcher.close(); err != nil {
-				t.Errorf("notificationWordMatcher.close returned error: %v", err)
+				t.Errorf("wordMatcher.close returned error: %v", err)
 			}
 		})
 
@@ -432,7 +432,7 @@ func TestNewNotificationWordMatcher(t *testing.T) {
 	})
 }
 
-func TestNotificationWordMatcher_MessageSender(t *testing.T) {
+func TestWordMatcher_MessageSender(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -457,7 +457,7 @@ func TestNotificationWordMatcher_MessageSender(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			matcher, err := newNotificationWordMatcher(
+			matcher, err := newWordMatcher(
 				nil,
 				[]model.UsersItem{
 					{TrapID: "human", TraqUUID: "human-uuid", IsBot: false},
@@ -465,11 +465,11 @@ func TestNotificationWordMatcher_MessageSender(t *testing.T) {
 				},
 			)
 			if err != nil {
-				t.Fatalf("newNotificationWordMatcher returned error: %v", err)
+				t.Fatalf("newWordMatcher returned error: %v", err)
 			}
 			t.Cleanup(func() {
 				if err := matcher.close(); err != nil {
-					t.Errorf("notificationWordMatcher.close returned error: %v", err)
+					t.Errorf("wordMatcher.close returned error: %v", err)
 				}
 			})
 
@@ -481,7 +481,7 @@ func TestNotificationWordMatcher_MessageSender(t *testing.T) {
 	}
 }
 
-func TestNewNotificationWordTarget(t *testing.T) {
+func TestNewWordMatchTarget(t *testing.T) {
 	t.Parallel()
 
 	user := model.UsersItem{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}
@@ -489,12 +489,12 @@ func TestNewNotificationWordTarget(t *testing.T) {
 	t.Run("target metadata", func(t *testing.T) {
 		t.Parallel()
 
-		target, err := newNotificationWordTarget(
+		target, err := newWordMatchTarget(
 			model.WordsItem{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: false},
 			user,
 		)
 		if err != nil {
-			t.Fatalf("newNotificationWordTarget returned error: %v", err)
+			t.Fatalf("newWordMatchTarget returned error: %v", err)
 		}
 		if target.includeBot != true || target.includeMe != false ||
 			target.trapID != "target" || target.traqUUID != "target-uuid" ||
@@ -506,9 +506,9 @@ func TestNewNotificationWordTarget(t *testing.T) {
 	t.Run("invalid regex returns error", func(t *testing.T) {
 		t.Parallel()
 
-		target, err := newNotificationWordTarget(model.WordsItem{Word: "/[/", TrapId: "target"}, user)
+		target, err := newWordMatchTarget(model.WordsItem{Word: "/[/", TrapId: "target"}, user)
 		if err == nil {
-			t.Fatal("newNotificationWordTarget error = nil, want error")
+			t.Fatal("newWordMatchTarget error = nil, want error")
 		}
 		if target.word != nil {
 			t.Fatalf("target word = %#v, want nil", target.word)
@@ -571,26 +571,26 @@ func TestNewRegisteredWord(t *testing.T) {
 	})
 }
 
-func TestNotificationWordTarget_MatchesContent(t *testing.T) {
+func TestWordMatchTarget_MatchesContent(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		notifyTarget   notificationWordTarget
+		notifyTarget   wordMatchTarget
 		messageContent messageContent
 		wantMatches    bool
 	}{
 		"target without a registered word never matches": {
-			notifyTarget:   notificationWordTarget{},
+			notifyTarget:   wordMatchTarget{},
 			messageContent: messageContent{raw: "keyword", normalized: "keyword"},
 			wantMatches:    false,
 		},
 		"target matches when its registered word matches normalized content": {
-			notifyTarget:   notificationWordTarget{word: plainRegisteredWord{normalized: "keyword"}},
+			notifyTarget:   wordMatchTarget{word: plainRegisteredWord{normalized: "keyword"}},
 			messageContent: messageContent{raw: "missing", normalized: "keyword"},
 			wantMatches:    true,
 		},
 		"target does not match when its registered word misses normalized content": {
-			notifyTarget:   notificationWordTarget{word: plainRegisteredWord{normalized: "keyword"}},
+			notifyTarget:   wordMatchTarget{word: plainRegisteredWord{normalized: "keyword"}},
 			messageContent: messageContent{raw: "keyword", normalized: "missing"},
 			wantMatches:    false,
 		},
