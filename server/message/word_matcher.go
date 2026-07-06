@@ -1,7 +1,6 @@
 package message
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -44,7 +43,7 @@ func newWordMatcher(words []model.WordsItem, users []model.UsersItem) (*wordMatc
 
 		target, err := newWordMatchTarget(word, user)
 		if err != nil {
-			slog.Error(fmt.Sprintf("skip invalid regex word `%s` for user `%s`: %v", word.Word, word.TrapId, err))
+			slog.Error("skip invalid registered regex word")
 			continue
 		}
 		targets = append(targets, target)
