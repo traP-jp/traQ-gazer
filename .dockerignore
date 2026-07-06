@@ -1,9 +1,10 @@
 .git
 .gitignore
-.DS_Store
+**/.DS_Store
 
 client/node_modules
 client/dist
 
 server/tmp
 server/build-errors.log
+server/traQ-gazer
