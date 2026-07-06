@@ -1,43 +1,76 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import NotifySwitch from '../components/NotifySwitch.vue'
 import WordList from '../components/WordList.vue'
 import ArticleContainer from '../components/ArticleContainer.vue'
 
 import apiClient from '../apis'
-import { WordRequest, WordsList } from '../apis/generated'
+import type { WordRequest, WordsList } from '../apis/generated'
 import PageContainer from '../components/PageContainer.vue'
 import PrimaryButton from '../components/PrimaryButton.vue'
 
+const maxWordLength = 50
 const words = ref<WordsList>([])
 
 const newWord = ref('')
 const newBotNotify = ref(true)
 const newSelfNotify = ref(false)
+const isLoadingWords = ref(true)
+const isRegistering = ref(false)
+const listErrorMessage = ref('')
+const formErrorMessage = ref('')
 
-apiClient.list.getListUserMe().then((res) => (words.value = res))
+const normalizedWord = computed(() => newWord.value.trim())
+const wordLength = computed(() => Array.from(normalizedWord.value).length)
+const validationMessage = computed(() => {
+  if (wordLength.value > maxWordLength) {
+    return `${maxWordLength}文字以内で入力してください`
+  }
+  return ''
+})
+const canRegister = computed(
+  () => normalizedWord.value.length > 0 && validationMessage.value === '' && !isRegistering.value
+)
+const registerButtonText = computed(() => (isRegistering.value ? '登録中' : '登録'))
 
-const registerNewWord = () => {
-  if (newWord.value.length === 0) {
-    return
-  } else if (newWord.value.length > 50) {
+const fetchWords = async () => {
+  isLoadingWords.value = true
+  listErrorMessage.value = ''
+  try {
+    words.value = await apiClient.list.getListUserMe()
+  } catch {
+    listErrorMessage.value = '登録単語を取得できませんでした'
+  } finally {
+    isLoadingWords.value = false
+  }
+}
+
+onMounted(() => {
+  void fetchWords()
+})
+
+const registerNewWord = async () => {
+  if (!canRegister.value) {
     return
   }
 
   const reqBody: WordRequest = {
-    word: newWord.value,
+    word: normalizedWord.value,
     includeBot: newBotNotify.value,
     includeMe: newSelfNotify.value
   }
 
-  // wordの登録リクエスト
-  apiClient.words.postWords(reqBody).then(() => update())
-
-  newWord.value = ''
-}
-
-const update = () => {
-  apiClient.list.getListUserMe().then((res) => (words.value = res))
+  isRegistering.value = true
+  formErrorMessage.value = ''
+  try {
+    await apiClient.words.postWords(reqBody)
+    newWord.value = ''
+    await fetchWords()
+  } catch {
+    formErrorMessage.value = '登録できませんでした'
+  } finally {
+    isRegistering.value = false
+  }
 }
 </script>
 
@@ -47,36 +80,46 @@ const update = () => {
       title="新規単語の登録"
       description="以下のフォームで登録した単語がtraQ上に投稿された際、DM で通知を送信します"
     >
-      <section :class="$style.form">
-        <input
-          size="1"
-          v-model="newWord"
-          type="text"
-          placeholder="登録したい単語をここに入力(50文字以内)"
-          :class="$style.inputForm"
-          @keypress.enter="registerNewWord"
-        />
-        <section
-          style="
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            flex-shrink: 0;
-            gap: 16px;
-          "
-        >
-          <section>
-            <h2>通知設定</h2>
-            <div :class="$style.settings">
-              <NotifySwitch v-model:notify="newBotNotify" title="Botの投稿" />
-              <NotifySwitch v-model:notify="newSelfNotify" title="自分の投稿" />
-            </div>
-          </section>
-          <div :class="$style.registerButton">
-            <primary-button text="登録" :disabled="newWord === ''" @click="registerNewWord" />
+      <form :class="$style.form" novalidate @submit.prevent="registerNewWord">
+        <div :class="$style.inputGroup">
+          <label :class="$style.label" for="new-word">登録する単語</label>
+          <input
+            id="new-word"
+            v-model="newWord"
+            type="text"
+            placeholder="例: ハッカソン"
+            :maxlength="maxWordLength"
+            :class="$style.inputForm"
+            :aria-invalid="validationMessage !== ''"
+            aria-describedby="new-word-meta"
+          />
+          <div id="new-word-meta" :class="$style.fieldMeta">
+            <span :class="[validationMessage && $style.errorText]">
+              {{ validationMessage || '50文字以内' }}
+            </span>
+            <span>{{ wordLength }}/{{ maxWordLength }}</span>
           </div>
-        </section>
-      </section>
+        </div>
+
+        <div
+          :class="$style.settingsPanel"
+          role="group"
+          aria-labelledby="notification-settings-label"
+        >
+          <span id="notification-settings-label" :class="$style.label">通知設定</span>
+          <div :class="$style.settings">
+            <NotifySwitch v-model:notify="newBotNotify" title="Botの投稿" />
+            <NotifySwitch v-model:notify="newSelfNotify" title="自分の投稿" />
+          </div>
+        </div>
+
+        <div :class="$style.actions">
+          <PrimaryButton :text="registerButtonText" type="submit" :disabled="!canRegister" />
+        </div>
+      </form>
+      <p v-if="formErrorMessage" :class="[$style.formMessage, $style.error]" role="alert">
+        {{ formErrorMessage }}
+      </p>
     </article-container>
 
     <article-container
@@ -85,7 +128,13 @@ const update = () => {
       :class="$style.wordList"
     >
       <div :class="$style.wordList">
-        <word-list :class="$style.wordList" :words="words" @update="update()" />
+        <word-list
+          :class="$style.wordList"
+          :words="words"
+          :is-loading="isLoadingWords"
+          :error-message="listErrorMessage"
+          @update="fetchWords"
+        />
       </div>
     </article-container>
   </PageContainer>
@@ -93,34 +142,111 @@ const update = () => {
 
 <style module>
 .form {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  padding: 8px;
-  gap: 16px;
+  padding: 20px;
+  row-gap: 20px;
+  column-gap: 28px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-color);
+  box-shadow: 0 8px 24px var(--shadow-color);
+}
+
+.inputGroup {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.label {
+  color: var(--heading-color);
+  font-size: 0.86rem;
+  font-weight: 800;
 }
 
 .inputForm {
-  width: 55%;
-  flex-grow: 2;
-  min-width: 350px;
-  max-width: 80%;
-  padding: 1.25rem;
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  margin: 0px 4px;
   font-size: inherit;
+  color: var(--text-color);
+  background: var(--background-color);
+}
+
+.inputForm:focus {
+  border-color: var(--primary-color);
+  outline: 3px solid var(--focus-color);
+  outline-offset: 1px;
+}
+
+.fieldMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted-text-color);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.errorText {
+  color: var(--danger-color);
+}
+
+.settingsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .settings {
   display: flex;
   justify-content: center;
-  padding: 8px;
-  gap: 8px;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  align-items: end;
+}
+
+.formMessage {
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.error {
+  color: var(--danger-color);
+  background: color-mix(in srgb, var(--danger-color), transparent 90%);
 }
 
 .wordList {
-  margin: auto;
-  overflow-x: scroll;
+  overflow-x: auto;
+}
+
+@media screen and (max-width: 860px) {
+  .form {
+    grid-template-columns: 1fr;
+    row-gap: 24px;
+  }
+
+  .settings {
+    justify-content: start;
+    flex-wrap: wrap;
+  }
+
+  .actions {
+    justify-content: stretch;
+
+    & button {
+      width: 100%;
+    }
+  }
 }
 </style>

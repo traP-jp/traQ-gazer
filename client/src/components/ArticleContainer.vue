@@ -5,8 +5,8 @@ defineProps<{ title: string; description?: string }>()
 <template>
   <article :class="$style.article">
     <div :class="$style.heading">
-      <h1>{{ title }}</h1>
-      <span v-if="description">{{ description }}</span>
+      <h2>{{ title }}</h2>
+      <p v-if="description">{{ description }}</p>
     </div>
     <slot />
   </article>
@@ -14,24 +14,25 @@ defineProps<{ title: string; description?: string }>()
 
 <style module>
 .article {
-  margin: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .heading {
-  display: flex;
-  margin: 8px;
-  align-items: center;
+  display: grid;
+  gap: 8px;
 
-  & h1 {
-    flex-shrink: 0;
+  & h2 {
+    color: var(--heading-color);
+    font-size: 1.25rem;
+    line-height: 1.3;
   }
 
-  & * {
-    margin: 8px 16px;
-  }
-
-  @media screen and (max-width: 768px) {
-    display: block;
+  & p {
+    max-width: 680px;
+    color: var(--muted-text-color);
+    font-size: 0.9rem;
   }
 }
 </style>

@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import { WordsList } from '../apis/generated'
+import type { WordsList } from '../apis/generated'
 import WordListItem from '../components/WordListItem.vue'
 
-defineProps<{ words: WordsList }>()
+withDefaults(
+  defineProps<{
+    words: WordsList
+    isLoading?: boolean
+    errorMessage?: string
+  }>(),
+  {
+    isLoading: false,
+    errorMessage: ''
+  }
+)
 const emit = defineEmits<{
   update: []
 }>()
@@ -13,35 +23,38 @@ const update = () => {
 </script>
 
 <template>
-  <table :class="$style.wordList">
-    <thead>
-      <tr>
-        <th>単語</th>
-        <th>bot</th>
-        <th>自分</th>
-        <th>編集・削除</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="item in words" :key="item.word">
-        <word-list-item :item="item" @update="update" />
-      </tr>
-    </tbody>
-  </table>
+  <div v-if="errorMessage" :class="[$style.state, $style.error]" role="alert">
+    {{ errorMessage }}
+  </div>
+  <div v-else-if="isLoading" :class="$style.state" role="status">読み込み中...</div>
+  <div v-else-if="words.length === 0" :class="$style.state">登録単語はまだありません</div>
+  <ul v-else :class="$style.wordList" aria-label="登録単語一覧">
+    <word-list-item v-for="item in words" :key="item.word" :item="item" @update="update" />
+  </ul>
 </template>
 
 <style module>
 .wordList {
-  width: 80%;
-  white-space: nowrap;
-  border-collapse: collapse;
-  border-spacing: 8px;
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
 }
-tbody > tr:nth-child(2n) {
-  background: var(--secondary-background-color);
+
+.state {
+  padding: 28px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--muted-text-color);
+  background: var(--surface-color);
+  text-align: center;
+  font-weight: 700;
 }
-th {
-  padding: 0px 8px;
-  border-bottom: 1px solid var(--text-color);
+
+.error {
+  color: var(--danger-color);
 }
+
 </style>

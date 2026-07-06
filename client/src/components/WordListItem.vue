@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref, watch } from 'vue'
 import apiClient from '../apis'
 import type { WordListItem, WordBotSetting, WordMeSetting, WordDelete } from '../apis/generated'
 import { Icon } from '@iconify/vue'
@@ -17,125 +17,292 @@ const update = () => {
 
 const includeBot = ref(props.item.includeBot)
 const includeMe = ref(props.item.includeMe)
-const isEdit = ref(false)
+const isSaving = ref(false)
+const isDeleting = ref(false)
+const dialogErrorMessage = ref('')
 
 const editDialog = ref<HTMLDialogElement>()
 const deleteDialog = ref<HTMLDialogElement>()
 
-const editDialogNum = Math.random().toString()
-const deleteDialogNum = Math.random().toString()
-
-onMounted(() => {
-  editDialog.value = document.getElementById(editDialogNum) as HTMLDialogElement
-  deleteDialog.value = document.getElementById(deleteDialogNum) as HTMLDialogElement
-})
+watch(
+  () => props.item,
+  (item) => {
+    includeBot.value = item.includeBot
+    includeMe.value = item.includeMe
+  }
+)
 
 const openEdit = () => {
   if (editDialog.value) {
-    isEdit.value = false
+    includeBot.value = props.item.includeBot
+    includeMe.value = props.item.includeMe
+    dialogErrorMessage.value = ''
     editDialog.value.showModal()
   }
 }
 
 const openDelete = () => {
   if (deleteDialog.value) {
+    dialogErrorMessage.value = ''
     deleteDialog.value.showModal()
   }
 }
 
-const sendSetting = () => {
+const closeEdit = () => {
+  editDialog.value?.close()
+}
+
+const closeDelete = () => {
+  deleteDialog.value?.close()
+}
+
+const sendSetting = async () => {
+  const requests: Promise<unknown>[] = []
   if (includeBot.value !== props.item.includeBot) {
     const editBotBody: WordBotSetting = {
       word: props.item.word,
       includeBot: includeBot.value
     }
-    apiClient.bot.putWords(editBotBody)
-    isEdit.value = true
+    requests.push(apiClient.bot.putWords(editBotBody))
   }
   if (includeMe.value !== props.item.includeMe) {
     const editMeBody: WordMeSetting = {
       word: props.item.word,
       includeMe: includeMe.value
     }
-    apiClient.me.putWordsMe(editMeBody)
-    isEdit.value = true
+    requests.push(apiClient.me.putWordsMe(editMeBody))
   }
-  if (isEdit.value) update()
+  if (requests.length === 0) {
+    closeEdit()
+    return
+  }
+
+  isSaving.value = true
+  dialogErrorMessage.value = ''
+  try {
+    await Promise.all(requests)
+    closeEdit()
+    update()
+  } catch {
+    dialogErrorMessage.value = '通知設定を変更できませんでした'
+  } finally {
+    isSaving.value = false
+  }
 }
 
-const deleteWord = () => {
+const deleteWord = async () => {
   const req: WordDelete = { word: props.item.word }
-  apiClient.words.deleteWords(req)
-  update()
+  isDeleting.value = true
+  dialogErrorMessage.value = ''
+  try {
+    await apiClient.words.deleteWords(req)
+    closeDelete()
+    update()
+  } catch {
+    dialogErrorMessage.value = '削除できませんでした'
+  } finally {
+    isDeleting.value = false
+  }
 }
 </script>
 
 <template>
-  <td>{{ item.word }}</td>
-  <td :class="$style.icons">
-    <Icon
-      :icon="item.includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'"
-      width="30"
-      height="30"
-    />
-  </td>
-  <td :class="$style.icons">
-    <Icon
-      :icon="item.includeMe ? 'mdi:notifications-active' : 'mdi:notifications-off'"
-      width="30"
-      height="30"
-    />
-  </td>
-  <td :class="$style.icons">
-    <Icon :class="$style.pointer" icon="mdi:file-edit" width="30" height="30" @click="openEdit" />
-    <Icon :class="$style.pointer" icon="mdi:delete" width="30" height="30" @click="openDelete" />
-  </td>
+  <li :class="$style.item">
+    <div :class="$style.wordCell">
+      <span :class="$style.word">{{ item.word }}</span>
+    </div>
+    <div :class="$style.statuses" aria-label="通知状態">
+      <div :class="$style.statusItem">
+        <span :class="$style.statusLabel">Bot</span>
+        <span :class="[$style.statusBadge, item.includeBot ? $style.enabled : $style.disabled]">
+          <Icon :icon="item.includeBot ? 'mdi:notifications-active' : 'mdi:notifications-off'" />
+          {{ item.includeBot ? 'ON' : 'OFF' }}
+        </span>
+      </div>
+      <div :class="$style.statusItem">
+        <span :class="$style.statusLabel">自分</span>
+        <span :class="[$style.statusBadge, item.includeMe ? $style.enabled : $style.disabled]">
+          <Icon :icon="item.includeMe ? 'mdi:notifications-active' : 'mdi:notifications-off'" />
+          {{ item.includeMe ? 'ON' : 'OFF' }}
+        </span>
+      </div>
+    </div>
+    <div :class="$style.actions">
+      <button
+        type="button"
+        :class="$style.iconButton"
+        :aria-label="`${item.word}の通知設定を編集`"
+        title="通知設定を編集"
+        @click="openEdit"
+      >
+        <Icon icon="mdi:file-edit" width="22" height="22" />
+      </button>
+      <button
+        type="button"
+        :class="[$style.iconButton, $style.deleteButton]"
+        :aria-label="`${item.word}を削除`"
+        title="削除"
+        @click="openDelete"
+      >
+        <Icon icon="mdi:delete" width="22" height="22" />
+      </button>
+    </div>
+  </li>
 
-  <dialog :class="$style.dialog" :id="editDialogNum" @click.self="editDialog?.close()">
-    <section :class="$style.dialogContent">
-      <h2>通知設定</h2>
-      <div :class="$style.settings">
-        <NotifySwitch v-model:notify="includeBot" title="Botの投稿" />
-        <NotifySwitch v-model:notify="includeMe" title="自分の投稿" />
-      </div>
-      <div :class="$style.downerButton">
-        <button @click="editDialog?.close()">閉じる</button>
-        <form method="dialog">
-          <SecondaryButton text="変更する" @click="sendSetting" />
-        </form>
-      </div>
-    </section>
-  </dialog>
+  <Teleport to="body">
+    <dialog ref="editDialog" :class="$style.dialog" @click.self="closeEdit">
+      <section :class="$style.dialogContent">
+        <header :class="$style.dialogHeader">
+          <h3>通知設定</h3>
+          <p>{{ item.word }}</p>
+        </header>
+        <div :class="$style.settings">
+          <NotifySwitch v-model:notify="includeBot" title="Botの投稿" />
+          <NotifySwitch v-model:notify="includeMe" title="自分の投稿" />
+        </div>
+        <p v-if="dialogErrorMessage" :class="$style.dialogError" role="alert">
+          {{ dialogErrorMessage }}
+        </p>
+        <div :class="$style.downerButton">
+          <button type="button" :class="$style.ghostButton" @click="closeEdit">閉じる</button>
+          <SecondaryButton
+            :text="isSaving ? '変更中' : '変更する'"
+            :disabled="isSaving"
+            @click="sendSetting"
+          />
+        </div>
+      </section>
+    </dialog>
 
-  <dialog :class="$style.dialog" :id="deleteDialogNum" @click.self="deleteDialog?.close()">
-    <section :class="$style.dialogContent">
-      <h2>単語の削除</h2>
-      <div :class="$style.downerButton">
-        <button @click="deleteDialog?.close()">閉じる</button>
-        <form method="dialog">
-          <secondary-button text="削除する" @click="deleteWord" />
-        </form>
-      </div>
-    </section>
-  </dialog>
+    <dialog ref="deleteDialog" :class="$style.dialog" @click.self="closeDelete">
+      <section :class="$style.dialogContent">
+        <header :class="$style.dialogHeader">
+          <h3>単語の削除</h3>
+          <p>{{ item.word }}</p>
+        </header>
+        <p v-if="dialogErrorMessage" :class="$style.dialogError" role="alert">
+          {{ dialogErrorMessage }}
+        </p>
+        <div :class="$style.downerButton">
+          <button type="button" :class="$style.ghostButton" @click="closeDelete">閉じる</button>
+          <button
+            type="button"
+            :class="$style.dangerButton"
+            :disabled="isDeleting"
+            @click="deleteWord"
+          >
+            {{ isDeleting ? '削除中' : '削除する' }}
+          </button>
+        </div>
+      </section>
+    </dialog>
+  </Teleport>
 </template>
 
 <style module>
-.icons {
-  width: 0px;
-  text-align: center;
+.item {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-color);
+  box-shadow: 0 8px 24px var(--shadow-color);
 }
 
-.pointer {
-  cursor: pointer;
+.wordCell {
+  min-width: 0;
+}
+
+.word {
+  color: var(--heading-color);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.statuses {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.statusItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusLabel {
+  color: var(--muted-text-color);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.statusBadge {
+  width: fit-content;
+  min-width: 70px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.enabled {
+  color: var(--success-color);
+  background: color-mix(in srgb, var(--success-color), transparent 88%);
+}
+
+.disabled {
+  color: var(--muted-text-color);
+  background: var(--secondary-background-color);
+}
+
+.actions {
+  display: flex;
+  justify-self: end;
+  gap: 8px;
+}
+
+.iconButton {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--secondary-color);
+  background: var(--surface-color);
+  border-color: var(--border-color);
+}
+
+.iconButton:hover {
+  color: var(--button-text-color);
+  background: var(--secondary-color);
+}
+
+.deleteButton {
+  color: var(--danger-color);
+}
+
+.deleteButton:hover {
+  color: var(--button-text-color);
+  background: var(--danger-color);
 }
 
 .dialog {
   margin: auto;
   border: none;
-  border-radius: 16px;
+  border-radius: 8px;
   color: var(--text-color);
-  background-color: var(--secondary-background-color);
+  background-color: var(--surface-color);
+  box-shadow: 0 18px 60px rgb(0 0 0 / 28%);
 
   &::backdrop {
     background-color: rgb(0 0 0 / 40%);
@@ -144,21 +311,74 @@ const deleteWord = () => {
 
 .dialogContent {
   width: fit-content;
-  min-width: 350px;
+  min-width: 320px;
   max-width: 90vw;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dialogHeader {
+  display: grid;
+  gap: 4px;
+
+  & h3 {
+    color: var(--heading-color);
+    font-size: 1.12rem;
+  }
+
+  & p {
+    color: var(--muted-text-color);
+    overflow-wrap: anywhere;
+  }
 }
 
 .settings {
   display: flex;
   justify-content: center;
-  margin: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dialogError {
+  color: var(--danger-color);
+  font-weight: 700;
 }
 
 .downerButton {
   display: flex;
   justify-content: end;
-  margin: 8px;
-  gap: 8px;
+  gap: 12px;
+}
+
+.ghostButton {
+  color: var(--text-color);
+  background: var(--secondary-background-color);
+}
+
+.dangerButton {
+  color: var(--button-text-color);
+  background: var(--danger-color);
+}
+
+.dangerButton:not(:disabled):hover {
+  background: var(--danger-hover-color);
+}
+
+@media screen and (max-width: 720px) {
+  .item {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .actions {
+    justify-self: start;
+  }
+
+  .dialogContent {
+    min-width: min(320px, calc(100vw - 32px));
+    padding: 20px;
+  }
 }
 </style>
