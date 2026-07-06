@@ -1,44 +1,68 @@
 <script setup lang="ts"></script>
 
 <template>
-  <header>
-    <div :class="$style.logo">
-      <router-link to="/" :class="$style.logo">
-        <img src="../assets/traQgazer_logo.svg" alt="logo" width="300" height="150" />
+  <header :class="$style.header">
+    <div :class="$style.inner">
+      <router-link to="/" :class="$style.logoLink" aria-label="traQ-gazer ホーム">
+        <img src="../assets/traQgazer_logo.svg" alt="traQ-gazer" width="180" height="52" />
       </router-link>
+      <span :class="$style.subtitle">単語通知ダッシュボード</span>
     </div>
-    <!-- <div :class="$style.links">
-      <router-link to="/">新規単語登録</router-link> /
-      <router-link to="/">登録単語の一覧</router-link>
-    </div> -->
   </header>
 </template>
 
 <style module>
-header {
+.header {
   width: 100%;
-  height: 150px;
-  padding: 0px 4px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-color);
+}
+
+.inner {
+  width: min(1120px, 100%);
+  min-height: 72px;
+  padding: 12px 24px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
-  border-bottom: 0.5px solid var(--border-color);
+  justify-content: space-between;
+  gap: 24px;
+}
 
-  & .logo {
-    height: 100%;
-    flex-grow: 2;
+.logoLink {
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: #fff;
 
-    & a {
-      width: 300px;
-    }
+  & img {
+    display: block;
+    width: 180px;
+    height: auto;
+  }
+}
 
-    & img {
-      background-color: var(--secondary-background-color);
-    }
+.subtitle {
+  color: var(--muted-text-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+@media screen and (max-width: 640px) {
+  .inner {
+    min-height: 64px;
+    padding: 12px 16px;
+    gap: 12px;
   }
 
-  @media screen and (max-width: 768px) {
-    display: block;
-    height: fit-content;
+  .logoLink img {
+    width: 150px;
+  }
+
+  .subtitle {
+    display: none;
   }
 }
 </style>
