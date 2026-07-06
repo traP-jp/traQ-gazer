@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"traQ-gazer/model"
+	"traQ-gazer/wordmatch"
 
 	"golang.org/x/exp/slog"
 )
@@ -64,8 +65,8 @@ func newWordMatchTarget(word model.WordsItem, user model.UsersItem) (wordMatchTa
 		word:       word.Word,
 	}
 
-	if isRegexWord(word.Word) {
-		regex, err := regexp.Compile(strings.Trim(word.Word, "/"))
+	if wordmatch.IsRegexWord(word.Word) {
+		regex, err := wordmatch.CompileRegexWord(word.Word)
 		if err != nil {
 			return wordMatchTarget{}, err
 		}
@@ -74,7 +75,7 @@ func newWordMatchTarget(word model.WordsItem, user model.UsersItem) (wordMatchTa
 		return target, nil
 	}
 
-	target.plainWord = normalizePlainWord(word.Word)
+	target.plainWord = wordmatch.NormalizePlainWord(word.Word)
 	return target, nil
 }
 
@@ -83,7 +84,7 @@ func (m *wordMatcher) matchMessage(messageItem model.MessageItem) []model.Matche
 	targetsByTrapID := map[string]model.MatchedWords{}
 	trapIDOrder := []string{}
 
-	content := normalizePlainWord(messageItem.Content)
+	content := wordmatch.NormalizePlainWord(messageItem.Content)
 	for _, target := range m.targets {
 		if !target.matches(messageItem.Content, content) ||
 			!target.allowsSelfNotification(messageItem.TraqUuid) ||
@@ -127,27 +128,4 @@ func (t wordMatchTarget) allowsBotNotification(senderIsBotByTraqUUID map[string]
 	}
 	senderIsBot, exists := senderIsBotByTraqUUID[senderTraqUUID]
 	return exists && !senderIsBot
-}
-
-func isRegexWord(word string) bool {
-	return len(word) >= 2 && strings.HasPrefix(word, "/") && strings.HasSuffix(word, "/")
-}
-
-// Plain words are matched for common reading differences, while keeping emoji, width, and marks distinct.
-func normalizePlainWord(word string) string {
-	return strings.Map(foldHiraganaToKatakana, strings.ToLower(word))
-}
-
-func foldHiraganaToKatakana(r rune) rune {
-	if r >= 'ぁ' && r <= 'ゖ' {
-		return r + ('ァ' - 'ぁ')
-	}
-	switch r {
-	case 'ゝ':
-		return 'ヽ'
-	case 'ゞ':
-		return 'ヾ'
-	default:
-		return r
-	}
 }

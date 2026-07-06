@@ -1,5 +1,6 @@
 CREATE TABLE `words` (
     `trap_id` VARCHAR(32) NOT NULL,
+    -- Keep registered words binary-distinct; notification matching applies app-side normalization.
     `word` VARCHAR(50) NOT NULL COLLATE utf8mb4_bin,
     `register_time` DATETIME DEFAULT NOW(),
     `bot_notification` BOOLEAN,
