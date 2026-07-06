@@ -31,7 +31,7 @@ func findMatchingWords(messageList model.MessageList, loadMatcher wordMatcherLoa
 	if closeableMatcher, ok := matcher.(closeableMessageWordMatcher); ok {
 		defer func() {
 			if err := closeableMatcher.close(); err != nil {
-				slog.Error(fmt.Sprintf("failed to close word matcher: %v", err))
+				slog.Error("failed to close word matcher", "err", err)
 			}
 		}()
 	}

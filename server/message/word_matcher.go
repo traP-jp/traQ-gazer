@@ -70,7 +70,7 @@ func newWordMatcher(words []model.WordsItem, users []model.UsersItem) (*wordMatc
 
 		target, err := newWordMatchTarget(word, user)
 		if err != nil {
-			slog.Warn("skip invalid registered regex word")
+			slog.Warn("skip invalid registered regex word", "err", err)
 			continue
 		}
 		targets = append(targets, target)
@@ -239,7 +239,7 @@ func (w regexRegisteredWord) close() error {
 func (w regexRegisteredWord) matches(content messageContent) bool {
 	matched, err := w.regex.MatchString(content.raw)
 	if err != nil {
-		slog.Warn("skip regex word after match error")
+		slog.Warn("skip regex word after match error", "err", err)
 		return false
 	}
 	return matched
