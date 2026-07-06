@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"traQ-gazer/model"
+	"traQ-gazer/wordpattern"
 )
 
 func TestFindMatchingWords(t *testing.T) {
@@ -101,32 +102,63 @@ func TestFindMatchingWords(t *testing.T) {
 func TestWordMatcher_MatchMessage(t *testing.T) {
 	t.Parallel()
 
-	t.Run("word matching", func(t *testing.T) {
+	matcher, err := newWordMatcher(
+		[]model.WordsItem{
+			{Word: "hello", TrapId: "target-a", IncludeBot: false, IncludeMe: true},
+			{Word: "self", TrapId: "sender", IncludeBot: true, IncludeMe: false},
+			{Word: "missing", TrapId: "target-b", IncludeBot: true, IncludeMe: true},
+		},
+		[]model.UsersItem{
+			{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
+			{TrapID: "target-a", TraqUUID: "target-a-uuid", IsBot: false},
+			{TrapID: "target-b", TraqUUID: "target-b-uuid", IsBot: false},
+		},
+	)
+	if err != nil {
+		t.Fatalf("newWordMatcher returned error: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := matcher.close(); err != nil {
+			t.Errorf("wordMatcher.close returned error: %v", err)
+		}
+	})
+
+	got := matcher.matchMessage(model.MessageItem{
+		TraqUuid: "sender-uuid",
+		Content:  "hello, self",
+	})
+	want := []model.MatchedWords{
+		{
+			ContactedWords: "hello",
+			TrapID:         "target-a",
+			TraqUUID:       "target-a-uuid",
+		},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("matched words = %#v, want %#v", got, want)
+	}
+}
+
+func TestTargetsMatchingContent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("message content filtering", func(t *testing.T) {
+		t.Parallel()
+
 		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
+			registeredWords  []string
+			messageContent   string
+			wantMatchedWords []string
 		}{
-			"plain and regex words for same user are grouped together": {
-				words: []model.WordsItem{
-					{Word: "hello", TrapId: "target-a", IncludeBot: false, IncludeMe: true},
-					{Word: "/traQ.+gazer/", TrapId: "target-a", IncludeBot: false, IncludeMe: true},
-					{Word: "missing", TrapId: "target-b", IncludeBot: false, IncludeMe: true},
-				},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target-a", TraqUUID: "target-a-uuid", IsBot: false},
-					{TrapID: "target-b", TraqUUID: "target-b-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "hello, traQ gazer!"},
-				want: []model.MatchedWords{
-					{
-						ContactedWords: "hello\n/traQ.+gazer/",
-						TrapID:         "target-a",
-						TraqUUID:       "target-a-uuid",
-					},
-				},
+			"only registered words found in the message remain": {
+				registeredWords:  []string{"hello", "missing", "world"},
+				messageContent:   "hello world",
+				wantMatchedWords: []string{"hello", "world"},
+			},
+			"registered words absent from the message are dropped": {
+				registeredWords:  []string{"first", "second"},
+				messageContent:   "content",
+				wantMatchedWords: []string{},
 			},
 		}
 
@@ -134,93 +166,74 @@ func TestWordMatcher_MatchMessage(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
+				registeredTargets := make([]wordMatchTarget, 0, len(tt.registeredWords))
+				for _, word := range tt.registeredWords {
+					registeredTargets = append(registeredTargets, wordMatchTarget{
+						word: plainRegisteredWord{original: word, normalized: word},
+					})
+				}
+
+				gotTargets := targetsMatchingContent(registeredTargets, newMessageContent(tt.messageContent))
+				got := make([]string, 0, len(gotTargets))
+				for _, target := range gotTargets {
+					got = append(got, target.word.text())
+				}
+
+				if !reflect.DeepEqual(got, tt.wantMatchedWords) {
+					t.Fatalf("matched target words = %#v, want %#v", got, tt.wantMatchedWords)
 				}
 			})
 		}
 	})
 
-	t.Run("matched word grouping", func(t *testing.T) {
-		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
-		}{
-			"matched words are grouped by trapID in registration order": {
-				words: []model.WordsItem{
-					{Word: "beta", TrapId: "target-b", IncludeBot: true, IncludeMe: true},
-					{Word: "alpha", TrapId: "target-a", IncludeBot: true, IncludeMe: true},
-					{Word: "beta-2", TrapId: "target-b", IncludeBot: true, IncludeMe: true},
-				},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target-a", TraqUUID: "target-a-uuid", IsBot: false},
-					{TrapID: "target-b", TraqUUID: "target-b-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "alpha beta beta-2"},
-				want: []model.MatchedWords{
-					{
-						ContactedWords: "beta\nbeta-2",
-						TrapID:         "target-b",
-						TraqUUID:       "target-b-uuid",
-					},
-					{
-						ContactedWords: "alpha",
-						TrapID:         "target-a",
-						TraqUUID:       "target-a-uuid",
-					},
-				},
+	t.Run("registration order", func(t *testing.T) {
+		t.Parallel()
+
+		gotTargets := targetsMatchingContent(
+			[]wordMatchTarget{
+				{word: plainRegisteredWord{original: "first", normalized: "first"}},
+				{word: plainRegisteredWord{original: "second", normalized: "second"}},
+				{word: plainRegisteredWord{original: "third", normalized: "third"}},
 			},
+			newMessageContent("third first second"),
+		)
+		got := make([]string, 0, len(gotTargets))
+		for _, target := range gotTargets {
+			got = append(got, target.word.text())
 		}
+		want := []string{"first", "second", "third"}
 
-		for name, tt := range tests {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
-				}
-			})
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("matched target words = %#v, want %#v", got, want)
 		}
 	})
+}
+
+func TestTargetsAllowedForSender(t *testing.T) {
+	t.Parallel()
 
 	t.Run("self notification setting", func(t *testing.T) {
+		t.Parallel()
+
 		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
+			includeMe      bool
+			senderTraqUUID string
+			wantAllowed    bool
 		}{
-			"includeMe true allows own message": {
-				words:   []model.WordsItem{{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users:   []model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
-				message: model.MessageItem{TraqUuid: "target-uuid", Content: "keyword"},
-				want: []model.MatchedWords{
-					{ContactedWords: "keyword", TrapID: "target", TraqUUID: "target-uuid"},
-				},
+			"own message is allowed when includeMe is true": {
+				includeMe:      true,
+				senderTraqUUID: "target-uuid",
+				wantAllowed:    true,
 			},
-			"includeMe false rejects own message": {
-				words:   []model.WordsItem{{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: false}},
-				users:   []model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
-				message: model.MessageItem{TraqUuid: "target-uuid", Content: "keyword"},
-				want:    []model.MatchedWords{},
+			"own message is dropped when includeMe is false": {
+				includeMe:      false,
+				senderTraqUUID: "target-uuid",
+				wantAllowed:    false,
 			},
-			"includeMe false allows another user's message": {
-				words: []model.WordsItem{{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: false}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "keyword"},
-				want: []model.MatchedWords{
-					{ContactedWords: "keyword", TrapID: "target", TraqUUID: "target-uuid"},
-				},
+			"another user's message is allowed even when includeMe is false": {
+				includeMe:      false,
+				senderTraqUUID: "sender-uuid",
+				wantAllowed:    true,
 			},
 		}
 
@@ -228,55 +241,53 @@ func TestWordMatcher_MatchMessage(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
+				notifyTarget := wordMatchTarget{
+					includeMe:  tt.includeMe,
+					includeBot: true,
+					trapID:     "target",
+					traqUUID:   "target-uuid",
+					word:       plainRegisteredWord{original: "keyword", normalized: "keyword"},
+				}
+
+				gotTargets := targetsAllowedForSender(
+					[]wordMatchTarget{notifyTarget},
+					messageSender{traqUUID: tt.senderTraqUUID, isKnown: true},
+				)
+				gotAllowed := len(gotTargets) == 1
+				if gotAllowed != tt.wantAllowed {
+					t.Fatalf("target allowed = %v, want %v", gotAllowed, tt.wantAllowed)
 				}
 			})
 		}
 	})
 
 	t.Run("bot notification setting", func(t *testing.T) {
+		t.Parallel()
+
 		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
+			includeBot  bool
+			sender      messageSender
+			wantAllowed bool
 		}{
-			"includeBot true allows unknown sender": {
-				words:   []model.WordsItem{{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users:   []model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
-				message: model.MessageItem{TraqUuid: "unknown-uuid", Content: "keyword"},
-				want: []model.MatchedWords{
-					{ContactedWords: "keyword", TrapID: "target", TraqUUID: "target-uuid"},
-				},
+			"unknown sender is allowed when includeBot is true": {
+				includeBot:  true,
+				sender:      messageSender{traqUUID: "unknown-uuid"},
+				wantAllowed: true,
 			},
-			"includeBot false allows known human sender": {
-				words: []model.WordsItem{{Word: "keyword", TrapId: "target", IncludeBot: false, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "human", TraqUUID: "human-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "human-uuid", Content: "keyword"},
-				want: []model.MatchedWords{
-					{ContactedWords: "keyword", TrapID: "target", TraqUUID: "target-uuid"},
-				},
+			"known human sender is allowed when includeBot is false": {
+				includeBot:  false,
+				sender:      messageSender{traqUUID: "human-uuid", isKnown: true, isBot: false},
+				wantAllowed: true,
 			},
-			"includeBot false rejects known bot sender": {
-				words: []model.WordsItem{{Word: "keyword", TrapId: "target", IncludeBot: false, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "bot", TraqUUID: "bot-uuid", IsBot: true},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "bot-uuid", Content: "keyword"},
-				want:    []model.MatchedWords{},
+			"known bot sender is dropped when includeBot is false": {
+				includeBot:  false,
+				sender:      messageSender{traqUUID: "bot-uuid", isKnown: true, isBot: true},
+				wantAllowed: false,
 			},
-			"includeBot false rejects unknown sender": {
-				words:   []model.WordsItem{{Word: "keyword", TrapId: "target", IncludeBot: false, IncludeMe: true}},
-				users:   []model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
-				message: model.MessageItem{TraqUuid: "unknown-uuid", Content: "keyword"},
-				want:    []model.MatchedWords{},
+			"unknown sender is dropped when includeBot is false": {
+				includeBot:  false,
+				sender:      messageSender{traqUUID: "unknown-uuid"},
+				wantAllowed: false,
 			},
 		}
 
@@ -284,292 +295,85 @@ func TestWordMatcher_MatchMessage(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
+				notifyTarget := wordMatchTarget{
+					includeMe:  true,
+					includeBot: tt.includeBot,
+					trapID:     "target",
+					traqUUID:   "target-uuid",
+					word:       plainRegisteredWord{original: "keyword", normalized: "keyword"},
+				}
+
+				gotTargets := targetsAllowedForSender([]wordMatchTarget{notifyTarget}, tt.sender)
+				gotAllowed := len(gotTargets) == 1
+				if gotAllowed != tt.wantAllowed {
+					t.Fatalf("target allowed = %v, want %v", gotAllowed, tt.wantAllowed)
 				}
 			})
 		}
 	})
+}
 
-	t.Run("plain word literal matching", func(t *testing.T) {
-		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
-		}{
-			"percent is treated as a literal plain word": {
-				words: []model.WordsItem{{Word: "%", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "hello"},
-				want:    []model.MatchedWords{},
-			},
-			"underscore is treated as a literal plain word": {
-				words: []model.WordsItem{{Word: "_", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "hello"},
-				want:    []model.MatchedWords{},
-			},
-		}
+func TestMatchedWordsFromTargets(t *testing.T) {
+	t.Parallel()
 
-		for name, tt := range tests {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
-				}
-			})
-		}
+	got := matchedWordsFromTargets([]wordMatchTarget{
+		{
+			trapID:   "target-b",
+			traqUUID: "target-b-uuid",
+			word:     plainRegisteredWord{original: "beta", normalized: "beta"},
+		},
+		{
+			trapID:   "target-a",
+			traqUUID: "target-a-uuid",
+			word:     plainRegisteredWord{original: "alpha", normalized: "alpha"},
+		},
+		{
+			trapID:   "target-b",
+			traqUUID: "target-b-uuid",
+			word:     plainRegisteredWord{original: "beta-2", normalized: "beta-2"},
+		},
 	})
+	want := []model.MatchedWords{
+		{
+			ContactedWords: "beta\nbeta-2",
+			TrapID:         "target-b",
+			TraqUUID:       "target-b-uuid",
+		},
+		{
+			ContactedWords: "alpha",
+			TrapID:         "target-a",
+			TraqUUID:       "target-a-uuid",
+		},
+	}
 
-	t.Run("plain word normalization", func(t *testing.T) {
-		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
-		}{
-			"identical plain words match": {
-				words: []model.WordsItem{{Word: "hello", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "hello"},
-				want: []model.MatchedWords{
-					{ContactedWords: "hello", TrapID: "target", TraqUUID: "target-uuid"},
-				},
-			},
-			"latin case differences are ignored": {
-				words: []model.WordsItem{{Word: "hello", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "HELLO"},
-				want: []model.MatchedWords{
-					{ContactedWords: "hello", TrapID: "target", TraqUUID: "target-uuid"},
-				},
-			},
-			"case variants registered by same user are reported together": {
-				words: []model.WordsItem{
-					{Word: "hello", TrapId: "target", IncludeBot: true, IncludeMe: true},
-					{Word: "HELLO", TrapId: "target", IncludeBot: true, IncludeMe: true},
-				},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "hello"},
-				want: []model.MatchedWords{
-					{ContactedWords: "hello\nHELLO", TrapID: "target", TraqUUID: "target-uuid"},
-				},
-			},
-			"hiragana and katakana variants are folded": {
-				words: []model.WordsItem{{Word: "あ", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "ア"},
-				want: []model.MatchedWords{
-					{ContactedWords: "あ", TrapID: "target", TraqUUID: "target-uuid"},
-				},
-			},
-			"voiced hiragana and katakana variants are folded": {
-				words: []model.WordsItem{{Word: "が", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "ガ"},
-				want: []model.MatchedWords{
-					{ContactedWords: "が", TrapID: "target", TraqUUID: "target-uuid"},
-				},
-			},
-			"different dakuten state stays distinct": {
-				words: []model.WordsItem{{Word: "は", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "ば"},
-				want:    []model.MatchedWords{},
-			},
-			"small hiragana and small katakana variants are folded": {
-				words: []model.WordsItem{{Word: "ぁ", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "ァ"},
-				want: []model.MatchedWords{
-					{ContactedWords: "ぁ", TrapID: "target", TraqUUID: "target-uuid"},
-				},
-			},
-			"large and small kana stay distinct": {
-				words: []model.WordsItem{{Word: "あ", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "ぁ"},
-				want:    []model.MatchedWords{},
-			},
-			"fullwidth latin stays distinct": {
-				words: []model.WordsItem{{Word: "a", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "ａ"},
-				want:    []model.MatchedWords{},
-			},
-			"accented latin stays distinct": {
-				words: []model.WordsItem{{Word: "e", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "é"},
-				want:    []model.MatchedWords{},
-			},
-			"different emoji code points stay distinct": {
-				words: []model.WordsItem{{Word: "😀", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "😃"},
-				want:    []model.MatchedWords{},
-			},
-		}
-
-		for name, tt := range tests {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
-				}
-			})
-		}
-	})
-
-	t.Run("emoji substring matching", func(t *testing.T) {
-		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
-		}{
-			"base emoji matches variation-selector sequence": {
-				words: []model.WordsItem{{Word: "☹", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "☹️"},
-				want: []model.MatchedWords{
-					{ContactedWords: "☹", TrapID: "target", TraqUUID: "target-uuid"},
-				},
-			},
-			"base emoji matches skin-tone modifier sequence": {
-				words: []model.WordsItem{{Word: "👍", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target", TraqUUID: "target-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "👍🏽"},
-				want: []model.MatchedWords{
-					{ContactedWords: "👍", TrapID: "target", TraqUUID: "target-uuid"},
-				},
-			},
-		}
-
-		for name, tt := range tests {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
-				}
-			})
-		}
-	})
-
-	t.Run("regex matching", func(t *testing.T) {
-		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
-		}{
-			"regex words use raw content without plain-word normalization": {
-				words: []model.WordsItem{
-					{Word: "/hello/", TrapId: "target-a", IncludeBot: true, IncludeMe: true},
-					{Word: "/あ/", TrapId: "target-b", IncludeBot: true, IncludeMe: true},
-				},
-				users: []model.UsersItem{
-					{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false},
-					{TrapID: "target-a", TraqUUID: "target-a-uuid", IsBot: false},
-					{TrapID: "target-b", TraqUUID: "target-b-uuid", IsBot: false},
-				},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "HELLO ア"},
-				want:    []model.MatchedWords{},
-			},
-		}
-
-		for name, tt := range tests {
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
-				}
-			})
-		}
-	})
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("matched words = %#v, want %#v", got, want)
+	}
 }
 
 func TestNewWordMatcher(t *testing.T) {
 	t.Parallel()
 
-	t.Run("target construction", func(t *testing.T) {
+	t.Run("notification target user lookup", func(t *testing.T) {
+		t.Parallel()
+
 		tests := map[string]struct {
-			words   []model.WordsItem
-			users   []model.UsersItem
-			message model.MessageItem
-			want    []model.MatchedWords
+			registeredWords []model.WordsItem
+			knownUsers      []model.UsersItem
+			wantTargetWords []string
 		}{
-			"invalid regex word is skipped": {
-				words:   []model.WordsItem{{Word: "/[/", TrapId: "target", IncludeBot: true, IncludeMe: true}},
-				users:   []model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "["},
-				want:    []model.MatchedWords{},
+			"word is kept when its notification target user exists": {
+				registeredWords: []model.WordsItem{{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: true}},
+				knownUsers:      []model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
+				wantTargetWords: []string{"keyword"},
 			},
-			"word without target user is skipped": {
-				words:   []model.WordsItem{{Word: "keyword", TrapId: "missing-user", IncludeBot: true, IncludeMe: true}},
-				users:   []model.UsersItem{{TrapID: "sender", TraqUUID: "sender-uuid", IsBot: false}},
-				message: model.MessageItem{TraqUuid: "sender-uuid", Content: "keyword"},
-				want:    []model.MatchedWords{},
+			"word is skipped when its notification target user is unknown": {
+				registeredWords: []model.WordsItem{
+					{Word: "missing", TrapId: "missing-user", IncludeBot: true, IncludeMe: true},
+					{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: true},
+				},
+				knownUsers:      []model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
+				wantTargetWords: []string{"keyword"},
 			},
 		}
 
@@ -577,24 +381,415 @@ func TestNewWordMatcher(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				matcher := mustNewWordMatcher(t, tt.words, tt.users)
-				got := matcher.matchMessage(tt.message)
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Fatalf("matched words = %#v, want %#v", got, tt.want)
+				matcher, err := newWordMatcher(tt.registeredWords, tt.knownUsers)
+				if err != nil {
+					t.Fatalf("newWordMatcher returned error: %v", err)
+				}
+				t.Cleanup(func() {
+					if err := matcher.close(); err != nil {
+						t.Errorf("wordMatcher.close returned error: %v", err)
+					}
+				})
+
+				gotWords := make([]string, 0, len(matcher.targets))
+				for _, target := range matcher.targets {
+					gotWords = append(gotWords, target.word.text())
+				}
+				if !reflect.DeepEqual(gotWords, tt.wantTargetWords) {
+					t.Fatalf("target words = %#v, want %#v", gotWords, tt.wantTargetWords)
+				}
+			})
+		}
+	})
+
+	t.Run("invalid registered word handling", func(t *testing.T) {
+		t.Parallel()
+
+		matcher, err := newWordMatcher(
+			[]model.WordsItem{
+				{Word: "/[/", TrapId: "target", IncludeBot: true, IncludeMe: true},
+				{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: true},
+			},
+			[]model.UsersItem{{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}},
+		)
+		if err != nil {
+			t.Fatalf("newWordMatcher returned error: %v", err)
+		}
+		t.Cleanup(func() {
+			if err := matcher.close(); err != nil {
+				t.Errorf("wordMatcher.close returned error: %v", err)
+			}
+		})
+
+		gotWords := make([]string, 0, len(matcher.targets))
+		for _, target := range matcher.targets {
+			gotWords = append(gotWords, target.word.text())
+		}
+		wantWords := []string{"keyword"}
+		if !reflect.DeepEqual(gotWords, wantWords) {
+			t.Fatalf("target words = %#v, want %#v", gotWords, wantWords)
+		}
+	})
+}
+
+func TestWordMatcher_MessageSender(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		senderTraqUUID string
+		wantSender     messageSender
+	}{
+		"known human sender": {
+			senderTraqUUID: "human-uuid",
+			wantSender:     messageSender{traqUUID: "human-uuid", isKnown: true, isBot: false},
+		},
+		"known bot sender": {
+			senderTraqUUID: "bot-uuid",
+			wantSender:     messageSender{traqUUID: "bot-uuid", isKnown: true, isBot: true},
+		},
+		"unknown sender": {
+			senderTraqUUID: "unknown-uuid",
+			wantSender:     messageSender{traqUUID: "unknown-uuid"},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			matcher, err := newWordMatcher(
+				nil,
+				[]model.UsersItem{
+					{TrapID: "human", TraqUUID: "human-uuid", IsBot: false},
+					{TrapID: "bot", TraqUUID: "bot-uuid", IsBot: true},
+				},
+			)
+			if err != nil {
+				t.Fatalf("newWordMatcher returned error: %v", err)
+			}
+			t.Cleanup(func() {
+				if err := matcher.close(); err != nil {
+					t.Errorf("wordMatcher.close returned error: %v", err)
+				}
+			})
+
+			got := matcher.messageSender(tt.senderTraqUUID)
+			if got != tt.wantSender {
+				t.Fatalf("message sender = %#v, want %#v", got, tt.wantSender)
+			}
+		})
+	}
+}
+
+func TestNewWordMatchTarget(t *testing.T) {
+	t.Parallel()
+
+	user := model.UsersItem{TrapID: "target", TraqUUID: "target-uuid", IsBot: false}
+
+	t.Run("target metadata", func(t *testing.T) {
+		t.Parallel()
+
+		target, err := newWordMatchTarget(
+			model.WordsItem{Word: "keyword", TrapId: "target", IncludeBot: true, IncludeMe: false},
+			user,
+		)
+		if err != nil {
+			t.Fatalf("newWordMatchTarget returned error: %v", err)
+		}
+		if target.includeBot != true || target.includeMe != false ||
+			target.trapID != "target" || target.traqUUID != "target-uuid" ||
+			target.word.text() != "keyword" {
+			t.Fatalf("target = %#v, want metadata copied from word and user", target)
+		}
+	})
+
+	t.Run("invalid regex returns error", func(t *testing.T) {
+		t.Parallel()
+
+		target, err := newWordMatchTarget(model.WordsItem{Word: "/[/", TrapId: "target"}, user)
+		if err == nil {
+			t.Fatal("newWordMatchTarget error = nil, want error")
+		}
+		if target.word != nil {
+			t.Fatalf("target word = %#v, want nil", target.word)
+		}
+	})
+}
+
+func TestNewRegisteredWord(t *testing.T) {
+	t.Parallel()
+
+	t.Run("plain word", func(t *testing.T) {
+		t.Parallel()
+
+		word, err := newRegisteredWord("HELLO")
+		if err != nil {
+			t.Fatalf("newRegisteredWord returned error: %v", err)
+		}
+
+		plainWord, ok := word.(plainRegisteredWord)
+		if !ok {
+			t.Fatalf("registered word type = %T, want plainRegisteredWord", word)
+		}
+		if plainWord.original != "HELLO" || plainWord.normalized != "hello" {
+			t.Fatalf("plain word = %#v, want original and normalized text", plainWord)
+		}
+	})
+
+	t.Run("regex word", func(t *testing.T) {
+		t.Parallel()
+
+		word, err := newRegisteredWord("/hello/")
+		if err != nil {
+			t.Fatalf("newRegisteredWord returned error: %v", err)
+		}
+
+		regexWord, ok := word.(regexRegisteredWord)
+		if !ok {
+			t.Fatalf("registered word type = %T, want regexRegisteredWord", word)
+		}
+		t.Cleanup(func() {
+			if err := regexWord.close(); err != nil {
+				t.Errorf("regexRegisteredWord.close returned error: %v", err)
+			}
+		})
+		if regexWord.original != "/hello/" {
+			t.Fatalf("regex word = %#v, want original text", regexWord)
+		}
+	})
+
+	t.Run("invalid regex", func(t *testing.T) {
+		t.Parallel()
+
+		word, err := newRegisteredWord("/[/")
+		if err == nil {
+			t.Fatal("newRegisteredWord error = nil, want error")
+		}
+		if word != nil {
+			t.Fatalf("registered word = %#v, want nil", word)
+		}
+	})
+}
+
+func TestWordMatchTarget_MatchesContent(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		notifyTarget   wordMatchTarget
+		messageContent messageContent
+		wantMatches    bool
+	}{
+		"target without a registered word never matches": {
+			notifyTarget:   wordMatchTarget{},
+			messageContent: messageContent{raw: "keyword", normalized: "keyword"},
+			wantMatches:    false,
+		},
+		"target matches when its registered word matches normalized content": {
+			notifyTarget:   wordMatchTarget{word: plainRegisteredWord{normalized: "keyword"}},
+			messageContent: messageContent{raw: "missing", normalized: "keyword"},
+			wantMatches:    true,
+		},
+		"target does not match when its registered word misses normalized content": {
+			notifyTarget:   wordMatchTarget{word: plainRegisteredWord{normalized: "keyword"}},
+			messageContent: messageContent{raw: "keyword", normalized: "missing"},
+			wantMatches:    false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := tt.notifyTarget.matchesContent(tt.messageContent)
+			if got != tt.wantMatches {
+				t.Fatalf("matchesContent(%#v) = %v, want %v", tt.messageContent, got, tt.wantMatches)
+			}
+		})
+	}
+}
+
+func TestPlainRegisteredWord_Matches(t *testing.T) {
+	t.Parallel()
+
+	t.Run("substring matching", func(t *testing.T) {
+		t.Parallel()
+
+		tests := map[string]struct {
+			registeredWord string
+			messageContent string
+			wantMatches    bool
+		}{
+			"plain word uses substring matching": {
+				registeredWord: "hello",
+				messageContent: "hello world",
+				wantMatches:    true,
+			},
+			"plain word absent from content does not match": {
+				registeredWord: "hello",
+				messageContent: "world",
+				wantMatches:    false,
+			},
+		}
+
+		for name, tt := range tests {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				matcher := plainRegisteredWord{
+					original:   tt.registeredWord,
+					normalized: wordpattern.NormalizePlainWord(tt.registeredWord),
+				}
+				got := matcher.matches(newMessageContent(tt.messageContent))
+				if got != tt.wantMatches {
+					t.Fatalf("matches(%q, %q) = %v, want %v", tt.registeredWord, tt.messageContent, got, tt.wantMatches)
+				}
+			})
+		}
+	})
+
+	t.Run("literal matching", func(t *testing.T) {
+		t.Parallel()
+
+		tests := map[string]struct {
+			registeredWord string
+			messageContent string
+			wantMatches    bool
+		}{
+			"treats metacharacters literally": {
+				registeredWord: "%",
+				messageContent: "100%",
+				wantMatches:    true,
+			},
+			"does not treat underscore as wildcard": {
+				registeredWord: "_",
+				messageContent: "hello",
+				wantMatches:    false,
+			},
+		}
+
+		for name, tt := range tests {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				matcher := plainRegisteredWord{
+					original:   tt.registeredWord,
+					normalized: wordpattern.NormalizePlainWord(tt.registeredWord),
+				}
+				got := matcher.matches(newMessageContent(tt.messageContent))
+				if got != tt.wantMatches {
+					t.Fatalf("matches(%q, %q) = %v, want %v", tt.registeredWord, tt.messageContent, got, tt.wantMatches)
+				}
+			})
+		}
+	})
+
+	t.Run("emoji code point matching", func(t *testing.T) {
+		t.Parallel()
+
+		tests := map[string]struct {
+			registeredWord string
+			messageContent string
+			wantMatches    bool
+		}{
+			"base emoji matches variation-selector sequence": {
+				registeredWord: "☹",
+				messageContent: "☹️",
+				wantMatches:    true,
+			},
+			"base emoji matches skin-tone modifier sequence": {
+				registeredWord: "👍",
+				messageContent: "👍🏽",
+				wantMatches:    true,
+			},
+			"different emoji code points stay distinct": {
+				registeredWord: "😀",
+				messageContent: "😃",
+				wantMatches:    false,
+			},
+		}
+
+		for name, tt := range tests {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				matcher := plainRegisteredWord{
+					original:   tt.registeredWord,
+					normalized: wordpattern.NormalizePlainWord(tt.registeredWord),
+				}
+				got := matcher.matches(newMessageContent(tt.messageContent))
+				if got != tt.wantMatches {
+					t.Fatalf("matches(%q, %q) = %v, want %v", tt.registeredWord, tt.messageContent, got, tt.wantMatches)
 				}
 			})
 		}
 	})
 }
 
-func mustNewWordMatcher(t *testing.T, words []model.WordsItem, users []model.UsersItem) *wordMatcher {
-	t.Helper()
+func TestRegexRegisteredWord_Matches(t *testing.T) {
+	t.Parallel()
 
-	matcher, err := newWordMatcher(words, users)
-	if err != nil {
-		t.Fatalf("newWordMatcher returned error: %v", err)
-	}
-	return matcher
+	t.Run("raw message content matching", func(t *testing.T) {
+		t.Parallel()
+
+		tests := map[string]struct {
+			registeredWord string
+			messageContent string
+			wantMatches    bool
+		}{
+			"regex word matches raw message content": {
+				registeredWord: "/hello/",
+				messageContent: "hello",
+				wantMatches:    true,
+			},
+			"regex word is case-sensitive unless the pattern opts in": {
+				registeredWord: "/hello/",
+				messageContent: "HELLO",
+				wantMatches:    false,
+			},
+		}
+
+		for name, tt := range tests {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				regex, err := wordpattern.CompileRegexWord(tt.registeredWord)
+				if err != nil {
+					t.Fatalf("CompileRegexWord returned error: %v", err)
+				}
+				matcher := regexRegisteredWord{original: tt.registeredWord, regex: regex}
+				t.Cleanup(func() {
+					if err := matcher.close(); err != nil {
+						t.Errorf("regexRegisteredWord.close returned error: %v", err)
+					}
+				})
+
+				got := matcher.matches(messageContent{raw: tt.messageContent, normalized: "missing"})
+				if got != tt.wantMatches {
+					t.Fatalf("matches(%q, %q) = %v, want %v", tt.registeredWord, tt.messageContent, got, tt.wantMatches)
+				}
+			})
+		}
+	})
+
+	t.Run("runtime match errors", func(t *testing.T) {
+		t.Parallel()
+
+		regex, err := wordpattern.CompileRegexWord("/.+/")
+		if err != nil {
+			t.Fatalf("CompileRegexWord returned error: %v", err)
+		}
+		matcher := regexRegisteredWord{original: "/.+/", regex: regex}
+		t.Cleanup(func() {
+			if err := matcher.close(); err != nil {
+				t.Errorf("regexRegisteredWord.close returned error: %v", err)
+			}
+		})
+
+		got := matcher.matches(messageContent{raw: string([]byte{0xff}), normalized: "missing"})
+		if got {
+			t.Fatal("matches returned true on runtime match error")
+		}
+	})
 }
 
 type fakeMessageWordMatcher struct {

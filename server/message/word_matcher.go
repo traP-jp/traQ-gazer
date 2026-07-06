@@ -1,28 +1,56 @@
 package message
 
 import (
+	"errors"
 	"log/slog"
-	"regexp"
 	"strings"
 
 	"traQ-gazer/model"
-	"traQ-gazer/wordmatch"
+	"traQ-gazer/wordpattern"
 )
 
+// wordMatcher applies registered words to messages and notification settings.
 type wordMatcher struct {
 	senderIsBotByTraqUUID map[string]bool
 	targets               []wordMatchTarget
 }
 
+type registeredWord interface {
+	matches(messageContent) bool
+	text() string
+}
+
+type closeableRegisteredWord interface {
+	close() error
+}
+
+type messageContent struct {
+	raw        string
+	normalized string
+}
+
+type messageSender struct {
+	traqUUID string
+	isKnown  bool
+	isBot    bool
+}
+
 type wordMatchTarget struct {
 	includeBot bool
 	includeMe  bool
-	isRegex    bool
-	plainWord  string
-	regex      *regexp.Regexp
 	trapID     string
 	traqUUID   string
-	word       string
+	word       registeredWord
+}
+
+type plainRegisteredWord struct {
+	original   string
+	normalized string
+}
+
+type regexRegisteredWord struct {
+	original string
+	regex    *wordpattern.RegexWord
 }
 
 func newWordMatcher(words []model.WordsItem, users []model.UsersItem) (*wordMatcher, error) {
@@ -42,7 +70,7 @@ func newWordMatcher(words []model.WordsItem, users []model.UsersItem) (*wordMatc
 
 		target, err := newWordMatchTarget(word, user)
 		if err != nil {
-			slog.Warn("skip invalid registered regex word")
+			slog.Warn("skip invalid registered regex word", "err", err)
 			continue
 		}
 		targets = append(targets, target)
@@ -55,41 +83,96 @@ func newWordMatcher(words []model.WordsItem, users []model.UsersItem) (*wordMatc
 }
 
 func newWordMatchTarget(word model.WordsItem, user model.UsersItem) (wordMatchTarget, error) {
+	matchedWord, err := newRegisteredWord(word.Word)
+	if err != nil {
+		return wordMatchTarget{}, err
+	}
+
 	target := wordMatchTarget{
 		includeBot: word.IncludeBot,
 		includeMe:  word.IncludeMe,
 		trapID:     word.TrapId,
 		traqUUID:   user.TraqUUID,
-		word:       word.Word,
+		word:       matchedWord,
 	}
-
-	if wordmatch.IsRegexWord(word.Word) {
-		regex, err := wordmatch.CompileRegexWord(word.Word)
-		if err != nil {
-			return wordMatchTarget{}, err
-		}
-		target.isRegex = true
-		target.regex = regex
-		return target, nil
-	}
-
-	target.plainWord = wordmatch.NormalizePlainWord(word.Word)
 	return target, nil
 }
 
+func newRegisteredWord(wordText string) (registeredWord, error) {
+	if wordpattern.IsRegexWord(wordText) {
+		regex, err := wordpattern.CompileRegexWord(wordText)
+		if err != nil {
+			return nil, err
+		}
+		return regexRegisteredWord{original: wordText, regex: regex}, nil
+	}
+
+	return plainRegisteredWord{
+		original:   wordText,
+		normalized: wordpattern.NormalizePlainWord(wordText),
+	}, nil
+}
+
+func (m *wordMatcher) close() error {
+	var errs []error
+	for _, target := range m.targets {
+		if err := target.close(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
+}
+
 func (m *wordMatcher) matchMessage(messageItem model.MessageItem) []model.MatchedWords {
+	content := newMessageContent(messageItem.Content)
+	sender := m.messageSender(messageItem.TraqUuid)
+	matchedTargets := targetsMatchingContent(m.targets, content)
+	allowedTargets := targetsAllowedForSender(matchedTargets, sender)
+	return matchedWordsFromTargets(allowedTargets)
+}
+
+func newMessageContent(raw string) messageContent {
+	return messageContent{
+		raw:        raw,
+		normalized: wordpattern.NormalizePlainWord(raw),
+	}
+}
+
+func (m *wordMatcher) messageSender(traqUUID string) messageSender {
+	isBot, exists := m.senderIsBotByTraqUUID[traqUUID]
+	return messageSender{
+		traqUUID: traqUUID,
+		isKnown:  exists,
+		isBot:    isBot,
+	}
+}
+
+func targetsMatchingContent(targets []wordMatchTarget, content messageContent) []wordMatchTarget {
+	matchedTargets := make([]wordMatchTarget, 0, len(targets))
+	for _, target := range targets {
+		if target.matchesContent(content) {
+			matchedTargets = append(matchedTargets, target)
+		}
+	}
+	return matchedTargets
+}
+
+func targetsAllowedForSender(targets []wordMatchTarget, sender messageSender) []wordMatchTarget {
+	allowedTargets := make([]wordMatchTarget, 0, len(targets))
+	for _, target := range targets {
+		if target.allowsSender(sender) {
+			allowedTargets = append(allowedTargets, target)
+		}
+	}
+	return allowedTargets
+}
+
+func matchedWordsFromTargets(targets []wordMatchTarget) []model.MatchedWords {
 	wordsByTrapID := map[string][]string{}
 	targetsByTrapID := map[string]model.MatchedWords{}
 	trapIDOrder := []string{}
 
-	content := wordmatch.NormalizePlainWord(messageItem.Content)
-	for _, target := range m.targets {
-		if !target.matches(messageItem.Content, content) ||
-			!target.allowsSelfNotification(messageItem.TraqUuid) ||
-			!target.allowsBotNotification(m.senderIsBotByTraqUUID, messageItem.TraqUuid) {
-			continue
-		}
-
+	for _, target := range targets {
 		if _, exists := targetsByTrapID[target.trapID]; !exists {
 			trapIDOrder = append(trapIDOrder, target.trapID)
 			targetsByTrapID[target.trapID] = model.MatchedWords{
@@ -97,7 +180,7 @@ func (m *wordMatcher) matchMessage(messageItem model.MessageItem) []model.Matche
 				TraqUUID: target.traqUUID,
 			}
 		}
-		wordsByTrapID[target.trapID] = append(wordsByTrapID[target.trapID], target.word)
+		wordsByTrapID[target.trapID] = append(wordsByTrapID[target.trapID], target.word.text())
 	}
 
 	matchedWordsList := make([]model.MatchedWords, 0, len(trapIDOrder))
@@ -109,21 +192,59 @@ func (m *wordMatcher) matchMessage(messageItem model.MessageItem) []model.Matche
 	return matchedWordsList
 }
 
-func (t wordMatchTarget) matches(rawContent, lowerContent string) bool {
-	if t.isRegex {
-		return t.regex.MatchString(rawContent)
+func (t wordMatchTarget) close() error {
+	if closeableWord, ok := t.word.(closeableRegisteredWord); ok {
+		return closeableWord.close()
 	}
-	return strings.Contains(lowerContent, t.plainWord)
+	return nil
 }
 
-func (t wordMatchTarget) allowsSelfNotification(senderTraqUUID string) bool {
-	return t.includeMe || t.traqUUID != senderTraqUUID
+func (t wordMatchTarget) matchesContent(content messageContent) bool {
+	if t.word == nil {
+		return false
+	}
+	return t.word.matches(content)
 }
 
-func (t wordMatchTarget) allowsBotNotification(senderIsBotByTraqUUID map[string]bool, senderTraqUUID string) bool {
+func (t wordMatchTarget) allowsSender(sender messageSender) bool {
+	return t.allowsSelfNotification(sender) && t.allowsBotNotification(sender)
+}
+
+func (t wordMatchTarget) allowsSelfNotification(sender messageSender) bool {
+	return t.includeMe || t.traqUUID != sender.traqUUID
+}
+
+func (t wordMatchTarget) allowsBotNotification(sender messageSender) bool {
 	if t.includeBot {
 		return true
 	}
-	senderIsBot, exists := senderIsBotByTraqUUID[senderTraqUUID]
-	return exists && !senderIsBot
+	return sender.isKnown && !sender.isBot
+}
+
+func (w plainRegisteredWord) matches(content messageContent) bool {
+	return strings.Contains(content.normalized, w.normalized)
+}
+
+func (w plainRegisteredWord) text() string {
+	return w.original
+}
+
+func (w regexRegisteredWord) close() error {
+	if w.regex == nil {
+		return nil
+	}
+	return w.regex.Close()
+}
+
+func (w regexRegisteredWord) matches(content messageContent) bool {
+	matched, err := w.regex.MatchString(content.raw)
+	if err != nil {
+		slog.Warn("skip regex word after match error", "err", err)
+		return false
+	}
+	return matched
+}
+
+func (w regexRegisteredWord) text() string {
+	return w.original
 }

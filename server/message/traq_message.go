@@ -2,6 +2,7 @@ package message
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 	"traQ-gazer/model"
 	"traQ-gazer/repo"
@@ -9,6 +10,10 @@ import (
 
 type messageWordMatcher interface {
 	matchMessage(model.MessageItem) []model.MatchedWords
+}
+
+type closeableMessageWordMatcher interface {
+	close() error
 }
 
 type wordMatcherLoaderFunc func() (messageWordMatcher, error)
@@ -22,6 +27,13 @@ func findMatchingWords(messageList model.MessageList, loadMatcher wordMatcherLoa
 	matcher, err := loadMatcher()
 	if err != nil {
 		return nil, err
+	}
+	if closeableMatcher, ok := matcher.(closeableMessageWordMatcher); ok {
+		defer func() {
+			if err := closeableMatcher.close(); err != nil {
+				slog.Error("failed to close word matcher", "err", err)
+			}
+		}()
 	}
 
 	// メッセージごとに通知対象を検索する

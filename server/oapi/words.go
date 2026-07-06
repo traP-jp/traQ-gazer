@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"traQ-gazer/model"
 	"traQ-gazer/repo"
-	"traQ-gazer/wordmatch"
+	"traQ-gazer/wordpattern"
 
 	"github.com/labstack/echo/v5"
 )
@@ -20,7 +20,7 @@ func (s Server) PostWords(ctx *echo.Context) error {
 		// 正常でないためステータスコード 400 "Invalid Input"
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if err := wordmatch.ValidateRegisteredWord(data.Word); err != nil {
+	if err := wordpattern.ValidateRegisteredWord(data.Word); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
