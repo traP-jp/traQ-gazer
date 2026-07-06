@@ -1,10 +1,9 @@
 package repo
 
 import (
+	"log/slog"
 	"time"
 	"traQ-gazer/model"
-
-	"golang.org/x/exp/slog"
 )
 
 // 今日のトレンド
@@ -17,13 +16,12 @@ func GetTrendToday(limit int) (model.TrendingWords, error) {
 func GetTrendOneday(day string, limit int) (model.TrendingWords, error) {
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
-		slog.Info("Error GetTrendOneday LoadLocation: %v", err)
+		slog.Error("failed to load location for daily trend", "err", err)
 		return model.TrendingWords{}, err
 	}
 
 	t, err := ParseDay(day)
 	if err != nil {
-		slog.Info("Error GetTrendOneday ParseDay: %v", err)
 		return model.TrendingWords{}, err
 	}
 
@@ -36,13 +34,12 @@ func GetTrendOneday(day string, limit int) (model.TrendingWords, error) {
 func GetTrendOneMonth(month string, limit int) (model.TrendingWords, error) {
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
-		slog.Info("Error GetTrendOneMonth LoadLocation: %v", err)
+		slog.Error("failed to load location for monthly trend", "err", err)
 		return model.TrendingWords{}, err
 	}
 
 	t, err := ParseMonth(month)
 	if err != nil {
-		slog.Info("Error GetTrendOneMonth ParseMonth: %v", err)
 		return model.TrendingWords{}, err
 	}
 
@@ -55,13 +52,12 @@ func GetTrendOneMonth(month string, limit int) (model.TrendingWords, error) {
 func GetTrendOneYear(year string, limit int) (model.TrendingWords, error) {
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
-		slog.Info("Error GetTrendOneYear LoadLocation: %v", err)
+		slog.Error("failed to load location for yearly trend", "err", err)
 		return model.TrendingWords{}, err
 	}
 
 	t, err := ParseYear(year)
 	if err != nil {
-		slog.Info("Error GetTrendOneYear ParseYear: %v", err)
 		return model.TrendingWords{}, err
 	}
 
@@ -75,7 +71,7 @@ func GetTrendRange(dateFrom, dateTo string, limit int) (model.TrendingWords, err
 	var words []model.TrendingWord
 	err := db.Select(&words, "SELECT COUNT(*) AS number, word FROM words WHERE (register_time >= ? AND register_time < ?) GROUP BY word ORDER BY number DESC LIMIT ?", dateFrom, dateTo, limit)
 	if err != nil {
-		slog.Info("Error GetTrendRange Select: %v", err)
+		slog.Error("failed to select trend range", "date_from", dateFrom, "date_to", dateTo, "limit", limit, "err", err)
 		return model.TrendingWords{}, err
 	}
 	return words, nil
@@ -88,7 +84,6 @@ func FormatDate(t time.Time) string {
 func ParseDay(day string) (time.Time, error) {
 	parsedDate, err := time.Parse("2006-01-02", day)
 	if err != nil {
-		slog.Info("Error ParseDay: %v", err)
 		return time.Time{}, err
 	}
 
@@ -97,7 +92,6 @@ func ParseDay(day string) (time.Time, error) {
 func ParseMonth(month string) (time.Time, error) {
 	parsedDate, err := time.Parse("2006-01", month)
 	if err != nil {
-		slog.Info("Error ParseMonth: %v", err)
 		return time.Time{}, err
 	}
 
@@ -106,7 +100,6 @@ func ParseMonth(month string) (time.Time, error) {
 func ParseYear(year string) (time.Time, error) {
 	parsedDate, err := time.Parse("2006", year)
 	if err != nil {
-		slog.Info("Error ParseYear: %v", err)
 		return time.Time{}, err
 	}
 

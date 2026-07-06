@@ -8,7 +8,6 @@ require (
 	github.com/labstack/echo/v4 v4.15.4
 	github.com/oapi-codegen/runtime v1.4.2
 	github.com/traPtitech/go-traq v0.0.0-20240224021219-538059ee2fa7
-	golang.org/x/exp v0.0.0-20240404231335-c0f41cb1a7a0
 )
 
 require (

@@ -2,16 +2,17 @@ package repo
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"net"
 	"os"
+	"slices"
 	"time"
 	"traQ-gazer/model"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/traPtitech/go-traq"
-	"golang.org/x/exp/slices"
-	"golang.org/x/exp/slog"
 )
 
 var (
@@ -42,7 +43,7 @@ func SetUp() error {
 	}
 	db = _db
 
-	slog.Info("Connected to Database")
+	slog.Info("connected to database")
 	err = initUsersTable()
 	if err != nil {
 		return err
@@ -53,7 +54,7 @@ func SetUp() error {
 // ユーザーとそのuuidの対照表を作る
 func initUsersTable() error {
 	if AccessToken == "" {
-		slog.Info("Skip initUsersTable")
+		slog.Info("skip init users table")
 		return nil
 	}
 
@@ -62,7 +63,7 @@ func initUsersTable() error {
 
 	result, _, err := client.UserApi.GetUsers(auth).Execute()
 	if err != nil {
-		slog.Error("Error getting users: %v", err)
+		slog.Error("failed to get users", "err", err)
 		return err
 	}
 
@@ -74,16 +75,17 @@ func initUsersTable() error {
 	alreadyExistUsersUUIDList := []string{}
 	err = db.Select(&alreadyExistUsersUUIDList, "SELECT traq_uuid FROM users")
 	if err != nil {
-		slog.Error("Error Select alreadyExistUsersUUIDList: %v", err)
+		slog.Error("failed to select existing users", "err", err)
 		return err
 	}
 
 	newUserList := removeAlreadyExistUsers(userList, alreadyExistUsersUUIDList)
 
 	for i := 0; i < len(newUserList); i += 50 {
-		_, err := db.NamedExec("INSERT INTO users (traq_uuid, trap_id, is_bot) VALUES (:traq_uuid, :trap_id, :is_bot)", newUserList[i:min(i+50, len(newUserList))])
+		batch := newUserList[i:min(i+50, len(newUserList))]
+		_, err := db.NamedExec("INSERT INTO users (traq_uuid, trap_id, is_bot) VALUES (:traq_uuid, :trap_id, :is_bot)", batch)
 		if err != nil {
-			slog.Error("Error Insert: %v", err)
+			slog.Error("failed to insert users", "count", len(batch), "err_type", fmt.Sprintf("%T", err))
 			return err
 		}
 	}
