@@ -22,7 +22,7 @@ const formErrorMessage = ref('')
 
 const normalizedWord = computed(() => newWord.value.trim())
 const wordLength = computed(() => normalizedWord.value.length)
-const wordLengthHelpText = computed(() => `${maxWordLength}文字以内`)
+const wordLengthHelpText = `${maxWordLength}文字以内`
 const validationMessage = computed(() => {
   if (wordLength.value > maxWordLength) {
     return `${maxWordLength}文字以内で入力してください`
