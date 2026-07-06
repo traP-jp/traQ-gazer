@@ -56,5 +56,4 @@ const update = () => {
 .error {
   color: var(--danger-color);
 }
-
 </style>
