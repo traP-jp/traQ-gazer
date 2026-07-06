@@ -10,6 +10,6 @@ tasks:
     cmd: docker compose --profile docs up openapi-ui
 
   install-server-openapi-codegen:
-    cmd: go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
+    cmd: go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1
   server-openapi-codegen:
     cmd: oapi-codegen --config=./server/oapi-config.yaml docs/openapi.yaml
