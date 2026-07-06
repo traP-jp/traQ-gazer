@@ -5,8 +5,6 @@ import (
 	"strings"
 	"traQ-gazer/model"
 	"traQ-gazer/repo"
-
-	"golang.org/x/exp/slog"
 )
 
 type messageWordMatcher interface {
@@ -49,20 +47,17 @@ func findMatchingWords(messageList model.MessageList, loadMatcher wordMatcherLoa
 func loadWordMatcher() (messageWordMatcher, error) {
 	words, err := repo.GetWordsWithoutTime()
 	if err != nil {
-		slog.Error(fmt.Sprintf("failed to fetch words for matching: %v", err))
-		return nil, err
+		return nil, fmt.Errorf("fetch words for matching: %w", err)
 	}
 
 	users, err := repo.GetUserList()
 	if err != nil {
-		slog.Error(fmt.Sprintf("failed to fetch users for matching: %v", err))
-		return nil, err
+		return nil, fmt.Errorf("fetch users for matching: %w", err)
 	}
 
 	matcher, err := newWordMatcher(words, users)
 	if err != nil {
-		slog.Error(fmt.Sprintf("failed to build word matcher: %v", err))
-		return nil, err
+		return nil, fmt.Errorf("build word matcher: %w", err)
 	}
 	return matcher, nil
 }

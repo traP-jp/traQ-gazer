@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strings"
 	"sync"
@@ -11,7 +12,6 @@ import (
 	"traQ-gazer/repo"
 
 	"github.com/traPtitech/go-traq"
-	"golang.org/x/exp/slog"
 )
 
 type MessagePoller struct {
@@ -35,7 +35,7 @@ func (m *MessagePoller) Run() {
 
 	lastCheckpoint, err := repo.GetPollingFrom()
 	if err != nil {
-		slog.Error(fmt.Sprintf("Failed to get pollinginfo: %v", err))
+		slog.Error("failed to get polling info", "err", err)
 		lastCheckpoint = time.Now()
 	}
 
@@ -43,7 +43,7 @@ func (m *MessagePoller) Run() {
 
 	ticker := time.Tick(pollingInterval)
 	for range ticker {
-		slog.Info("Start polling")
+		slog.Info("start polling", "from", lastCheckpoint)
 		checkpointMutex.Lock()
 
 		onPollingTime := time.Now()
@@ -55,7 +55,7 @@ func (m *MessagePoller) Run() {
 			messages, more, err := collectMessages(lastCheckpoint, onPollingTime, page)
 
 			if err != nil {
-				slog.Error(fmt.Sprintf("Failed to polling messages: %v", err))
+				slog.Error("failed to poll messages", "from", lastCheckpoint, "to", onPollingTime, "page", page, "err", err)
 				break
 			}
 
@@ -66,7 +66,7 @@ func (m *MessagePoller) Run() {
 				lastCheckpoint = (*messages)[0].CreatedAt
 			}
 
-			slog.Info(fmt.Sprintf("Collected %d messages", tmpMessageCount))
+			slog.Info("collected messages", "count", tmpMessageCount, "page", page)
 
 			collectedMessageCount += tmpMessageCount
 
@@ -74,9 +74,9 @@ func (m *MessagePoller) Run() {
 			allMessages = append(allMessages, *messages...)
 			if !more {
 				if tmpMessageCount <= 0 {
-					slog.Info("Message count is 0. Skip logging created at information")
+					slog.Info("no messages collected")
 				} else {
-					slog.Info(fmt.Sprintf("The first one is created at %v.", (*messages)[tmpMessageCount-1].CreatedAt))
+					slog.Info("oldest collected message", "created_at", (*messages)[tmpMessageCount-1].CreatedAt)
 				}
 				break
 			}
@@ -85,13 +85,13 @@ func (m *MessagePoller) Run() {
 		// 通知処理にメッセージを渡す
 		m.processor.enqueue(&allMessages)
 
-		slog.Info(fmt.Sprintf("%d messages collected totally", collectedMessageCount))
+		slog.Info("messages collected", "count", collectedMessageCount)
 
 		err := repo.RecordPollingTime(lastCheckpoint)
 		if err != nil {
-			slog.Error(fmt.Sprintf("Failed to recording lastCheckpoint: %v", err))
+			slog.Error("failed to record last checkpoint", "last_checkpoint", lastCheckpoint, "err", err)
 		}
-		slog.Info(fmt.Sprintf("Now, lastCheckpoint = %v", lastCheckpoint))
+		slog.Info("updated last checkpoint", "last_checkpoint", lastCheckpoint)
 		checkpointMutex.Unlock()
 	}
 }
@@ -119,16 +119,16 @@ func (m *messageProcessor) enqueue(messages *[]traq.Message) {
 func (m *messageProcessor) process(messages []traq.Message) {
 	messageList, err := convertMessageHits(messages)
 	if err != nil {
-		slog.Error(fmt.Sprintf("Failed to convert messages: %v", err))
+		slog.Error("failed to convert messages", "err", err)
 		return
 	}
 	notifyInfoList, err := findMatchingWords(messageList, m.wordMatcherLoader())
 	if err != nil {
-		slog.Error(fmt.Sprintf("Failed to process messages: %v", err))
+		slog.Error("failed to process messages", "err", err)
 		return
 	}
 
-	slog.Info(fmt.Sprintf("Sending %d DMs...", len(notifyInfoList)))
+	slog.Info("sending direct messages", "count", len(notifyInfoList))
 
 	// 元投稿の時系列に沿ってDMを送るためにnotifyInfoListをIdでソート
 	sort.Slice(notifyInfoList, func(i, j int) bool {
@@ -138,12 +138,12 @@ func (m *messageProcessor) process(messages []traq.Message) {
 	for _, notifyInfo := range notifyInfoList {
 		err := sendMessage(notifyInfo.NotifyTargetTraqUuid, genNotifyMessageContent(notifyInfo.MessageId, notifyInfo.Words...))
 		if err != nil {
-			slog.Error(fmt.Sprintf("Failed to send message: %v", err))
+			slog.Error("failed to send direct message", "err_type", fmt.Sprintf("%T", err))
 			continue
 		}
 	}
 
-	slog.Info("End of send DMs")
+	slog.Info("finished sending direct messages")
 }
 
 func (m *messageProcessor) wordMatcherLoader() wordMatcherLoaderFunc {
@@ -165,7 +165,7 @@ func genNotifyMessageContent(citeMessageId string, words ...string) string {
 
 func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 	if repo.AccessToken == "" {
-		slog.Info("Skip sendMessage")
+		slog.Info("skip send message")
 		return nil
 	}
 
@@ -175,7 +175,6 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 		Content: messageContent,
 	}).Execute()
 	if err != nil {
-		slog.Info("Error sending message: %v", err)
 		return err
 	}
 	return nil
@@ -183,7 +182,7 @@ func sendMessage(notifyTargetTraqUUID string, messageContent string) error {
 
 func collectMessages(from time.Time, to time.Time, page int) (*[]traq.Message, bool, error) {
 	if repo.AccessToken == "" {
-		slog.Info("Skip collectMessage")
+		slog.Info("skip collect messages")
 		return &[]traq.Message{}, false, nil
 	}
 

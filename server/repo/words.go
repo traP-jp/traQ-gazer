@@ -3,11 +3,9 @@ package repo
 import (
 	"database/sql"
 	"errors"
-	"log"
+	"log/slog"
 
 	"traQ-gazer/model"
-
-	"golang.org/x/exp/slog"
 )
 
 func ResisterWord(word string, includeBot, includeMe bool, userId string) error {
@@ -36,7 +34,7 @@ func ExistWord(word, userId string) (bool, error) {
 
 	// 予期せぬエラー
 	if err != nil {
-		slog.Info(err.Error())
+		slog.Error("failed to check existing word", "err", err)
 		return false, err
 	}
 
@@ -48,7 +46,7 @@ func GetWords() (model.WordsAllList, error) {
 	words := []model.WordAllListItem{}
 	err := db.Select(&words, "SELECT * FROM `words`")
 	if err != nil {
-		log.Printf("Error: %s\n", err)
+		slog.Error("failed to select words", "err", err)
 		return nil, err
 	}
 	return words, nil
@@ -57,12 +55,11 @@ func GetWords() (model.WordsAllList, error) {
 func GetWordsWithoutTime() ([]model.WordsItem, error) {
 	wordsList := []model.WordsItem{}
 	err := db.Select(&wordsList, `
-		SELECT 
-			word, bot_notification, me_notification, trap_id 
-		FROM
-			words`)
+			SELECT
+				word, bot_notification, me_notification, trap_id
+			FROM
+				words`)
 	if err != nil {
-		slog.Info("Error selecting words: %v", err)
 		return nil, err
 	}
 	return wordsList, nil

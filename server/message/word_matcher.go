@@ -1,13 +1,12 @@
 package message
 
 import (
+	"log/slog"
 	"regexp"
 	"strings"
 
 	"traQ-gazer/model"
 	"traQ-gazer/wordmatch"
-
-	"golang.org/x/exp/slog"
 )
 
 type wordMatcher struct {
@@ -43,7 +42,7 @@ func newWordMatcher(words []model.WordsItem, users []model.UsersItem) (*wordMatc
 
 		target, err := newWordMatchTarget(word, user)
 		if err != nil {
-			slog.Error("skip invalid registered regex word")
+			slog.Warn("skip invalid registered regex word")
 			continue
 		}
 		targets = append(targets, target)
