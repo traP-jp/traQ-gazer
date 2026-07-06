@@ -8,8 +8,8 @@ import (
 	"traQ-gazer/oapi"
 	"traQ-gazer/repo"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 )
 
 func main() {
@@ -45,13 +45,12 @@ func main() {
 func requestLogger() echo.MiddlewareFunc {
 	return middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		HandleError:     true,
-		LogError:        true,
 		LogLatency:      true,
 		LogMethod:       true,
 		LogRoutePath:    true,
 		LogStatus:       true,
 		LogResponseSize: true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+		LogValuesFunc: func(c *echo.Context, v middleware.RequestLoggerValues) error {
 			level := slog.LevelInfo
 			if v.Status >= 500 {
 				level = slog.LevelError
