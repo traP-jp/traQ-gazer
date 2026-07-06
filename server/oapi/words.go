@@ -6,34 +6,34 @@ import (
 	"traQ-gazer/repo"
 	"traQ-gazer/wordmatch"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // wordの登録
 // (POST /words)
-func (s Server) PostWords(ctx echo.Context) error {
+func (s Server) PostWords(ctx *echo.Context) error {
 
 	// Wordの取得
 	data := &PostWordsJSONRequestBody{}
 	err := ctx.Bind(data)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	if err := wordmatch.ValidateRegisteredWord(data.Word); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	// traPIdの取得
 	userId, err := getUserIdFromSession(ctx)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	exist, err := repo.ExistWord(data.Word, userId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	if exist {
@@ -43,7 +43,7 @@ func (s Server) PostWords(ctx echo.Context) error {
 
 	err = repo.ResisterWord(data.Word, data.IncludeBot, data.IncludeMe, userId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return ctx.JSON(http.StatusOK, "Successful registration")
@@ -51,26 +51,26 @@ func (s Server) PostWords(ctx echo.Context) error {
 
 // wordの削除
 // (DELETE /words)
-func (s Server) DeleteWords(ctx echo.Context) error {
+func (s Server) DeleteWords(ctx *echo.Context) error {
 
 	data := &DeleteWordsJSONRequestBody{}
 	err := ctx.Bind(data)
 
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	// traPIdの取得
 	userId, err := getUserIdFromSession(ctx)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	exist, err := repo.ExistWord(data.Word, userId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	if !exist {
@@ -79,7 +79,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 
 	err = repo.DeleteWord(data.Word, userId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return ctx.JSON(http.StatusOK, "Successful deletion")
@@ -87,7 +87,7 @@ func (s Server) DeleteWords(ctx echo.Context) error {
 
 // 全データの取得
 // (GET /words)
-func (s Server) GetWords(ctx echo.Context) error {
+func (s Server) GetWords(ctx *echo.Context) error {
 	return echo.NewHTTPError(http.StatusGone, "this endpoint is not available")
 }
 

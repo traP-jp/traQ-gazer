@@ -5,17 +5,17 @@ import (
 	"traQ-gazer/model"
 	"traQ-gazer/repo"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // 今見てるuserのwordたち
 // (GET /list/user/{userId})
-func (s Server) GetListUserMe(ctx echo.Context) error {
+func (s Server) GetListUserMe(ctx *echo.Context) error {
 	// traPIdの取得
 	userId, err := getUserIdFromSession(ctx)
 	if err != nil {
 		// 正常でないためステータスコード 400 "Invalid Input"
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	wordsListMode, err := repo.GetListUserUserId(userId)
@@ -28,13 +28,13 @@ func (s Server) GetListUserMe(ctx echo.Context) error {
 
 // あるuserのwordたち
 // (GET /list/user/{userId})
-func (s Server) GetListUserUserId(ctx echo.Context, userId string) error {
+func (s Server) GetListUserUserId(ctx *echo.Context, userId string) error {
 	return echo.NewHTTPError(http.StatusGone, "this endpoint is not available")
 }
 
 // あるuserのwordたちを登録しているuserたち
 // (GET /list/user/{userId}/users)
-func (s Server) GetListUserUserIdUsers(ctx echo.Context, userId string) error {
+func (s Server) GetListUserUserIdUsers(ctx *echo.Context, userId string) error {
 	// usersOfWordsListMode, err := model.GetListUserUserIdUsers(userId)
 	// if err != nil {
 	// 	return echo.NewHTTPError(500, err.Error())
@@ -60,13 +60,13 @@ func ConvertWordList(models model.WordsList) WordsList {
 
 // ある単語を見ているuserたち
 // (GET /list/word/{word})
-func (s Server) GetListWordWord(ctx echo.Context, word string) error {
+func (s Server) GetListWordWord(ctx *echo.Context, word string) error {
 	return echo.NewHTTPError(http.StatusGone, "this endpoint is not available")
 }
 
 // あるwordのuserたちが登録しているwordたち
 // (GET /list/word/{word}/words)
-func (s Server) GetListWordWordWords(ctx echo.Context, word string) error {
+func (s Server) GetListWordWordWords(ctx *echo.Context, word string) error {
 	return nil
 }
 

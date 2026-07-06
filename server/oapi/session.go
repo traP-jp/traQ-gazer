@@ -3,10 +3,10 @@ package oapi
 import (
 	"errors"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func getUserIdFromSession(ctx echo.Context) (string, error) {
+func getUserIdFromSession(ctx *echo.Context) (string, error) {
 	userId := ctx.Request().Header.Get("X-Forwarded-User")
 	if userId == "" {
 		return "", errors.New("X-Forwarded-User is empty")
