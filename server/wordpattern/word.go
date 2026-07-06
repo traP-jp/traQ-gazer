@@ -1,10 +1,17 @@
-package wordmatch
+package wordpattern
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
+
+	"go.arsenm.dev/pcre"
 )
+
+const regexCompileOptions = pcre.UTF
+
+type RegexWord struct {
+	regex *pcre.Regexp
+}
 
 func IsRegexWord(word string) bool {
 	return len(word) >= 2 && strings.HasPrefix(word, "/") && strings.HasSuffix(word, "/")
@@ -18,19 +25,46 @@ func RegexPattern(word string) string {
 }
 
 // CompileRegexWord defines the supported regex dialect for registered words.
-// Matching and registration validation both use Go's regexp package.
-func CompileRegexWord(word string) (*regexp.Regexp, error) {
-	return regexp.Compile(RegexPattern(word))
+// Matching and registration validation both use PCRE, matching MariaDB REGEXP more closely.
+func CompileRegexWord(word string) (*RegexWord, error) {
+	regex, err := pcre.CompileOpts(RegexPattern(word), regexCompileOptions)
+	if err != nil {
+		return nil, err
+	}
+	return &RegexWord{regex: regex}, nil
+}
+
+func (r *RegexWord) MatchString(s string) (matched bool, err error) {
+	if r == nil || r.regex == nil {
+		return false, nil
+	}
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			matched = false
+			err = fmt.Errorf("regex match failed: %v", recovered)
+		}
+	}()
+	return r.regex.MatchString(s), nil
+}
+
+func (r *RegexWord) Close() error {
+	if r == nil || r.regex == nil {
+		return nil
+	}
+	err := r.regex.Close()
+	r.regex = nil
+	return err
 }
 
 func ValidateRegisteredWord(word string) error {
 	if !IsRegexWord(word) {
 		return nil
 	}
-	if _, err := CompileRegexWord(word); err != nil {
+	regex, err := CompileRegexWord(word)
+	if err != nil {
 		return fmt.Errorf("invalid regex word: %w", err)
 	}
-	return nil
+	return regex.Close()
 }
 
 // NormalizePlainWord defines app-side plain-word matching semantics.

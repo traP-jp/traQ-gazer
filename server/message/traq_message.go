@@ -2,6 +2,7 @@ package message
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 	"traQ-gazer/model"
 	"traQ-gazer/repo"
@@ -11,9 +12,13 @@ type messageWordMatcher interface {
 	matchMessage(model.MessageItem) []model.MatchedWords
 }
 
-type wordMatcherLoaderFunc func() (messageWordMatcher, error)
+type closeableMessageWordMatcher interface {
+	close() error
+}
 
-func findMatchingWords(messageList model.MessageList, loadMatcher wordMatcherLoaderFunc) ([]*model.NotifyInfo, error) {
+type notificationWordMatcherLoaderFunc func() (messageWordMatcher, error)
+
+func findMatchingWords(messageList model.MessageList, loadMatcher notificationWordMatcherLoaderFunc) ([]*model.NotifyInfo, error) {
 	if len(messageList) == 0 {
 		return nil, nil
 	}
@@ -22,6 +27,13 @@ func findMatchingWords(messageList model.MessageList, loadMatcher wordMatcherLoa
 	matcher, err := loadMatcher()
 	if err != nil {
 		return nil, err
+	}
+	if closeableMatcher, ok := matcher.(closeableMessageWordMatcher); ok {
+		defer func() {
+			if err := closeableMatcher.close(); err != nil {
+				slog.Error(fmt.Sprintf("failed to close notification word matcher: %v", err))
+			}
+		}()
 	}
 
 	// メッセージごとに通知対象を検索する
@@ -44,7 +56,7 @@ func findMatchingWords(messageList model.MessageList, loadMatcher wordMatcherLoa
 	return notifyInfoList, nil
 }
 
-func loadWordMatcher() (messageWordMatcher, error) {
+func loadNotificationWordMatcher() (messageWordMatcher, error) {
 	words, err := repo.GetWordsWithoutTime()
 	if err != nil {
 		return nil, fmt.Errorf("fetch words for matching: %w", err)
@@ -55,9 +67,9 @@ func loadWordMatcher() (messageWordMatcher, error) {
 		return nil, fmt.Errorf("fetch users for matching: %w", err)
 	}
 
-	matcher, err := newWordMatcher(words, users)
+	matcher, err := newNotificationWordMatcher(words, users)
 	if err != nil {
-		return nil, fmt.Errorf("build word matcher: %w", err)
+		return nil, fmt.Errorf("build notification word matcher: %w", err)
 	}
 	return matcher, nil
 }
