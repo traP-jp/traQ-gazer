@@ -1,15 +1,20 @@
 name: Server
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
       - 'main'
     paths:
       - server/**/*
+      - schema/**/*
       - .github/workflows/server.yaml
   pull_request:
     paths:
       - server/**/*
+      - schema/**/*
       - .github/workflows/server.yaml
 
 jobs:
@@ -25,7 +30,7 @@ jobs:
       - name: Format
         run: go fmt ./...
         working-directory: ./server/
-  
+
   build:
     name: Check build
     runs-on: ubuntu-latest
@@ -38,4 +43,16 @@ jobs:
       - name: Build
         run: go build .
         working-directory: ./server/
-  
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: './server/go.mod'
+      - name: Test
+        run: go test -v ./...
+        working-directory: ./server/

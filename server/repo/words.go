@@ -3,10 +3,9 @@ package repo
 import (
 	"database/sql"
 	"errors"
-	"fmt"
-	"traQ-gazer/model"
-
 	"log"
+
+	"traQ-gazer/model"
 
 	"golang.org/x/exp/slog"
 )
@@ -67,32 +66,4 @@ func GetWordsWithoutTime() ([]model.WordsItem, error) {
 		return nil, err
 	}
 	return wordsList, nil
-}
-
-func GetMatchedWordList(messageItem model.MessageItem) ([]model.MatchedWords, error) {
-	matchedWordsList := []model.MatchedWords{}
-	err := db.Select(&matchedWordsList, `
-			SELECT
-				group_concat(words.word SEPARATOR '\n') AS contacted_words,
-				words.trap_id AS trap_id,
-				users.traq_uuid AS traq_uuid
-			FROM words
-			JOIN users ON words.trap_id = users.trap_id
-				WHERE (
-				    	((word NOT LIKE '/%/') 
-				    		AND (? LIKE concat('%', word, '%')))
-            			OR ((word LIKE '/%/') 
-            				AND (BINARY ? REGEXP trim(BOTH '/' FROM word)))
-				    )
-				AND (me_notification OR
-					 users.traq_uuid != ?)
-				AND (bot_notification OR
-					 (SELECT is_bot FROM users WHERE traq_uuid = ? LIMIT 1) = FALSE)
-			GROUP BY words.trap_id`,
-		messageItem.Content, messageItem.Content, messageItem.TraqUuid, messageItem.TraqUuid)
-	if err != nil {
-		slog.Error(fmt.Sprintf("failed to search words with message: `%s`", messageItem.Id))
-		return nil, err
-	}
-	return matchedWordsList, nil
 }
