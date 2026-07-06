@@ -21,7 +21,8 @@ const listErrorMessage = ref('')
 const formErrorMessage = ref('')
 
 const normalizedWord = computed(() => newWord.value.trim())
-const wordLength = computed(() => Array.from(normalizedWord.value).length)
+const wordLength = computed(() => normalizedWord.value.length)
+const wordLengthHelpText = computed(() => `${maxWordLength}文字以内`)
 const validationMessage = computed(() => {
   if (wordLength.value > maxWordLength) {
     return `${maxWordLength}文字以内で入力してください`
@@ -95,7 +96,7 @@ const registerNewWord = async () => {
           />
           <div id="new-word-meta" :class="$style.fieldMeta">
             <span :class="[validationMessage && $style.errorText]">
-              {{ validationMessage || '50文字以内' }}
+              {{ validationMessage || wordLengthHelpText }}
             </span>
             <span>{{ wordLength }}/{{ maxWordLength }}</span>
           </div>
