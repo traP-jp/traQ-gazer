@@ -46,7 +46,7 @@ services:
       retries: 60
 
   openapi-ui:
-    image: swaggerapi/swagger-ui:v5.32.8@sha256:1ece6f19ca5709fb5fbab9bf43adee2916144fb21e82b7bafba568124e8c8930
+    image: swaggerapi/swagger-ui:v5.32.11@sha256:e43eb34b978af58d8cb78e5da9c12d605cf43d113ad3a96b18f9b028d6479d68
     profiles:
       - docs
     ports:
