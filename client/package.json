@@ -35,7 +35,7 @@
     "postcss": "^8.5.32",
     "prettier": "3.9.4",
     "typescript": "^6.0.3",
-    "vite": "^8.1.5",
+    "vite": "^8.3.5",
     "vue-tsc": "^3.3.13"
   },
   "packageManager": "pnpm@11.2.1"
